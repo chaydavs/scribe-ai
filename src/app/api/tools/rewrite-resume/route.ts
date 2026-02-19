@@ -4,6 +4,33 @@ import { generateWithClaude, toolPrompts } from '@/lib/claude/client'
 
 const CREDIT_COST = 5
 
+interface ExtractedKeywords {
+  required_skills: string[]
+  preferred_skills: string[]
+  key_responsibilities: string[]
+  industry_keywords: string[]
+}
+
+async function extractKeywordsFromJobDescription(jobDescription: string): Promise<ExtractedKeywords | null> {
+  try {
+    const response = await generateWithClaude(
+      toolPrompts.keywordExtraction,
+      jobDescription,
+      1024
+    )
+
+    // Parse the JSON response
+    const jsonMatch = response.content.match(/\{[\s\S]*\}/)
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]) as ExtractedKeywords
+    }
+    return null
+  } catch {
+    // If keyword extraction fails, continue without keywords
+    return null
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
@@ -33,10 +60,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Resume text is required' }, { status: 400 })
     }
 
-    // Build prompt
+    // Build prompt with optional keyword injection
     let userMessage = `Here is the resume to rewrite:\n\n${resumeText}`
+
     if (jobDescription) {
-      userMessage += `\n\nTarget job description (optimize keywords for this role):\n${jobDescription}`
+      // Extract keywords from job description
+      const keywords = await extractKeywordsFromJobDescription(jobDescription)
+
+      if (keywords) {
+        const allKeywords = [
+          ...keywords.required_skills,
+          ...keywords.preferred_skills,
+          ...keywords.industry_keywords
+        ].filter((k, i, arr) => arr.indexOf(k) === i) // dedupe
+
+        userMessage += `\n\n---\nTARGET JOB KEYWORDS (include naturally where they match existing experience):\n${allKeywords.join(', ')}`
+        userMessage += `\n\nKey responsibilities to highlight if relevant:\n${keywords.key_responsibilities.join('\n- ')}`
+      } else {
+        userMessage += `\n\nTarget job description (optimize keywords for this role):\n${jobDescription}`
+      }
     }
 
     // Generate rewrite

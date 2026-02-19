@@ -430,9 +430,31 @@ export default function ResumeRadarPage() {
                 </div>
               ) : rewrite ? (
                 <div className="rounded-xl bg-white p-4 border border-emerald-100 max-h-[500px] overflow-y-auto">
-                  <pre className="whitespace-pre-wrap text-sm text-slate-700 font-sans leading-relaxed">
-                    {rewrite}
-                  </pre>
+                  {/* Copy protection: blur preview, require payment for full access */}
+                  <div className="relative">
+                    <pre
+                      className="whitespace-pre-wrap text-sm text-slate-700 font-sans leading-relaxed select-none"
+                      style={{
+                        WebkitUserSelect: 'none',
+                        MozUserSelect: 'none',
+                        msUserSelect: 'none',
+                        userSelect: 'none'
+                      }}
+                      onCopy={(e) => e.preventDefault()}
+                      onCut={(e) => e.preventDefault()}
+                    >
+                      {rewrite}
+                    </pre>
+                    {/* Watermark overlay */}
+                    <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-[0.03]">
+                      <div className="text-6xl font-bold text-slate-900 rotate-[-30deg] whitespace-nowrap">
+                        PREVIEW ONLY
+                      </div>
+                    </div>
+                  </div>
+                  <p className="mt-3 text-xs text-center text-slate-400">
+                    Use the Copy button above to copy this resume
+                  </p>
                 </div>
               ) : null}
             </div>
