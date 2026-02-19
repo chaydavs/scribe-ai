@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install)",
+      "Bash(npm run build:*)",
+      "Bash(curl:*)",
+      "WebFetch(domain:www.youtube.com)",
+      "WebSearch",
+      "Bash(pkill:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git rm:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}
