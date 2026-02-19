@@ -180,36 +180,12 @@ function SettingsContent() {
                 <td className="whitespace-nowrap px-4 py-3 text-right text-sm text-gray-900">3</td>
               </tr>
               <tr>
-                <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900">FeedbackLoop</td>
-                <td className="whitespace-nowrap px-4 py-3 text-right text-sm text-gray-900">4</td>
-              </tr>
-              <tr>
-                <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900">DataBrief</td>
-                <td className="whitespace-nowrap px-4 py-3 text-right text-sm text-gray-900">5</td>
-              </tr>
-              <tr>
                 <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900">GrantGPT</td>
                 <td className="whitespace-nowrap px-4 py-3 text-right text-sm text-gray-900">6</td>
               </tr>
               <tr>
                 <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900">LinkedIn Writer</td>
                 <td className="whitespace-nowrap px-4 py-3 text-right text-sm text-gray-900">2</td>
-              </tr>
-              <tr>
-                <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900">SEO Outliner</td>
-                <td className="whitespace-nowrap px-4 py-3 text-right text-sm text-gray-900">4</td>
-              </tr>
-              <tr>
-                <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900">Product Descriptions</td>
-                <td className="whitespace-nowrap px-4 py-3 text-right text-sm text-gray-900">2</td>
-              </tr>
-              <tr>
-                <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900">Subject Line Tester</td>
-                <td className="whitespace-nowrap px-4 py-3 text-right text-sm text-gray-900">1</td>
-              </tr>
-              <tr>
-                <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900">Meeting Notes</td>
-                <td className="whitespace-nowrap px-4 py-3 text-right text-sm text-gray-900">3</td>
               </tr>
               <tr>
                 <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900">Notion Templates</td>

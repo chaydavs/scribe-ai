@@ -35,14 +35,8 @@ export const creditPacks: CreditPack[] = [
 export const toolCreditCosts: Record<string, number> = {
   resumeradar: 5,
   coldcraft: 3,
-  feedbackloop: 4,
-  databrief: 5,
   grantgpt: 6,
   linkedinwriter: 2,
-  seooutliner: 4,
-  productdesc: 2,
-  subjectline: 1,
-  meetingnotes: 3,
   notiontemplate: 6,
 }
 
