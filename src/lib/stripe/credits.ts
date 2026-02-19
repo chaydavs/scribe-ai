@@ -34,10 +34,6 @@ export const creditPacks: CreditPack[] = [
 
 export const toolCreditCosts: Record<string, number> = {
   resumeradar: 5,
-  coldcraft: 3,
-  grantgpt: 6,
-  linkedinwriter: 2,
-  notiontemplate: 6,
 }
 
 export function getCreditPack(id: string): CreditPack | undefined {

@@ -270,24 +270,8 @@ function SettingsContent() {
             </thead>
             <tbody className="divide-y divide-slate-200 bg-white">
               <tr>
-                <td className="whitespace-nowrap px-4 py-3 text-sm text-slate-900">ResumeRadar</td>
-                <td className="whitespace-nowrap px-4 py-3 text-right text-sm font-medium text-indigo-600">5</td>
-              </tr>
-              <tr>
-                <td className="whitespace-nowrap px-4 py-3 text-sm text-slate-900">ColdCraft</td>
-                <td className="whitespace-nowrap px-4 py-3 text-right text-sm font-medium text-indigo-600">3</td>
-              </tr>
-              <tr>
-                <td className="whitespace-nowrap px-4 py-3 text-sm text-slate-900">GrantGPT</td>
-                <td className="whitespace-nowrap px-4 py-3 text-right text-sm font-medium text-indigo-600">6</td>
-              </tr>
-              <tr>
-                <td className="whitespace-nowrap px-4 py-3 text-sm text-slate-900">LinkedIn Writer</td>
-                <td className="whitespace-nowrap px-4 py-3 text-right text-sm font-medium text-indigo-600">2</td>
-              </tr>
-              <tr>
-                <td className="whitespace-nowrap px-4 py-3 text-sm text-slate-900">Notion Templates</td>
-                <td className="whitespace-nowrap px-4 py-3 text-right text-sm font-medium text-indigo-600">6</td>
+                <td className="whitespace-nowrap px-4 py-3 text-sm text-slate-900">Resume Analysis</td>
+                <td className="whitespace-nowrap px-4 py-3 text-right text-sm font-medium text-indigo-600">5 credits</td>
               </tr>
             </tbody>
           </table>
