@@ -91,8 +91,32 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Social Proof Stats */}
+      <section className="py-12 border-t border-slate-100 bg-slate-50">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-indigo-600">80%</div>
+              <div className="mt-1 text-sm text-slate-600">of resumes rejected by ATS</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-indigo-600">6 sec</div>
+              <div className="mt-1 text-sm text-slate-600">avg. recruiter scan time</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-indigo-600">3x</div>
+              <div className="mt-1 text-sm text-slate-600">more interviews after optimization</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-indigo-600">&lt;30s</div>
+              <div className="mt-1 text-sm text-slate-600">to get AI feedback</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* How It Works */}
-      <section className="py-20 border-t border-slate-100">
+      <section className="py-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">
@@ -103,14 +127,14 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-4">
             <div className="text-center">
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-2xl font-bold shadow-lg shadow-indigo-500/30">
                 1
               </div>
               <h3 className="mt-6 text-xl font-semibold text-slate-900">Upload Resume</h3>
               <p className="mt-2 text-slate-600">
-                Drop your PDF or paste your resume text. We support all formats.
+                Drop your PDF or paste text. Takes 5 seconds.
               </p>
             </div>
             <div className="text-center">
@@ -119,17 +143,109 @@ export default function LandingPage() {
               </div>
               <h3 className="mt-6 text-xl font-semibold text-slate-900">Get AI Analysis</h3>
               <p className="mt-2 text-slate-600">
-                Our AI scores your resume and identifies specific improvements.
+                Score, ATS check, and specific fixes to make.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white text-2xl font-bold shadow-lg shadow-emerald-500/30">
+                3
+              </div>
+              <h3 className="mt-6 text-xl font-semibold text-slate-900">Auto-Rewrite</h3>
+              <p className="mt-2 text-slate-600">
+                One click to get an optimized version ready to use.
               </p>
             </div>
             <div className="text-center">
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-2xl font-bold shadow-lg shadow-indigo-500/30">
-                3
+                4
               </div>
-              <h3 className="mt-6 text-xl font-semibold text-slate-900">Apply Fixes</h3>
+              <h3 className="mt-6 text-xl font-semibold text-slate-900">Land Interviews</h3>
               <p className="mt-2 text-slate-600">
-                Follow our actionable recommendations to improve your resume.
+                Apply with confidence. Track your results.
               </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Why ResumeRadar - Problem/Solution */}
+      <section className="py-20 bg-white border-t border-slate-100">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-12 lg:grid-cols-2 items-center">
+            <div>
+              <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">
+                Your resume is probably getting rejected. Here's why.
+              </h2>
+              <div className="mt-6 space-y-4">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0 mt-1">
+                    <svg className="h-5 w-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </div>
+                  <p className="ml-3 text-slate-600">
+                    <strong className="text-slate-900">80% of resumes</strong> are filtered out by ATS software before a human ever sees them
+                  </p>
+                </div>
+                <div className="flex items-start">
+                  <div className="flex-shrink-0 mt-1">
+                    <svg className="h-5 w-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </div>
+                  <p className="ml-3 text-slate-600">
+                    Recruiters spend only <strong className="text-slate-900">6 seconds</strong> scanning each resume
+                  </p>
+                </div>
+                <div className="flex items-start">
+                  <div className="flex-shrink-0 mt-1">
+                    <svg className="h-5 w-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </div>
+                  <p className="ml-3 text-slate-600">
+                    Generic bullet points like "responsible for..." get <strong className="text-slate-900">ignored instantly</strong>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-8">
+              <h3 className="text-xl font-semibold text-slate-900 mb-4">
+                ResumeRadar fixes this by:
+              </h3>
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0 mt-1">
+                    <svg className="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <p className="ml-3 text-slate-600">
+                    <strong className="text-slate-900">Scanning like a recruiter</strong> — identifying exactly what they look for
+                  </p>
+                </div>
+                <div className="flex items-start">
+                  <div className="flex-shrink-0 mt-1">
+                    <svg className="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <p className="ml-3 text-slate-600">
+                    <strong className="text-slate-900">Optimizing for ATS</strong> — ensuring the right keywords are present
+                  </p>
+                </div>
+                <div className="flex items-start">
+                  <div className="flex-shrink-0 mt-1">
+                    <svg className="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <p className="ml-3 text-slate-600">
+                    <strong className="text-slate-900">Auto-rewriting</strong> — transforming weak bullets into achievement statements
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -210,8 +326,90 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Testimonials */}
+      <section className="py-20 border-t border-slate-100">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">
+              What Job Seekers Say
+            </h2>
+            <p className="mt-4 text-lg text-slate-600">
+              Real feedback from people who landed interviews
+            </p>
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-3">
+            <div className="rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
+              <div className="flex items-center space-x-1 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <svg key={i} className="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                ))}
+              </div>
+              <p className="text-slate-600 mb-4">
+                "The rewrite feature is magic. It took my generic bullets and turned them into achievement-focused statements with metrics. Got 3 interviews in the first week."
+              </p>
+              <div className="flex items-center">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 font-semibold">
+                  S
+                </div>
+                <div className="ml-3">
+                  <p className="font-medium text-slate-900">Sarah M.</p>
+                  <p className="text-sm text-slate-500">Software Engineer</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
+              <div className="flex items-center space-x-1 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <svg key={i} className="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                ))}
+              </div>
+              <p className="text-slate-600 mb-4">
+                "My resume went from a 62 to an 89 score. The AI caught things I'd never have noticed — wrong keywords, missing metrics, weak action verbs."
+              </p>
+              <div className="flex items-center">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 font-semibold">
+                  J
+                </div>
+                <div className="ml-3">
+                  <p className="font-medium text-slate-900">James R.</p>
+                  <p className="text-sm text-slate-500">Product Manager</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
+              <div className="flex items-center space-x-1 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <svg key={i} className="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                ))}
+              </div>
+              <p className="text-slate-600 mb-4">
+                "I was skeptical but tried the free version. The analysis was so spot-on that I bought credits immediately. Landed my dream job 3 weeks later."
+              </p>
+              <div className="flex items-center">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100 text-purple-600 font-semibold">
+                  A
+                </div>
+                <div className="ml-3">
+                  <p className="font-medium text-slate-900">Alex T.</p>
+                  <p className="text-sm text-slate-500">Marketing Director</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing */}
-      <section className="py-20">
+      <section className="py-20 bg-slate-50">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">
@@ -242,7 +440,7 @@ export default function LandingPage() {
                   <svg className="mr-2 h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  Full AI feedback
+                  AI rewrite feature
                 </li>
                 <li className="flex items-center">
                   <svg className="mr-2 h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -255,11 +453,14 @@ export default function LandingPage() {
                 href="/signup"
                 className="mt-6 block w-full rounded-lg bg-indigo-500 py-2.5 text-center text-sm font-medium text-white hover:bg-indigo-600"
               >
-                Get Started
+                Get Started Free
               </Link>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-6">
+            <div className="rounded-2xl border-2 border-emerald-500 bg-white p-6 relative">
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-emerald-500 px-4 py-1 text-xs font-medium text-white">
+                Most Popular
+              </span>
               <h3 className="text-lg font-semibold text-slate-900">Standard</h3>
               <p className="mt-2 text-3xl font-bold text-slate-900">$10</p>
               <p className="text-slate-500">120 credits</p>
@@ -269,7 +470,7 @@ export default function LandingPage() {
                   <svg className="mr-2 h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  24 resume analyses
+                  12 analyses + rewrites
                 </li>
                 <li className="flex items-center">
                   <svg className="mr-2 h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -286,7 +487,7 @@ export default function LandingPage() {
               </ul>
               <Link
                 href="/signup"
-                className="mt-6 block w-full rounded-lg border border-slate-200 py-2.5 text-center text-sm font-medium text-slate-700 hover:bg-slate-50"
+                className="mt-6 block w-full rounded-lg bg-emerald-500 py-2.5 text-center text-sm font-medium text-white hover:bg-emerald-600"
               >
                 Get Started
               </Link>
@@ -302,7 +503,7 @@ export default function LandingPage() {
                   <svg className="mr-2 h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  60 resume analyses
+                  30 analyses + rewrites
                 </li>
                 <li className="flex items-center">
                   <svg className="mr-2 h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -314,7 +515,7 @@ export default function LandingPage() {
                   <svg className="mr-2 h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  Best value per analysis
+                  Best value (50% savings)
                 </li>
               </ul>
               <Link

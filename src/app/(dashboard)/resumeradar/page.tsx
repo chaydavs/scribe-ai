@@ -10,9 +10,12 @@ export default function ResumeRadarPage() {
   const [fileName, setFileName] = useState<string | null>(null)
   const [jobDescription, setJobDescription] = useState('')
   const [analysis, setAnalysis] = useState<string | null>(null)
+  const [rewrite, setRewrite] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [rewriteLoading, setRewriteLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,8 +103,57 @@ export default function ResumeRadarPage() {
   const clearFile = () => {
     setFileName(null)
     setResumeText('')
+    setAnalysis(null)
+    setRewrite(null)
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
+    }
+  }
+
+  const handleRewrite = async () => {
+    if (!resumeText.trim()) {
+      setError('No resume text available for rewrite')
+      return
+    }
+
+    setError(null)
+    setRewriteLoading(true)
+    setRewrite(null)
+
+    try {
+      const response = await fetch('/api/tools/rewrite-resume', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          resumeText,
+          jobDescription: jobDescription.trim() || undefined,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to rewrite resume')
+      }
+
+      setRewrite(data.rewrite)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setRewriteLoading(false)
+    }
+  }
+
+  const copyToClipboard = async () => {
+    if (!rewrite) return
+    try {
+      await navigator.clipboard.writeText(rewrite)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      setError('Failed to copy to clipboard')
     }
   }
 
@@ -262,47 +314,127 @@ export default function ResumeRadarPage() {
         </div>
 
         {/* Results Section */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm max-h-[800px] overflow-y-auto">
-          <div className="mb-4 flex items-center space-x-2">
-            <div className="rounded-lg bg-green-100 p-2">
-              <svg className="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <h2 className="text-lg font-semibold text-slate-900">Analysis Results</h2>
-          </div>
-
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-16">
-              <div className="h-12 w-12 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
-              <p className="mt-4 text-sm text-slate-500">Analyzing your resume...</p>
-              <p className="mt-1 text-xs text-slate-400">This may take 10-15 seconds</p>
-            </div>
-          ) : analysis ? (
-            <div className="prose prose-sm max-w-none prose-headings:text-slate-900 prose-p:text-slate-600 prose-strong:text-slate-900 prose-li:text-slate-600">
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: analysis
-                    .replace(/## (.*?)(\n|$)/g, '<h2 class="text-xl font-bold mt-6 mb-3 text-slate-900 border-b border-slate-200 pb-2">$1</h2>')
-                    .replace(/### (.*?)(\n|$)/g, '<h3 class="text-lg font-semibold mt-4 mb-2 text-slate-800">$1</h3>')
-                    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-slate-900">$1</strong>')
-                    .replace(/(\d+)\. \*\*/g, '<span class="text-indigo-600 font-bold">$1.</span> **')
-                    .replace(/- (.*?)(\n|$)/g, '<li class="ml-4 text-slate-600 my-1">$1</li>')
-                    .replace(/→/g, '<span class="text-indigo-500 font-bold">→</span>')
-                    .replace(/\n\n/g, '</p><p class="my-3 text-slate-600">')
-                    .replace(/\n/g, '<br />')
-                }}
-              />
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="rounded-full bg-slate-100 p-4">
-                <svg className="h-8 w-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm max-h-[600px] overflow-y-auto">
+            <div className="mb-4 flex items-center space-x-2">
+              <div className="rounded-lg bg-green-100 p-2">
+                <svg className="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <p className="mt-4 font-medium text-slate-700">Upload your resume to get started</p>
-              <p className="mt-1 text-sm text-slate-500">You'll receive a detailed analysis with actionable improvements</p>
+              <h2 className="text-lg font-semibold text-slate-900">Analysis Results</h2>
+            </div>
+
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-16">
+                <div className="h-12 w-12 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
+                <p className="mt-4 text-sm text-slate-500">Analyzing your resume...</p>
+                <p className="mt-1 text-xs text-slate-400">This may take 10-15 seconds</p>
+              </div>
+            ) : analysis ? (
+              <div className="prose prose-sm max-w-none prose-headings:text-slate-900 prose-p:text-slate-600 prose-strong:text-slate-900 prose-li:text-slate-600">
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: analysis
+                      .replace(/## (.*?)(\n|$)/g, '<h2 class="text-xl font-bold mt-6 mb-3 text-slate-900 border-b border-slate-200 pb-2">$1</h2>')
+                      .replace(/### (.*?)(\n|$)/g, '<h3 class="text-lg font-semibold mt-4 mb-2 text-slate-800">$1</h3>')
+                      .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-slate-900">$1</strong>')
+                      .replace(/(\d+)\. \*\*/g, '<span class="text-indigo-600 font-bold">$1.</span> **')
+                      .replace(/- (.*?)(\n|$)/g, '<li class="ml-4 text-slate-600 my-1">$1</li>')
+                      .replace(/→/g, '<span class="text-indigo-500 font-bold">→</span>')
+                      .replace(/\n\n/g, '</p><p class="my-3 text-slate-600">')
+                      .replace(/\n/g, '<br />')
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <div className="rounded-full bg-slate-100 p-4">
+                  <svg className="h-8 w-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <p className="mt-4 font-medium text-slate-700">Upload your resume to get started</p>
+                <p className="mt-1 text-sm text-slate-500">You'll receive a detailed analysis with actionable improvements</p>
+              </div>
+            )}
+          </div>
+
+          {/* Rewrite Button - Only show after analysis */}
+          {analysis && !rewrite && (
+            <button
+              onClick={handleRewrite}
+              disabled={rewriteLoading}
+              className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-4 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition-all hover:shadow-xl hover:shadow-emerald-500/40 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {rewriteLoading ? (
+                <span className="flex items-center justify-center space-x-2">
+                  <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  <span>Rewriting your resume...</span>
+                </span>
+              ) : (
+                <span className="flex items-center justify-center space-x-2">
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  <span>Rewrite My Resume ({tool.creditCost} credits)</span>
+                </span>
+              )}
+            </button>
+          )}
+
+          {/* Rewritten Resume Section */}
+          {(rewrite || rewriteLoading) && (
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-6 shadow-sm">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <div className="rounded-lg bg-emerald-100 p-2">
+                    <svg className="h-5 w-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </div>
+                  <h2 className="text-lg font-semibold text-slate-900">Rewritten Resume</h2>
+                </div>
+                {rewrite && (
+                  <button
+                    onClick={copyToClipboard}
+                    className="flex items-center space-x-2 rounded-lg bg-emerald-100 px-3 py-2 text-sm font-medium text-emerald-700 transition-colors hover:bg-emerald-200"
+                  >
+                    {copied ? (
+                      <>
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                        </svg>
+                        <span>Copy</span>
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+
+              {rewriteLoading ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="h-12 w-12 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
+                  <p className="mt-4 text-sm text-slate-500">Rewriting your resume...</p>
+                  <p className="mt-1 text-xs text-slate-400">Creating an optimized version</p>
+                </div>
+              ) : rewrite ? (
+                <div className="rounded-xl bg-white p-4 border border-emerald-100 max-h-[500px] overflow-y-auto">
+                  <pre className="whitespace-pre-wrap text-sm text-slate-700 font-sans leading-relaxed">
+                    {rewrite}
+                  </pre>
+                </div>
+              ) : null}
             </div>
           )}
         </div>
