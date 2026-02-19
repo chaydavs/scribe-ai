@@ -1,59 +1,78 @@
-import { ParsedResume, TemplateStyle } from '@/types/templates'
+import { ParsedResume, TemplateStyle, ProjectEntry } from '@/types/templates'
 import { generateModernMinimalLatex } from './templates/modern-minimal'
 import { generateClassicProfessionalLatex } from './templates/classic-professional'
 import { generateTechFocusedLatex } from './templates/tech-focused'
 
 /**
  * Parse a rewritten resume text into structured data
+ * Handles multiple section header variations
  */
 export function parseResumeText(resumeText: string): ParsedResume {
-  const lines = resumeText.split('\n').map(l => l.trim()).filter(Boolean)
+  const lines = resumeText.split('\n').map(l => l.trim())
 
   const resume: ParsedResume = {
     fullName: '',
     experience: [],
     education: [],
-    skills: []
+    skills: [],
+    projects: [],
+    certifications: []
   }
 
   let currentSection = ''
   let currentExperience: ParsedResume['experience'][0] | null = null
   let currentEducation: ParsedResume['education'][0] | null = null
+  let currentProject: ProjectEntry | null = null
+
+  // Section header patterns
+  const sectionHeaders: { [key: string]: string[] } = {
+    summary: ['SUMMARY', 'PROFESSIONAL SUMMARY', 'OBJECTIVE', 'PROFILE'],
+    experience: ['EXPERIENCE', 'PROFESSIONAL EXPERIENCE', 'WORK EXPERIENCE', 'EMPLOYMENT', 'RESEARCH & WORK EXPERIENCE', 'WORK HISTORY'],
+    education: ['EDUCATION', 'ACADEMIC BACKGROUND', 'ACADEMICS'],
+    skills: ['SKILLS', 'TECHNICAL SKILLS', 'CORE COMPETENCIES', 'TECHNOLOGIES', 'TECH STACK'],
+    projects: ['PROJECTS', 'SELECTED PROJECTS', 'PERSONAL PROJECTS', 'KEY PROJECTS'],
+    certifications: ['CERTIFICATIONS', 'CERTIFICATES', 'LICENSES', 'CREDENTIALS'],
+    leadership: ['LEADERSHIP', 'LEADERSHIP & ACTIVITIES', 'ACTIVITIES', 'EXTRACURRICULAR'],
+    coursework: ['COURSEWORK', 'RELEVANT COURSEWORK']
+  }
+
+  const detectSection = (line: string): string => {
+    const upper = line.toUpperCase().replace(/[^A-Z\s&]/g, '').trim()
+    for (const [section, headers] of Object.entries(sectionHeaders)) {
+      if (headers.some(h => upper === h || upper.startsWith(h))) {
+        return section
+      }
+    }
+    return ''
+  }
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]
-    const upperLine = line.toUpperCase()
+    if (!line) continue
 
-    // Detect section headers
-    if (upperLine === 'SUMMARY' || upperLine === 'PROFESSIONAL SUMMARY') {
-      currentSection = 'summary'
-      continue
-    }
-    if (upperLine === 'EXPERIENCE' || upperLine === 'PROFESSIONAL EXPERIENCE' || upperLine === 'WORK EXPERIENCE') {
-      currentSection = 'experience'
-      continue
-    }
-    if (upperLine === 'EDUCATION') {
-      currentSection = 'education'
-      continue
-    }
-    if (upperLine === 'SKILLS' || upperLine === 'TECHNICAL SKILLS') {
-      currentSection = 'skills'
-      continue
-    }
-    if (upperLine === 'PROJECTS') {
-      currentSection = 'projects'
-      continue
-    }
-    if (upperLine === 'CERTIFICATIONS') {
-      currentSection = 'certifications'
+    // Check for section headers
+    const detectedSection = detectSection(line)
+    if (detectedSection) {
+      // Save current entries before switching sections
+      if (currentExperience && currentExperience.bullets.length > 0) {
+        resume.experience.push(currentExperience)
+        currentExperience = null
+      }
+      if (currentEducation) {
+        resume.education.push(currentEducation)
+        currentEducation = null
+      }
+      if (currentProject) {
+        resume.projects!.push(currentProject)
+        currentProject = null
+      }
+      currentSection = detectedSection
       continue
     }
 
-    // Parse based on current section
+    // Parse header (name and contact)
     if (!currentSection) {
-      // Header section (name, contact)
-      if (i === 0 && !resume.fullName) {
+      if (i === 0 && !resume.fullName && !line.includes('|') && !line.includes('@')) {
         resume.fullName = line
         continue
       }
@@ -61,89 +80,201 @@ export function parseResumeText(resumeText: string): ParsedResume {
       if (line.includes('|') || line.includes('@')) {
         const parts = line.split(/\s*\|\s*/)
         for (const part of parts) {
-          if (part.includes('@')) resume.email = part.trim()
-          else if (part.match(/\d{3}.*\d{3}.*\d{4}/)) resume.phone = part.trim()
-          else if (part.toLowerCase().includes('linkedin')) resume.linkedin = part.trim()
-          else if (part.match(/^[A-Za-z\s,]+$/)) resume.location = part.trim()
+          const trimmed = part.trim()
+          if (trimmed.includes('@') && !resume.email) {
+            resume.email = trimmed
+          } else if (trimmed.match(/\+?\d[\d\s\-().]{8,}/)) {
+            resume.phone = trimmed
+          } else if (trimmed.toLowerCase().includes('linkedin') || trimmed.includes('linkedin.com')) {
+            resume.linkedin = trimmed
+          } else if (trimmed.toLowerCase().includes('github') || trimmed.includes('github.com')) {
+            // Store in location for now, or add github field
+          } else if (trimmed.match(/^[A-Za-z\s,]+$/) && trimmed.length < 50) {
+            resume.location = trimmed
+          }
         }
         continue
       }
     }
 
+    // Parse summary
     if (currentSection === 'summary') {
       resume.summary = (resume.summary || '') + ' ' + line
       resume.summary = resume.summary.trim()
     }
 
+    // Parse experience
     if (currentSection === 'experience') {
-      // Check if this is a job title line (contains | and dates)
-      if (line.includes('|') && (line.includes('-') || line.includes('–'))) {
+      // Check if this is a job title line (contains | or looks like a header)
+      const isJobHeader = line.includes('|') && !line.startsWith('-')
+      const hasDatePattern = /\d{4}|present|current/i.test(line)
+
+      if (isJobHeader || (hasDatePattern && !line.startsWith('-'))) {
         // Save previous experience
-        if (currentExperience) {
+        if (currentExperience && currentExperience.bullets.length > 0) {
           resume.experience.push(currentExperience)
         }
 
-        // Parse: JOB TITLE | Company Name | Start Date - End Date
+        // Parse job line - handle various formats
         const parts = line.split(/\s*\|\s*/)
-        const title = parts[0] || ''
-        const company = parts[1] || ''
-        const dateRange = parts[2] || ''
 
-        const [startDate, endDate] = dateRange.split(/\s*[-–]\s*/)
+        let title = '', company = '', startDate = '', endDate = ''
+
+        if (parts.length >= 3) {
+          title = parts[0]?.trim() || ''
+          company = parts[1]?.trim() || ''
+          const dateRange = parts[2]?.trim() || ''
+          const dateParts = dateRange.split(/\s*[-–—]\s*/)
+          startDate = dateParts[0]?.trim() || ''
+          endDate = dateParts[1]?.trim() || 'Present'
+        } else if (parts.length === 2) {
+          // Could be "Title | Company" with date on next line or in same line
+          title = parts[0]?.trim() || ''
+          const secondPart = parts[1]?.trim() || ''
+          if (/\d{4}/.test(secondPart)) {
+            // Second part has date
+            const dateParts = secondPart.split(/\s*[-–—]\s*/)
+            company = ''
+            startDate = dateParts[0]?.trim() || ''
+            endDate = dateParts[1]?.trim() || 'Present'
+          } else {
+            company = secondPart
+          }
+        } else {
+          title = line
+        }
 
         currentExperience = {
-          title: title.trim(),
-          company: company.trim(),
-          startDate: startDate?.trim() || '',
-          endDate: endDate?.trim() || 'Present',
+          title,
+          company,
+          startDate,
+          endDate,
           bullets: []
         }
-      } else if (line.startsWith('-') || line.startsWith('•')) {
+      } else if (line.startsWith('-') || line.startsWith('•') || line.startsWith('*')) {
         // Bullet point
         if (currentExperience) {
-          currentExperience.bullets.push(line.replace(/^[-•]\s*/, '').trim())
+          currentExperience.bullets.push(line.replace(/^[-•*]\s*/, '').trim())
+        }
+      } else if (currentExperience && line.length > 0 && !line.includes('|')) {
+        // Could be a continuation or additional info - add as bullet if substantial
+        if (line.length > 20) {
+          currentExperience.bullets.push(line)
         }
       }
     }
 
+    // Parse education
     if (currentSection === 'education') {
-      // Check if this is an education entry line
-      if (line.includes('|')) {
+      if (line.includes('|') && !line.startsWith('-')) {
         // Save previous education
         if (currentEducation) {
           resume.education.push(currentEducation)
         }
 
-        // Parse: Degree | School Name | Graduation Year
         const parts = line.split(/\s*\|\s*/)
 
-        currentEducation = {
-          degree: parts[0]?.trim() || '',
-          school: parts[1]?.trim() || '',
-          graduationDate: parts[2]?.trim() || ''
+        // Handle various formats
+        let degree = '', school = '', graduationDate = '', gpa = ''
+
+        if (parts.length >= 3) {
+          // Could be "School | Degree | Date" or "Degree | School | Date"
+          // Check which part looks like a date
+          const dateIdx = parts.findIndex(p => /\d{4}|expected|present/i.test(p))
+          if (dateIdx === 2) {
+            degree = parts[0]?.trim() || ''
+            school = parts[1]?.trim() || ''
+            graduationDate = parts[2]?.trim() || ''
+          } else if (dateIdx === 0) {
+            graduationDate = parts[0]?.trim() || ''
+            school = parts[1]?.trim() || ''
+            degree = parts[2]?.trim() || ''
+          } else {
+            // Assume first is school/degree
+            school = parts[0]?.trim() || ''
+            degree = parts[1]?.trim() || ''
+            graduationDate = parts[2]?.trim() || ''
+          }
+        } else if (parts.length === 2) {
+          school = parts[0]?.trim() || ''
+          degree = parts[1]?.trim() || ''
         }
-      } else if (line.toLowerCase().includes('gpa')) {
-        if (currentEducation) {
-          const gpaMatch = line.match(/gpa[:\s]*([0-9.]+)/i)
-          if (gpaMatch) currentEducation.gpa = gpaMatch[1]
+
+        // Extract GPA if present
+        const gpaMatch = line.match(/gpa[:\s]*([0-9.]+)/i)
+        if (gpaMatch) gpa = gpaMatch[1]
+
+        currentEducation = {
+          degree,
+          school,
+          graduationDate,
+          gpa: gpa || undefined
+        }
+      } else if (line.toLowerCase().includes('gpa') && currentEducation) {
+        const gpaMatch = line.match(/gpa[:\s]*([0-9.]+)/i)
+        if (gpaMatch) currentEducation.gpa = gpaMatch[1]
+      } else if (line.toLowerCase().includes('coursework') && currentEducation) {
+        // Could add coursework handling
+      }
+    }
+
+    // Parse skills
+    if (currentSection === 'skills') {
+      // Handle "Category: skill1, skill2" format
+      if (line.includes(':')) {
+        const [, skillsPart] = line.split(':')
+        if (skillsPart) {
+          const skillList = skillsPart.split(/[,;]/).map(s => s.trim()).filter(Boolean)
+          resume.skills.push(...skillList)
+        }
+      } else {
+        // Plain comma-separated list
+        const skillList = line.split(/[,;]/).map(s => s.trim()).filter(Boolean)
+        resume.skills.push(...skillList)
+      }
+    }
+
+    // Parse projects
+    if (currentSection === 'projects') {
+      if (line.includes(':') && !line.startsWith('-')) {
+        // Project header: "Project Name: Description"
+        if (currentProject) {
+          resume.projects!.push(currentProject)
+        }
+        const [name, ...descParts] = line.split(':')
+        currentProject = {
+          name: name.trim(),
+          description: descParts.join(':').trim()
+        }
+      } else if (line.startsWith('-') || line.startsWith('•')) {
+        // Project bullet
+        if (currentProject) {
+          currentProject.description += ' ' + line.replace(/^[-•]\s*/, '').trim()
         }
       }
     }
 
-    if (currentSection === 'skills') {
-      // Skills can be comma-separated or on multiple lines
-      const skillList = line.split(/[,;]/).map(s => s.trim()).filter(Boolean)
-      resume.skills.push(...skillList)
+    // Parse certifications
+    if (currentSection === 'certifications') {
+      if (line.length > 0 && !line.startsWith('-')) {
+        resume.certifications!.push(line)
+      }
     }
   }
 
-  // Save last entries
-  if (currentExperience) {
+  // Save final entries
+  if (currentExperience && currentExperience.bullets.length > 0) {
     resume.experience.push(currentExperience)
   }
   if (currentEducation) {
     resume.education.push(currentEducation)
   }
+  if (currentProject) {
+    resume.projects!.push(currentProject)
+  }
+
+  // Dedupe skills
+  resume.skills = [...new Set(resume.skills)]
 
   return resume
 }
@@ -160,10 +291,8 @@ export function generateLatex(resume: ParsedResume, templateStyle: TemplateStyle
     case 'tech-focused':
       return generateTechFocusedLatex(resume)
     case 'creative-bold':
-      // Fallback to modern for now
       return generateModernMinimalLatex(resume)
     case 'executive':
-      // Fallback to classic for now
       return generateClassicProfessionalLatex(resume)
     default:
       return generateModernMinimalLatex(resume)
