@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { getTool } from '@/types'
 import { TemplatePicker } from '@/components/tools/resumeradar/template-picker'
 import { TemplatePreview } from '@/types/templates'
@@ -17,7 +18,23 @@ interface Tab {
   optional?: boolean
 }
 
+// Wrapper component to handle Suspense for useSearchParams
 export default function ResumeRadarPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="h-16 w-16 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
+      </div>
+    }>
+      <ResumeRadarContent />
+    </Suspense>
+  )
+}
+
+function ResumeRadarContent() {
+  const searchParams = useSearchParams()
+  const analysisId = searchParams.get('id')
+
   // Tab state
   const [activeTab, setActiveTab] = useState<TabId>('upload')
 
@@ -29,6 +46,7 @@ export default function ResumeRadarPage() {
   // Analysis state
   const [analysis, setAnalysis] = useState<string | null>(null)
   const [analysisScore, setAnalysisScore] = useState<number | null>(null)
+  const [currentAnalysisId, setCurrentAnalysisId] = useState<string | null>(null)
 
   // Rewrite state
   const [rewrite, setRewrite] = useState<string | null>(null)
@@ -38,6 +56,7 @@ export default function ResumeRadarPage() {
   const [rewriteLoading, setRewriteLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [exportLoading, setExportLoading] = useState(false)
+  const [loadingAnalysis, setLoadingAnalysis] = useState(false)
 
   // UI state
   const [error, setError] = useState<string | null>(null)
@@ -46,6 +65,46 @@ export default function ResumeRadarPage() {
   const [userCredits, setUserCredits] = useState(0)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Load analysis from URL parameter
+  useEffect(() => {
+    const loadAnalysis = async (id: string) => {
+      setLoadingAnalysis(true)
+      setError(null)
+
+      try {
+        const res = await fetch(`/api/analyses/${id}`)
+        const data = await res.json()
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to load analysis')
+        }
+
+        const analysisData = data.analysis
+
+        // Populate state with loaded data
+        setResumeText(analysisData.resume_text || '')
+        setJobDescription(analysisData.job_description || '')
+        setAnalysis(analysisData.analysis_result || null)
+        setAnalysisScore(analysisData.score || null)
+        setRewrite(analysisData.rewrite_result || null)
+        setCurrentAnalysisId(id)
+
+        // Switch to appropriate tab
+        if (analysisData.analysis_result) {
+          setActiveTab('analysis')
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load analysis')
+      } finally {
+        setLoadingAnalysis(false)
+      }
+    }
+
+    if (analysisId && analysisId !== currentAnalysisId) {
+      loadAnalysis(analysisId)
+    }
+  }, [analysisId, currentAnalysisId])
 
   // Fetch user credits
   useEffect(() => {
@@ -377,8 +436,16 @@ export default function ResumeRadarPage() {
 
       {/* Tab Content */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
+        {/* Loading State for Past Analysis */}
+        {loadingAnalysis && (
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="h-16 w-16 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
+            <p className="mt-6 text-lg text-slate-600">Loading analysis...</p>
+          </div>
+        )}
+
         {/* Upload Tab */}
-        {activeTab === 'upload' && (
+        {!loadingAnalysis && activeTab === 'upload' && (
           <div className="p-8">
             <div className="max-w-2xl mx-auto space-y-8">
               {/* File Upload */}
@@ -505,7 +572,7 @@ export default function ResumeRadarPage() {
         )}
 
         {/* Analysis Tab */}
-        {activeTab === 'analysis' && (
+        {!loadingAnalysis && activeTab === 'analysis' && (
           <div className="p-8">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-20">
@@ -592,7 +659,7 @@ export default function ResumeRadarPage() {
         )}
 
         {/* Rewrite Tab */}
-        {activeTab === 'rewrite' && (
+        {!loadingAnalysis && activeTab === 'rewrite' && (
           <div className="p-8">
             {rewriteLoading ? (
               <div className="flex flex-col items-center justify-center py-20">
@@ -677,7 +744,7 @@ export default function ResumeRadarPage() {
         )}
 
         {/* Export Tab */}
-        {activeTab === 'export' && (
+        {!loadingAnalysis && activeTab === 'export' && (
           <div className="p-8">
             {rewrite ? (
               <TemplatePicker
