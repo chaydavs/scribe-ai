@@ -18,7 +18,8 @@
       "Bash(npx supabase link:*)",
       "Bash(npx supabase:*)",
       "Bash(vercel:*)",
-      "Bash(node -e:*)"
+      "Bash(node -e:*)",
+      "Bash(npm uninstall:*)"
     ]
   }
 }

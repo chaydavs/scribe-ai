@@ -1,7 +1,7 @@
-// PDF parser with serverless-compatible fallback
+// PDF parser using unpdf - works in serverless environments
 
 export async function extractTextFromPDF(buffer: Buffer): Promise<string> {
-  // Try unpdf first (modern, uses pdfjs)
+  // Use unpdf (modern, serverless-compatible)
   try {
     const { extractText } = await import('unpdf')
     const uint8Array = new Uint8Array(buffer)
@@ -9,25 +9,15 @@ export async function extractTextFromPDF(buffer: Buffer): Promise<string> {
     const result = Array.isArray(text) ? text.join('\n') : (text || '')
     if (result.trim()) return result
   } catch (e) {
-    console.log('unpdf failed, trying fallback:', e)
+    console.error('unpdf extraction failed:', e)
   }
 
-  // Fallback: Try pdf-parse with workaround
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const pdfParse = require('pdf-parse/lib/pdf-parse')
-    const data = await pdfParse(buffer)
-    if (data.text?.trim()) return data.text
-  } catch (e) {
-    console.log('pdf-parse fallback failed:', e)
-  }
-
-  // Last resort: Basic text extraction for simple PDFs
+  // Fallback: Basic text extraction for simple PDFs
   try {
     const text = extractBasicText(buffer)
     if (text.trim()) return text
   } catch (e) {
-    console.log('Basic extraction failed:', e)
+    console.error('Basic extraction failed:', e)
   }
 
   throw new Error('Could not extract text from this PDF. It may be scanned or image-based')
@@ -37,10 +27,9 @@ export async function extractTextFromPDF(buffer: Buffer): Promise<string> {
 function extractBasicText(buffer: Buffer): string {
   const content = buffer.toString('utf-8', 0, Math.min(buffer.length, 500000))
 
-  // Look for text between stream/endstream or in parentheses
   const textParts: string[] = []
 
-  // Extract text from PDF text objects (Tj, TJ operators)
+  // Extract text from PDF text objects
   const textRegex = /\(([^)]+)\)/g
   let match
   while ((match = textRegex.exec(content)) !== null) {
