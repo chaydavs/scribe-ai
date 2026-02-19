@@ -274,7 +274,7 @@ export function parseResumeText(resumeText: string): ParsedResume {
   }
 
   // Dedupe skills
-  resume.skills = [...new Set(resume.skills)]
+  resume.skills = Array.from(new Set(resume.skills))
 
   return resume
 }
