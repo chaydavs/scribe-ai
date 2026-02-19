@@ -1,7 +1,9 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { getTool } from '@/types'
+import { TemplatePicker } from '@/components/tools/resumeradar/template-picker'
+import { TemplatePreview } from '@/types/templates'
 
 const tool = getTool('resumeradar')!
 
@@ -17,6 +19,98 @@ export default function ResumeRadarPage() {
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Template picker state
+  const [showTemplates, setShowTemplates] = useState(false)
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | undefined>()
+  const [exportLoading, setExportLoading] = useState(false)
+  const [userCredits, setUserCredits] = useState(0)
+
+  // Fetch user credits
+  useEffect(() => {
+    const fetchCredits = async () => {
+      try {
+        const res = await fetch('/api/user/credits')
+        const data = await res.json()
+        if (data.credits !== undefined) {
+          setUserCredits(data.credits)
+        }
+      } catch {
+        // Ignore errors
+      }
+    }
+    fetchCredits()
+  }, [analysis, rewrite]) // Refetch after analysis/rewrite
+
+  const handleTemplateSelect = (template: TemplatePreview) => {
+    setSelectedTemplateId(template.id)
+  }
+
+  const handleExport = async (template: TemplatePreview) => {
+    if (!rewrite) return
+
+    setError(null)
+    setExportLoading(true)
+
+    try {
+      const response = await fetch('/api/tools/export-resume', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          resumeText: rewrite,
+          templateId: template.id,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to export resume')
+      }
+
+      // Handle the response
+      if (data.format === 'pdf' && data.content) {
+        // Download PDF
+        const byteCharacters = atob(data.content)
+        const byteNumbers = new Array(byteCharacters.length)
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i)
+        }
+        const byteArray = new Uint8Array(byteNumbers)
+        const blob = new Blob([byteArray], { type: 'application/pdf' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = data.filename || 'resume.pdf'
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+
+        // Update credits
+        if (data.remainingCredits !== undefined) {
+          setUserCredits(data.remainingCredits)
+        }
+      } else if (data.format === 'latex' && data.content) {
+        // Download LaTeX source
+        const blob = new Blob([data.content], { type: 'text/plain' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'resume.tex'
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to export resume')
+    } finally {
+      setExportLoading(false)
+    }
+  }
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -453,14 +547,58 @@ export default function ResumeRadarPage() {
                     </div>
                   </div>
                   <p className="mt-3 text-xs text-center text-slate-400">
-                    Use the Copy button above to copy this resume
+                    Export as PDF to get the full version
                   </p>
                 </div>
               ) : null}
+
+              {/* Export as PDF Button */}
+              {rewrite && !showTemplates && (
+                <button
+                  onClick={() => setShowTemplates(true)}
+                  className="mt-4 w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span>Export as Professional PDF</span>
+                </button>
+              )}
             </div>
           )}
         </div>
       </div>
+
+      {/* Template Picker Modal */}
+      {showTemplates && rewrite && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-slate-900">Choose Your Template</h2>
+              <button
+                onClick={() => {
+                  setShowTemplates(false)
+                  setSelectedTemplateId(undefined)
+                }}
+                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6">
+              <TemplatePicker
+                onSelect={handleTemplateSelect}
+                onExport={handleExport}
+                selectedTemplateId={selectedTemplateId}
+                loading={exportLoading}
+                userCredits={userCredits}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
