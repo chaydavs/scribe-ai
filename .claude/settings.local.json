@@ -16,7 +16,9 @@
       "Bash(git push:*)",
       "Bash(npm install:*)",
       "Bash(npx supabase link:*)",
-      "Bash(npx supabase:*)"
+      "Bash(npx supabase:*)",
+      "Bash(vercel:*)",
+      "Bash(node -e:*)"
     ]
   }
 }

@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { resumeText, jobDescription } = await request.json()
+    const { resumeText, jobDescription, analysisId } = await request.json()
 
     if (!resumeText) {
       return NextResponse.json({ error: 'Resume text is required' }, { status: 400 })
@@ -68,6 +68,18 @@ export async function POST(request: NextRequest) {
       input_tokens: response.inputTokens,
       output_tokens: response.outputTokens,
     })
+
+    // Update analysis with rewrite result if analysisId provided
+    if (analysisId) {
+      await supabase
+        .from('resume_analyses')
+        .update({
+          rewrite_result: response.content,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', analysisId)
+        .eq('user_id', user.id)
+    }
 
     return NextResponse.json({ rewrite: response.content })
   } catch (error) {

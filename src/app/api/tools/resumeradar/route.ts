@@ -76,8 +76,35 @@ export async function POST(request: Request) {
       output_tokens: response.outputTokens,
     })
 
+    // Extract score from analysis (look for "Resume Score: XX/100")
+    const scoreMatch = response.content.match(/Resume Score:\s*(\d+)\/100/i)
+    const score = scoreMatch ? parseInt(scoreMatch[1], 10) : null
+
+    // Generate title from resume text
+    const firstLine = resumeText.split('\n').find((l: string) => l.trim())?.trim() || ''
+    const title = (firstLine.length < 50 && /^[A-Za-z\s.'-]+$/.test(firstLine))
+      ? firstLine
+      : `Resume Analysis - ${new Date().toLocaleDateString()}`
+
+    // Save analysis to database
+    const { data: savedAnalysis } = await serviceClient
+      .from('resume_analyses')
+      .insert({
+        user_id: user.id,
+        title,
+        resume_text: resumeText,
+        job_description: jobDescription || null,
+        analysis_result: response.content,
+        score,
+        credits_used: CREDIT_COST,
+      })
+      .select('id')
+      .single()
+
     return NextResponse.json({
       analysis: response.content,
+      analysisId: savedAnalysis?.id,
+      score,
       creditsUsed: CREDIT_COST,
       remainingCredits: profile.credits - CREDIT_COST,
     })
