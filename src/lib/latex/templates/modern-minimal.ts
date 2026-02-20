@@ -3,11 +3,12 @@ import { ParsedResume } from '@/types/templates'
 /**
  * Modern Minimal Template
  * Based on ATS-optimized, clean professional style
- * - Charter font
+ * - Charter font (10pt for one-page fit)
  * - Clean section dividers
  * - Two-column layout for dates
  * - No colors (black text)
  * - Machine readable (glyphtounicode)
+ * - Optimized for single page
  */
 export function generateModernMinimalLatex(resume: ParsedResume): string {
   const escapeTex = (str: string): string => {
@@ -26,8 +27,16 @@ export function generateModernMinimalLatex(resume: ParsedResume): string {
       .replace(/\|/g, '\\textbar{}')
   }
 
+  // Limit bullets per job to ensure one-page fit (max 4 per job, prioritize first ones)
+  const limitBullets = (bullets: string[], max: number = 4): string[] => {
+    return bullets.slice(0, max)
+  }
+
+  // Limit experience entries for one page (max 3-4 jobs)
+  const limitedExperience = resume.experience.slice(0, 4)
+
   // Build experience section
-  const experienceSection = resume.experience.map(exp => `
+  const experienceSection = limitedExperience.map(exp => `
     \\begin{twocolentry}{
         ${escapeTex(exp.startDate)} -- ${escapeTex(exp.endDate)}
     }
@@ -36,37 +45,39 @@ export function generateModernMinimalLatex(resume: ParsedResume): string {
 
     \\begin{onecolentry}
         \\begin{highlights}
-${exp.bullets.map(b => `            \\item ${escapeTex(b)}`).join('\n')}
+${limitBullets(exp.bullets).map(b => `            \\item ${escapeTex(b)}`).join('\n')}
         \\end{highlights}
     \\end{onecolentry}
 
-    \\vspace{0.2 cm}
+    \\vspace{0.08 cm}
 `).join('\n')
 
-  // Build education section
-  const educationSection = resume.education.map(edu => `
+  // Build education section (max 2 entries)
+  const limitedEducation = resume.education.slice(0, 2)
+  const educationSection = limitedEducation.map(edu => `
     \\begin{twocolentry}{
         ${escapeTex(edu.graduationDate)}
     }
         \\textbf{${escapeTex(edu.school)}} \\\\
         ${escapeTex(edu.degree)}${edu.gpa ? ` | GPA: ${escapeTex(edu.gpa)}` : ''}
     \\end{twocolentry}
-`).join('\n\\vspace{0.2 cm}\n')
+`).join('\n\\vspace{0.08 cm}\n')
 
-  // Build skills section - group by category if possible
+  // Build skills section - group by category if possible (single line)
   const skillsSection = resume.skills.length > 0
     ? `    \\begin{onecolentry}
-        \\textbf{Technical Skills:} ${resume.skills.map(s => escapeTex(s)).join(', ')}
+        \\textbf{Technical Skills:} ${resume.skills.slice(0, 15).map(s => escapeTex(s)).join(', ')}
     \\end{onecolentry}`
     : ''
 
-  // Build projects section if present
-  const projectsSection = resume.projects && resume.projects.length > 0
-    ? resume.projects.map(p => `
+  // Build projects section if present (max 2 projects)
+  const limitedProjects = resume.projects?.slice(0, 2) || []
+  const projectsSection = limitedProjects.length > 0
+    ? limitedProjects.map(p => `
     \\begin{onecolentry}
-        \\textbf{${escapeTex(p.name)}:} ${escapeTex(p.description)}${p.technologies && p.technologies.length > 0 ? ` \\textbar{} \\textit{${p.technologies.map(t => escapeTex(t)).join(', ')}}` : ''}
+        \\textbf{${escapeTex(p.name)}:} ${escapeTex(p.description).slice(0, 150)}${p.description.length > 150 ? '...' : ''}${p.technologies && p.technologies.length > 0 ? ` \\textbar{} \\textit{${p.technologies.slice(0, 5).map(t => escapeTex(t)).join(', ')}}` : ''}
     \\end{onecolentry}
-`).join('\n\\vspace{0.1 cm}\n')
+`).join('\n\\vspace{0.05 cm}\n')
     : ''
 
   // Contact info
@@ -79,16 +90,16 @@ ${exp.bullets.map(b => `            \\item ${escapeTex(b)}`).join('\n')}
 
   const contactLine = contactParts.join('%\n        \\kern 5.0 pt%\n        \\AND%\n        \\kern 5.0 pt%\n        ')
 
-  return `\\documentclass[11pt, letterpaper]{article}
+  return `\\documentclass[10pt, letterpaper]{article}
 
-% Packages
+% Packages - Tight margins for one-page fit
 \\usepackage[
     ignoreheadfoot,
-    top=1.3 cm,
-    bottom=1.3 cm,
-    left=2 cm,
-    right=2 cm,
-    footskip=1.0 cm
+    top=0.5cm,
+    bottom=0.5cm,
+    left=1.2cm,
+    right=1.2cm,
+    footskip=0.5cm
 ]{geometry}
 \\usepackage{titlesec}
 \\usepackage{tabularx}
@@ -124,7 +135,7 @@ ${exp.bullets.map(b => `            \\item ${escapeTex(b)}`).join('\n')}
 
 \\usepackage{charter}
 
-% Layout settings
+% Layout settings - compact
 \\raggedright
 \\AtBeginEnvironment{adjustwidth}{\\partopsep0pt}
 \\pagestyle{empty}
@@ -132,23 +143,24 @@ ${exp.bullets.map(b => `            \\item ${escapeTex(b)}`).join('\n')}
 \\setlength{\\parindent}{0pt}
 \\setlength{\\topskip}{0pt}
 \\setlength{\\columnsep}{0.15cm}
+\\setlength{\\parskip}{0pt}
 \\pagenumbering{gobble}
 
-% Section formatting
-\\titleformat{\\section}{\\needspace{4\\baselineskip}\\bfseries\\large}{}{0pt}{}[\\vspace{1pt}\\titlerule]
-\\titlespacing{\\section}{-1pt}{0.2 cm}{0.3 cm}
+% Section formatting - reduced spacing
+\\titleformat{\\section}{\\needspace{4\\baselineskip}\\bfseries\\normalsize}{}{0pt}{}[\\vspace{1pt}\\titlerule]
+\\titlespacing{\\section}{-1pt}{0.15cm}{0.15cm}
 
-% Custom bullet points
-\\renewcommand\\labelitemi{$\\vcenter{\\hbox{\\small$\\bullet$}}$}
+% Custom bullet points - smaller
+\\renewcommand\\labelitemi{$\\vcenter{\\hbox{\\scriptsize$\\bullet$}}$}
 
-% Highlights environment
+% Highlights environment - tighter spacing
 \\newenvironment{highlights}{
     \\begin{itemize}[
-        topsep=0.10 cm,
-        parsep=0.10 cm,
+        topsep=0.03cm,
+        parsep=0.03cm,
         partopsep=0pt,
         itemsep=0pt,
-        leftmargin=0 cm + 10pt
+        leftmargin=0cm + 10pt
     ]
 }{
     \\end{itemize}
@@ -156,7 +168,7 @@ ${exp.bullets.map(b => `            \\item ${escapeTex(b)}`).join('\n')}
 
 % One column entry
 \\newenvironment{onecolentry}{
-    \\begin{adjustwidth}{0 cm + 0.00001 cm}{0 cm + 0.00001 cm}
+    \\begin{adjustwidth}{0cm + 0.00001cm}{0cm + 0.00001cm}
 }{
     \\end{adjustwidth}
 }
@@ -165,7 +177,7 @@ ${exp.bullets.map(b => `            \\item ${escapeTex(b)}`).join('\n')}
 \\newenvironment{twocolentry}[2][]{
     \\onecolentry
     \\def\\secondColumn{#2}
-    \\setcolumnwidth{\\fill, 4.5 cm}
+    \\setcolumnwidth{\\fill, 4cm}
     \\begin{paracol}{2}
 }{
     \\switchcolumn \\raggedleft \\secondColumn
@@ -175,7 +187,7 @@ ${exp.bullets.map(b => `            \\item ${escapeTex(b)}`).join('\n')}
 
 % Header environment
 \\newenvironment{header}{
-    \\setlength{\\topsep}{0pt}\\par\\kern\\topsep\\centering\\linespread{1.5}
+    \\setlength{\\topsep}{0pt}\\par\\kern\\topsep\\centering\\linespread{1.2}
 }{
     \\par\\kern\\topsep
 }
@@ -190,21 +202,21 @@ ${exp.bullets.map(b => `            \\item ${escapeTex(b)}`).join('\n')}
     \\newsavebox\\ANDbox
     \\sbox\\ANDbox{$|$}
 
-    % Header
+    % Header - compact
     \\begin{header}
-        \\fontsize{25 pt}{25 pt}\\selectfont ${escapeTex(resume.fullName)}
+        \\fontsize{20pt}{20pt}\\selectfont ${escapeTex(resume.fullName)}
 
-        \\vspace{5 pt}
+        \\vspace{3pt}
 
-        \\normalsize
+        \\footnotesize
         \\mbox{}%
-        \\kern 5.0 pt%
+        \\kern 5.0pt%
         \\AND%
-        \\kern 5.0 pt%
+        \\kern 5.0pt%
         ${contactLine}
     \\end{header}
 
-    \\vspace{5 pt}
+    \\vspace{3pt}
 
     % Education
     \\section{Education}

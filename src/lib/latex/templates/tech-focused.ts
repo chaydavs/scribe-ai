@@ -3,11 +3,12 @@ import { ParsedResume } from '@/types/templates'
 /**
  * Tech-Focused Template
  * Skills-first layout for technical roles
- * - Charter font
+ * - Charter font (10pt for one-page fit)
  * - Clean section dividers
  * - Skills prominently displayed
  * - No colors (black text)
  * - ATS-optimized
+ * - Optimized for single page
  */
 export function generateTechFocusedLatex(resume: ParsedResume): string {
   const escapeTex = (str: string): string => {
@@ -26,27 +27,32 @@ export function generateTechFocusedLatex(resume: ParsedResume): string {
       .replace(/\|/g, '\\textbar{}')
   }
 
+  // Limit bullets per job to ensure one-page fit
+  const limitBullets = (bullets: string[], max: number = 4): string[] => {
+    return bullets.slice(0, max)
+  }
+
   // Categorize skills
   const categorizeSkills = (skills: string[]) => {
     const categories: { [key: string]: string[] } = {
-      'Programming Languages': [],
-      'Frameworks & Libraries': [],
-      'Tools & Platforms': [],
+      'Languages': [],
+      'Frameworks': [],
+      'Tools': [],
       'Other': []
     }
 
-    const languageKeywords = ['python', 'javascript', 'typescript', 'java', 'c++', 'c#', 'go', 'rust', 'ruby', 'php', 'swift', 'kotlin', 'sql', 'r', 'matlab', 'scala']
-    const frameworkKeywords = ['react', 'angular', 'vue', 'node', 'express', 'django', 'flask', 'spring', 'next', 'tensorflow', 'pytorch', 'pandas', 'numpy', 'scikit', 'scipy']
-    const toolKeywords = ['git', 'docker', 'kubernetes', 'aws', 'azure', 'gcp', 'jenkins', 'terraform', 'linux', 'mongodb', 'postgresql', 'redis', 'tableau', 'jupyter', 'colab']
+    const languageKeywords = ['python', 'javascript', 'typescript', 'java', 'c++', 'c#', 'go', 'rust', 'ruby', 'php', 'swift', 'kotlin', 'sql', 'r', 'matlab', 'scala', 'html', 'css']
+    const frameworkKeywords = ['react', 'angular', 'vue', 'node', 'express', 'django', 'flask', 'spring', 'next', 'tensorflow', 'pytorch', 'pandas', 'numpy', 'scikit', 'scipy', 'tailwind', 'bootstrap']
+    const toolKeywords = ['git', 'docker', 'kubernetes', 'aws', 'azure', 'gcp', 'jenkins', 'terraform', 'linux', 'mongodb', 'postgresql', 'redis', 'tableau', 'jupyter', 'colab', 'jira', 'figma']
 
     skills.forEach(skill => {
       const lower = skill.toLowerCase()
       if (languageKeywords.some(k => lower.includes(k))) {
-        categories['Programming Languages'].push(skill)
+        categories['Languages'].push(skill)
       } else if (frameworkKeywords.some(k => lower.includes(k))) {
-        categories['Frameworks & Libraries'].push(skill)
+        categories['Frameworks'].push(skill)
       } else if (toolKeywords.some(k => lower.includes(k))) {
-        categories['Tools & Platforms'].push(skill)
+        categories['Tools'].push(skill)
       } else {
         categories['Other'].push(skill)
       }
@@ -57,16 +63,19 @@ export function generateTechFocusedLatex(resume: ParsedResume): string {
 
   const skillCategories = categorizeSkills(resume.skills)
 
-  // Build skills section with categories
+  // Build skills section with categories - limit each category
   const skillsSection = Object.entries(skillCategories)
     .filter(([, skills]) => skills.length > 0)
     .map(([category, skills]) => `    \\begin{onecolentry}
-        \\textbf{${category}:} ${skills.map(s => escapeTex(s)).join(', ')}
+        \\textbf{${category}:} ${skills.slice(0, 8).map(s => escapeTex(s)).join(', ')}
     \\end{onecolentry}`)
-    .join('\n\n    \\vspace{0.1 cm}\n\n')
+    .join('\n    \\vspace{0.03cm}\n')
+
+  // Limit experience entries (max 4 jobs)
+  const limitedExperience = resume.experience.slice(0, 4)
 
   // Build experience section
-  const experienceSection = resume.experience.map(exp => `
+  const experienceSection = limitedExperience.map(exp => `
     \\begin{twocolentry}{
         ${escapeTex(exp.startDate)} -- ${escapeTex(exp.endDate)}
     }
@@ -75,30 +84,32 @@ export function generateTechFocusedLatex(resume: ParsedResume): string {
 
     \\begin{onecolentry}
         \\begin{highlights}
-${exp.bullets.map(b => `            \\item ${escapeTex(b)}`).join('\n')}
+${limitBullets(exp.bullets).map(b => `            \\item ${escapeTex(b)}`).join('\n')}
         \\end{highlights}
     \\end{onecolentry}
 
-    \\vspace{0.2 cm}
+    \\vspace{0.08cm}
 `).join('\n')
 
-  // Build education section
-  const educationSection = resume.education.map(edu => `
+  // Build education section (max 2 entries)
+  const limitedEducation = resume.education.slice(0, 2)
+  const educationSection = limitedEducation.map(edu => `
     \\begin{twocolentry}{
         ${escapeTex(edu.graduationDate)}
     }
         \\textbf{${escapeTex(edu.school)}} \\\\
         ${escapeTex(edu.degree)}${edu.gpa ? ` \\textbar{} GPA: ${escapeTex(edu.gpa)}` : ''}
     \\end{twocolentry}
-`).join('\n\\vspace{0.2 cm}\n')
+`).join('\n\\vspace{0.08cm}\n')
 
-  // Build projects section
-  const projectsSection = resume.projects && resume.projects.length > 0
-    ? resume.projects.map(p => `
+  // Build projects section (max 2 projects)
+  const limitedProjects = resume.projects?.slice(0, 2) || []
+  const projectsSection = limitedProjects.length > 0
+    ? limitedProjects.map(p => `
     \\begin{onecolentry}
-        \\textbf{${escapeTex(p.name)}:} ${escapeTex(p.description)}${p.technologies && p.technologies.length > 0 ? ` \\textbar{} \\textit{${p.technologies.map(t => escapeTex(t)).join(', ')}}` : ''}
+        \\textbf{${escapeTex(p.name)}:} ${escapeTex(p.description).slice(0, 150)}${p.description.length > 150 ? '...' : ''}${p.technologies && p.technologies.length > 0 ? ` \\textbar{} \\textit{${p.technologies.slice(0, 5).map(t => escapeTex(t)).join(', ')}}` : ''}
     \\end{onecolentry}
-`).join('\n\\vspace{0.1 cm}\n')
+`).join('\n\\vspace{0.05cm}\n')
     : ''
 
   // Contact info
@@ -109,16 +120,16 @@ ${exp.bullets.map(b => `            \\item ${escapeTex(b)}`).join('\n')}
     resume.location ? escapeTex(resume.location) : ''
   ].filter(Boolean)
 
-  return `\\documentclass[11pt, letterpaper]{article}
+  return `\\documentclass[10pt, letterpaper]{article}
 
-% Packages
+% Packages - Tight margins for one-page fit
 \\usepackage[
     ignoreheadfoot,
-    top=1.2 cm,
-    bottom=1.2 cm,
-    left=1.8 cm,
-    right=1.8 cm,
-    footskip=1.0 cm
+    top=0.5cm,
+    bottom=0.5cm,
+    left=1.2cm,
+    right=1.2cm,
+    footskip=0.5cm
 ]{geometry}
 \\usepackage{titlesec}
 \\usepackage{tabularx}
@@ -148,7 +159,7 @@ ${exp.bullets.map(b => `            \\item ${escapeTex(b)}`).join('\n')}
 
 \\usepackage{charter}
 
-% Layout
+% Layout - compact
 \\raggedright
 \\AtBeginEnvironment{adjustwidth}{\\partopsep0pt}
 \\pagestyle{empty}
@@ -156,23 +167,24 @@ ${exp.bullets.map(b => `            \\item ${escapeTex(b)}`).join('\n')}
 \\setlength{\\parindent}{0pt}
 \\setlength{\\topskip}{0pt}
 \\setlength{\\columnsep}{0.15cm}
+\\setlength{\\parskip}{0pt}
 \\pagenumbering{gobble}
 
-% Section formatting
-\\titleformat{\\section}{\\needspace{4\\baselineskip}\\bfseries\\large}{}{0pt}{}[\\vspace{1pt}\\titlerule]
-\\titlespacing{\\section}{-1pt}{0.2 cm}{0.3 cm}
+% Section formatting - reduced spacing
+\\titleformat{\\section}{\\needspace{4\\baselineskip}\\bfseries\\normalsize}{}{0pt}{}[\\vspace{1pt}\\titlerule]
+\\titlespacing{\\section}{-1pt}{0.15cm}{0.15cm}
 
-% Custom environments
-\\renewcommand\\labelitemi{$\\vcenter{\\hbox{\\small$\\bullet$}}$}
+% Custom environments - tighter
+\\renewcommand\\labelitemi{$\\vcenter{\\hbox{\\scriptsize$\\bullet$}}$}
 
 \\newenvironment{highlights}{
-    \\begin{itemize}[topsep=0.10 cm, parsep=0.10 cm, partopsep=0pt, itemsep=0pt, leftmargin=10pt]
+    \\begin{itemize}[topsep=0.03cm, parsep=0.03cm, partopsep=0pt, itemsep=0pt, leftmargin=10pt]
 }{
     \\end{itemize}
 }
 
 \\newenvironment{onecolentry}{
-    \\begin{adjustwidth}{0.00001 cm}{0.00001 cm}
+    \\begin{adjustwidth}{0.00001cm}{0.00001cm}
 }{
     \\end{adjustwidth}
 }
@@ -180,7 +192,7 @@ ${exp.bullets.map(b => `            \\item ${escapeTex(b)}`).join('\n')}
 \\newenvironment{twocolentry}[2][]{
     \\onecolentry
     \\def\\secondColumn{#2}
-    \\setcolumnwidth{\\fill, 4.5 cm}
+    \\setcolumnwidth{\\fill, 4cm}
     \\begin{paracol}{2}
 }{
     \\switchcolumn \\raggedleft \\secondColumn
@@ -192,13 +204,13 @@ ${exp.bullets.map(b => `            \\item ${escapeTex(b)}`).join('\n')}
 
 \\begin{document}
 
-    % Header
+    % Header - compact
     \\begin{center}
-        {\\fontsize{25pt}{25pt}\\selectfont\\bfseries ${escapeTex(resume.fullName)}}\\\\[0.4em]
-        {\\small ${contactParts.join(' \\textbar{} ')}}
+        {\\fontsize{20pt}{20pt}\\selectfont\\bfseries ${escapeTex(resume.fullName)}}\\\\[0.2em]
+        {\\footnotesize ${contactParts.join(' \\textbar{} ')}}
     \\end{center}
 
-    \\vspace{0.3 cm}
+    \\vspace{0.15cm}
 
     % Education first for students
     \\section{Education}
@@ -209,12 +221,12 @@ ${educationSection}
 ${skillsSection}
 
     % Experience
-    \\section{Research \\& Work Experience}
+    \\section{Experience}
 ${experienceSection}
 
 ${projectsSection ? `
     % Projects
-    \\section{Selected Projects}
+    \\section{Projects}
 ${projectsSection}` : ''}
 
 \\end{document}`
