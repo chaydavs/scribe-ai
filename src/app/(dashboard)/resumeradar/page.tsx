@@ -428,10 +428,24 @@ function ResumeRadarContent() {
     }
   }
 
+  const [saving, setSaving] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false)
+
   const handleSave = async () => {
-    if (!currentAnalysisId || !rewrite) return
+    if (!rewrite) {
+      setError('No rewrite to save')
+      return
+    }
+
+    if (!currentAnalysisId) {
+      setError('No analysis ID found. Try analyzing again.')
+      return
+    }
 
     setError(null)
+    setSaving(true)
+    setSaveSuccess(false)
+
     try {
       const response = await fetch(`/api/analyses/${currentAnalysisId}`, {
         method: 'PATCH',
@@ -442,14 +456,17 @@ function ResumeRadarContent() {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to save')
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to save')
       }
 
       // Show success feedback
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      setSaveSuccess(true)
+      setTimeout(() => setSaveSuccess(false), 2000)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -964,13 +981,36 @@ function ResumeRadarContent() {
                   <div className="flex items-center space-x-3">
                     <button
                       onClick={handleSave}
-                      disabled={!currentAnalysisId}
-                      className="flex items-center space-x-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                      disabled={!currentAnalysisId || saving}
+                      className={`flex items-center space-x-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 ${
+                        saveSuccess
+                          ? 'border-green-300 bg-green-50 text-green-700'
+                          : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                      }`}
                     >
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                      </svg>
-                      <span>Save</span>
+                      {saving ? (
+                        <>
+                          <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                          <span>Saving...</span>
+                        </>
+                      ) : saveSuccess ? (
+                        <>
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span>Saved!</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                          </svg>
+                          <span>Save</span>
+                        </>
+                      )}
                     </button>
                     <button
                       onClick={handleExport}
