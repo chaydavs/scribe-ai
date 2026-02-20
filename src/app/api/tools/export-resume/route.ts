@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { resumeText, templateId, analysisId } = await request.json()
+    const { resumeText, templateId, analysisId, previewOnly } = await request.json()
 
     if (!resumeText || !templateId) {
       return NextResponse.json(
@@ -29,14 +29,14 @@ export async function POST(request: NextRequest) {
 
     const creditCost = template.creditCost
 
-    // Check credits
+    // Check credits (skip for preview mode)
     const { data: profile } = await supabase
       .from('profiles')
       .select('credits')
       .eq('id', user.id)
       .single()
 
-    if (!profile || profile.credits < creditCost) {
+    if (!previewOnly && (!profile || profile.credits < creditCost)) {
       return NextResponse.json(
         { error: `Insufficient credits. You need ${creditCost} credits for this export.` },
         { status: 402 }
@@ -83,12 +83,22 @@ export async function POST(request: NextRequest) {
     const pdfBuffer = await compileResponse.arrayBuffer()
     const pdfBase64 = Buffer.from(pdfBuffer).toString('base64')
 
+    // For preview mode, return without charging credits
+    if (previewOnly) {
+      return NextResponse.json({
+        success: true,
+        format: 'pdf',
+        content: pdfBase64,
+        preview: true,
+      })
+    }
+
     // Deduct credits
     const serviceClient = await createServiceClient()
 
     await serviceClient
       .from('profiles')
-      .update({ credits: profile.credits - creditCost })
+      .update({ credits: (profile?.credits || 0) - creditCost })
       .eq('id', user.id)
 
     // Log the transaction
@@ -123,7 +133,7 @@ export async function POST(request: NextRequest) {
       content: pdfBase64,
       filename: `${parsedResume.fullName.replace(/\s+/g, '_')}_Resume.pdf`,
       creditsUsed: creditCost,
-      remainingCredits: profile.credits - creditCost,
+      remainingCredits: (profile?.credits || 0) - creditCost,
     })
   } catch (error) {
     console.error('Export resume error:', error)

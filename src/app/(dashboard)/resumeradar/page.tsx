@@ -1,14 +1,14 @@
 'use client'
 
 import { useState, useRef, useEffect, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { getTool } from '@/types'
 import { TemplatePicker } from '@/components/tools/resumeradar/template-picker'
 import { TemplatePreview } from '@/types/templates'
 
 const tool = getTool('resumeradar')!
 
-type TabId = 'upload' | 'analysis' | 'rewrite' | 'export'
+type TabId = 'upload' | 'analysis' | 'rewrite' | 'preview'
 
 interface Tab {
   id: TabId
@@ -33,6 +33,7 @@ export default function ResumeRadarPage() {
 
 function ResumeRadarContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const analysisId = searchParams.get('id')
 
   // Tab state
@@ -42,6 +43,7 @@ function ResumeRadarContent() {
   const [resumeText, setResumeText] = useState('')
   const [fileName, setFileName] = useState<string | null>(null)
   const [jobDescription, setJobDescription] = useState('')
+  const [analysisTitle, setAnalysisTitle] = useState<string>('')
 
   // Analysis state
   const [analysis, setAnalysis] = useState<string | null>(null)
@@ -51,18 +53,27 @@ function ResumeRadarContent() {
   // Rewrite state
   const [rewrite, setRewrite] = useState<string | null>(null)
 
+  // Preview state
+  const [viewMode, setViewMode] = useState<'changes' | 'preview'>('changes')
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null)
+  const [previewLoading, setPreviewLoading] = useState(false)
+
   // Loading states
   const [loading, setLoading] = useState(false)
   const [rewriteLoading, setRewriteLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [exportLoading, setExportLoading] = useState(false)
   const [loadingAnalysis, setLoadingAnalysis] = useState(false)
+  const [savingTitle, setSavingTitle] = useState(false)
 
   // UI state
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | undefined>()
+  const [selectedTemplate, setSelectedTemplate] = useState<TemplatePreview | null>(null)
   const [userCredits, setUserCredits] = useState(0)
+  const [isEditingTitle, setIsEditingTitle] = useState(false)
+  const [editedTitle, setEditedTitle] = useState('')
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -88,10 +99,13 @@ function ResumeRadarContent() {
         setAnalysis(analysisData.analysis_result || null)
         setAnalysisScore(analysisData.score || null)
         setRewrite(analysisData.rewrite_result || null)
+        setAnalysisTitle(analysisData.title || '')
         setCurrentAnalysisId(id)
 
         // Switch to appropriate tab
-        if (analysisData.analysis_result) {
+        if (analysisData.rewrite_result) {
+          setActiveTab('preview')
+        } else if (analysisData.analysis_result) {
           setActiveTab('analysis')
         }
       } catch (err) {
@@ -155,11 +169,12 @@ function ResumeRadarContent() {
       optional: true,
     },
     {
-      id: 'export',
-      label: 'Export PDF',
+      id: 'preview',
+      label: 'Preview & Export',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
         </svg>
       ),
       disabled: !rewrite,
@@ -241,6 +256,9 @@ function ResumeRadarContent() {
 
       setAnalysis(data.analysis)
       setAnalysisScore(data.score)
+      if (data.analysisId) {
+        setCurrentAnalysisId(data.analysisId)
+      }
       setActiveTab('analysis')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
@@ -289,9 +307,13 @@ function ResumeRadarContent() {
     setAnalysis(null)
     setRewrite(null)
     setAnalysisScore(null)
+    setPdfPreviewUrl(null)
+    setCurrentAnalysisId(null)
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
+    // Clear URL params
+    router.push('/resumeradar')
   }
 
   const copyToClipboard = async () => {
@@ -307,10 +329,52 @@ function ResumeRadarContent() {
 
   const handleTemplateSelect = (template: TemplatePreview) => {
     setSelectedTemplateId(template.id)
+    setSelectedTemplate(template)
+    // Generate preview when template is selected
+    generatePreview(template)
   }
 
-  const handleExport = async (template: TemplatePreview) => {
+  const generatePreview = async (template: TemplatePreview) => {
     if (!rewrite) return
+
+    setPreviewLoading(true)
+    try {
+      const response = await fetch('/api/tools/export-resume', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          resumeText: rewrite,
+          templateId: template.id,
+          previewOnly: true,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate preview')
+      }
+
+      if (data.format === 'pdf' && data.content) {
+        const byteCharacters = atob(data.content)
+        const byteNumbers = new Array(byteCharacters.length)
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i)
+        }
+        const byteArray = new Uint8Array(byteNumbers)
+        const blob = new Blob([byteArray], { type: 'application/pdf' })
+        const url = URL.createObjectURL(blob)
+        setPdfPreviewUrl(url)
+      }
+    } catch (err) {
+      console.error('Preview error:', err)
+    } finally {
+      setPreviewLoading(false)
+    }
+  }
+
+  const handleExport = async () => {
+    if (!rewrite || !selectedTemplate) return
 
     setError(null)
     setExportLoading(true)
@@ -321,7 +385,7 @@ function ResumeRadarContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           resumeText: rewrite,
-          templateId: template.id,
+          templateId: selectedTemplate.id,
         }),
       })
 
@@ -351,16 +415,6 @@ function ResumeRadarContent() {
         if (data.remainingCredits !== undefined) {
           setUserCredits(data.remainingCredits)
         }
-      } else if (data.format === 'latex' && data.content) {
-        const blob = new Blob([data.content], { type: 'text/plain' })
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = 'resume.tex'
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        URL.revokeObjectURL(url)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to export resume')
@@ -369,13 +423,129 @@ function ResumeRadarContent() {
     }
   }
 
+  const handleSave = async () => {
+    if (!currentAnalysisId || !rewrite) return
+
+    setError(null)
+    try {
+      const response = await fetch(`/api/analyses/${currentAnalysisId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rewriteResult: rewrite,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to save')
+      }
+
+      // Show success feedback
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save')
+    }
+  }
+
+  const handleRenameAnalysis = async () => {
+    if (!currentAnalysisId || !editedTitle.trim()) return
+
+    setSavingTitle(true)
+    try {
+      const response = await fetch(`/api/analyses/${currentAnalysisId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: editedTitle.trim(),
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to rename')
+      }
+
+      setAnalysisTitle(editedTitle.trim())
+      setIsEditingTitle(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to rename')
+    } finally {
+      setSavingTitle(false)
+    }
+  }
+
+  // Helper to get word-level diff highlights
+  const getChangeSummary = () => {
+    if (!resumeText || !rewrite) return null
+
+    const originalLines = resumeText.split('\n').filter(l => l.trim())
+    const rewriteLines = rewrite.split('\n').filter(l => l.trim())
+
+    return {
+      originalCount: originalLines.length,
+      rewriteCount: rewriteLines.length,
+      originalWords: resumeText.split(/\s+/).length,
+      rewriteWords: rewrite.split(/\s+/).length,
+    }
+  }
+
+  const changeSummary = getChangeSummary()
+
   return (
     <div className="min-h-screen">
       {/* Header */}
       <div className="rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Resume Analysis</h1>
+            {currentAnalysisId && (isEditingTitle ? (
+              <div className="flex items-center space-x-2">
+                <input
+                  type="text"
+                  value={editedTitle}
+                  onChange={(e) => setEditedTitle(e.target.value)}
+                  className="bg-white/20 border border-white/30 rounded-lg px-3 py-1 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
+                  placeholder="Enter title..."
+                  autoFocus
+                />
+                <button
+                  onClick={handleRenameAnalysis}
+                  disabled={savingTitle}
+                  className="bg-white/20 hover:bg-white/30 rounded-lg px-3 py-1 text-sm"
+                >
+                  {savingTitle ? 'Saving...' : 'Save'}
+                </button>
+                <button
+                  onClick={() => {
+                    setIsEditingTitle(false)
+                    setEditedTitle(analysisTitle)
+                  }}
+                  className="text-white/60 hover:text-white"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <h1 className="text-2xl font-bold">
+                  {analysisTitle || 'Resume Analysis'}
+                </h1>
+                <button
+                  onClick={() => {
+                    setEditedTitle(analysisTitle)
+                    setIsEditingTitle(true)
+                  }}
+                  className="text-white/60 hover:text-white p-1"
+                  title="Rename analysis"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                </button>
+              </div>
+            ))}
+            {!currentAnalysisId && (
+              <h1 className="text-2xl font-bold">Resume Analysis</h1>
+            )}
             <p className="mt-1 text-indigo-100 text-sm">
               AI-powered feedback and optimization
             </p>
@@ -701,20 +871,20 @@ function ResumeRadarContent() {
                   </pre>
                 </div>
 
-                {/* Export CTA */}
+                {/* Preview CTA */}
                 <div className="mt-8 p-6 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-100">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-semibold text-slate-900">Ready to export?</h3>
+                      <h3 className="font-semibold text-slate-900">Ready to preview and export?</h3>
                       <p className="text-sm text-slate-600 mt-1">
-                        Choose a professional template and download as PDF
+                        See the changes, choose a template, and download as PDF
                       </p>
                     </div>
                     <button
-                      onClick={() => setActiveTab('export')}
+                      onClick={() => setActiveTab('preview')}
                       className="rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:shadow-xl"
                     >
-                      Choose Template →
+                      Preview & Export →
                     </button>
                   </div>
                 </div>
@@ -728,7 +898,7 @@ function ResumeRadarContent() {
                 </div>
                 <h2 className="mt-6 text-xl font-bold text-slate-900">AI Resume Rewrite</h2>
                 <p className="mt-3 text-slate-600 max-w-md mx-auto">
-                  Transform your resume with AI-powered optimization. We'll improve structure,
+                  Transform your resume with AI-powered optimization. We&apos;ll improve structure,
                   strengthen bullet points, and optimize for ATS systems.
                 </p>
                 <button
@@ -743,27 +913,183 @@ function ResumeRadarContent() {
           </div>
         )}
 
-        {/* Export Tab */}
-        {!loadingAnalysis && activeTab === 'export' && (
+        {/* Preview & Export Tab */}
+        {!loadingAnalysis && activeTab === 'preview' && (
           <div className="p-8">
             {rewrite ? (
-              <TemplatePicker
-                onSelect={handleTemplateSelect}
-                onExport={handleExport}
-                selectedTemplateId={selectedTemplateId}
-                loading={exportLoading}
-                userCredits={userCredits}
-              />
+              <div className="max-w-6xl mx-auto">
+                {/* View Toggle */}
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex rounded-lg bg-slate-100 p-1">
+                    <button
+                      onClick={() => setViewMode('changes')}
+                      className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                        viewMode === 'changes'
+                          ? 'bg-white shadow text-slate-900'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      View Changes
+                    </button>
+                    <button
+                      onClick={() => setViewMode('preview')}
+                      className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                        viewMode === 'preview'
+                          ? 'bg-white shadow text-slate-900'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      PDF Preview
+                    </button>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={handleSave}
+                      disabled={!currentAnalysisId}
+                      className="flex items-center space-x-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                    >
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                      </svg>
+                      <span>Save</span>
+                    </button>
+                    <button
+                      onClick={handleExport}
+                      disabled={!selectedTemplate || exportLoading}
+                      className="flex items-center space-x-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-lg hover:shadow-xl disabled:opacity-50"
+                    >
+                      {exportLoading ? (
+                        <>
+                          <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                          <span>Exporting...</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          <span>Export PDF</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {viewMode === 'changes' ? (
+                  <>
+                    {/* Change Summary */}
+                    {changeSummary && (
+                      <div className="mb-6 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <h3 className="font-semibold text-slate-900 mb-2">Changes Summary</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                          <div>
+                            <p className="text-slate-500">Original Lines</p>
+                            <p className="font-semibold text-slate-900">{changeSummary.originalCount}</p>
+                          </div>
+                          <div>
+                            <p className="text-slate-500">Rewritten Lines</p>
+                            <p className="font-semibold text-slate-900">{changeSummary.rewriteCount}</p>
+                          </div>
+                          <div>
+                            <p className="text-slate-500">Original Words</p>
+                            <p className="font-semibold text-slate-900">{changeSummary.originalWords}</p>
+                          </div>
+                          <div>
+                            <p className="text-slate-500">Rewritten Words</p>
+                            <p className="font-semibold text-slate-900">{changeSummary.rewriteWords}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Side by Side Comparison */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div>
+                        <h3 className="font-semibold text-slate-900 mb-3 flex items-center">
+                          <span className="w-3 h-3 rounded-full bg-red-400 mr-2" />
+                          Original
+                        </h3>
+                        <div className="rounded-xl bg-red-50 border border-red-100 p-4 max-h-[500px] overflow-y-auto">
+                          <pre className="whitespace-pre-wrap text-sm text-slate-700 font-sans leading-relaxed">
+                            {resumeText}
+                          </pre>
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-slate-900 mb-3 flex items-center">
+                          <span className="w-3 h-3 rounded-full bg-green-400 mr-2" />
+                          AI Rewritten
+                        </h3>
+                        <div className="rounded-xl bg-green-50 border border-green-100 p-4 max-h-[500px] overflow-y-auto">
+                          <pre className="whitespace-pre-wrap text-sm text-slate-700 font-sans leading-relaxed">
+                            {rewrite}
+                          </pre>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Template Selection & PDF Preview */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      {/* Template Picker */}
+                      <div className="lg:col-span-1">
+                        <h3 className="font-semibold text-slate-900 mb-3">Choose Template</h3>
+                        <TemplatePicker
+                          onSelect={handleTemplateSelect}
+                          onExport={() => {}}
+                          selectedTemplateId={selectedTemplateId}
+                          loading={false}
+                          userCredits={userCredits}
+                          compact
+                        />
+                      </div>
+
+                      {/* PDF Preview */}
+                      <div className="lg:col-span-2">
+                        <h3 className="font-semibold text-slate-900 mb-3">Preview</h3>
+                        <div className="rounded-xl border border-slate-200 bg-slate-100 min-h-[600px] flex items-center justify-center">
+                          {previewLoading ? (
+                            <div className="flex flex-col items-center">
+                              <div className="h-12 w-12 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
+                              <p className="mt-4 text-slate-600">Generating preview...</p>
+                            </div>
+                          ) : pdfPreviewUrl ? (
+                            <iframe
+                              src={pdfPreviewUrl}
+                              className="w-full h-[600px] rounded-xl"
+                              title="Resume Preview"
+                            />
+                          ) : (
+                            <div className="text-center text-slate-500">
+                              <svg className="mx-auto h-16 w-16 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                              <p className="mt-4">Select a template to see preview</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
             ) : (
               <div className="text-center py-20">
                 <div className="rounded-full bg-slate-100 p-6 w-fit mx-auto">
                   <svg className="h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
                 </div>
-                <h2 className="mt-6 text-xl font-bold text-slate-900">Export as PDF</h2>
+                <h2 className="mt-6 text-xl font-bold text-slate-900">Preview & Export</h2>
                 <p className="mt-3 text-slate-600">
-                  Get your AI-rewritten resume first, then export with a professional template.
+                  Get your AI-rewritten resume first to preview and export.
                 </p>
                 <button
                   onClick={() => setActiveTab('rewrite')}

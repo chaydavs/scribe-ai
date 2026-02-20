@@ -21,7 +21,8 @@
       "Bash(node -e:*)",
       "Bash(npm uninstall:*)",
       "Bash(npx tsc:*)",
-      "Bash(npx tsx:*)"
+      "Bash(npx tsx:*)",
+      "Bash(npm run lint:*)"
     ]
   }
 }
