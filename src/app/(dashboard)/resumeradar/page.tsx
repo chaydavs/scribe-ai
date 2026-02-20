@@ -15,17 +15,15 @@ interface Tab {
   label: string
   icon: React.ReactNode
   disabled?: boolean
+  optional?: boolean
 }
 
 // Wrapper component to handle Suspense for useSearchParams
 export default function ResumeRadarPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#0a0a0b] flex items-center justify-center">
-        <div className="relative">
-          <div className="h-16 w-16 rounded-full border-2 border-amber-500/20 border-t-amber-500 animate-spin" />
-          <div className="absolute inset-0 h-16 w-16 rounded-full border-2 border-transparent border-r-amber-300/50 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="h-16 w-16 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
       </div>
     }>
       <ResumeRadarContent />
@@ -67,8 +65,6 @@ function ResumeRadarContent() {
   const [exportLoading, setExportLoading] = useState(false)
   const [loadingAnalysis, setLoadingAnalysis] = useState(false)
   const [savingTitle, setSavingTitle] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [saveSuccess, setSaveSuccess] = useState(false)
 
   // UI state
   const [error, setError] = useState<string | null>(null)
@@ -78,7 +74,6 @@ function ResumeRadarContent() {
   const [userCredits, setUserCredits] = useState(0)
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [editedTitle, setEditedTitle] = useState('')
-  const [isDragging, setIsDragging] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -98,6 +93,7 @@ function ResumeRadarContent() {
 
         const analysisData = data.analysis
 
+        // Populate state with loaded data
         setResumeText(analysisData.resume_text || '')
         setJobDescription(analysisData.job_description || '')
         setAnalysis(analysisData.analysis_result || null)
@@ -106,6 +102,7 @@ function ResumeRadarContent() {
         setAnalysisTitle(analysisData.title || '')
         setCurrentAnalysisId(id)
 
+        // Switch to appropriate tab
         if (analysisData.rewrite_result) {
           setActiveTab('preview')
         } else if (analysisData.analysis_result) {
@@ -145,8 +142,8 @@ function ResumeRadarContent() {
       id: 'upload',
       label: 'Upload',
       icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
         </svg>
       ),
     },
@@ -154,8 +151,8 @@ function ResumeRadarContent() {
       id: 'analysis',
       label: 'Analysis',
       icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
         </svg>
       ),
       disabled: !analysis,
@@ -164,21 +161,24 @@ function ResumeRadarContent() {
       id: 'rewrite',
       label: 'Rewrite',
       icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
         </svg>
       ),
       disabled: !analysis,
+      optional: true,
     },
     {
       id: 'preview',
-      label: 'Export',
+      label: 'Preview & Export',
       icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
         </svg>
       ),
       disabled: !rewrite,
+      optional: true,
     },
   ]
 
@@ -217,7 +217,6 @@ function ResumeRadarContent() {
 
   const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault()
-    setIsDragging(false)
     const file = e.dataTransfer.files?.[0]
     if (!file) return
 
@@ -318,6 +317,7 @@ function ResumeRadarContent() {
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
+    // Clear URL params
     router.push('/resumeradar')
   }
 
@@ -335,6 +335,7 @@ function ResumeRadarContent() {
   const handleTemplateSelect = (template: TemplatePreview) => {
     setSelectedTemplateId(template.id)
     setSelectedTemplate(template)
+    // Generate preview when template is selected
     generatePreview(template)
   }
 
@@ -427,6 +428,9 @@ function ResumeRadarContent() {
     }
   }
 
+  const [saving, setSaving] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false)
+
   const handleSave = async () => {
     if (!rewrite) {
       setError('No rewrite to save')
@@ -456,6 +460,7 @@ function ResumeRadarContent() {
         throw new Error(data.error || 'Failed to save')
       }
 
+      // Show success feedback
       setSaveSuccess(true)
       setTimeout(() => setSaveSuccess(false), 2000)
     } catch (err) {
@@ -491,6 +496,7 @@ function ResumeRadarContent() {
     }
   }
 
+  // Helper to get word-level diff highlights
   const getChangeSummary = () => {
     if (!resumeText || !rewrite) return null
 
@@ -507,237 +513,217 @@ function ResumeRadarContent() {
 
   const changeSummary = getChangeSummary()
 
-  // Score color based on value
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-emerald-400'
-    if (score >= 60) return 'text-amber-400'
-    return 'text-red-400'
-  }
-
   return (
-    <div className="min-h-screen bg-[#0a0a0b] text-white">
-      {/* Ambient background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-orange-500/5 rounded-full blur-3xl" />
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtOS45NDEgMC0xOCA4LjA1OS0xOCAxOHM4LjA1OSAxOCAxOCAxOGM5Ljk0MSAwIDE4LTguMDU5IDE4LTE4cy04LjA1OS0xOC0xOC0xOHptMCAzMmMtNy43MzIgMC0xNC02LjI2OC0xNC0xNHM2LjI2OC0xNCAxNC0xNCAxNCA2LjI2OCAxNCAxNC02LjI2OCAxNC0xNCAxNHoiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iLjAyIi8+PC9nPjwvc3ZnPg==')] opacity-30" />
-      </div>
-
-      <div className="relative z-10 max-w-6xl mx-auto px-6 py-8">
-        {/* Header */}
-        <header className="mb-12">
-          <div className="flex items-start justify-between">
-            <div className="space-y-1">
-              {currentAnalysisId && isEditingTitle ? (
-                <div className="flex items-center gap-3">
-                  <input
-                    type="text"
-                    value={editedTitle}
-                    onChange={(e) => setEditedTitle(e.target.value)}
-                    className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-xl font-light text-white placeholder-white/30 focus:outline-none focus:border-amber-500/50 transition-colors"
-                    placeholder="Enter title..."
-                    autoFocus
-                  />
-                  <button
-                    onClick={handleRenameAnalysis}
-                    disabled={savingTitle}
-                    className="px-4 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 rounded-lg text-sm font-medium transition-colors"
-                  >
-                    {savingTitle ? 'Saving...' : 'Save'}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsEditingTitle(false)
-                      setEditedTitle(analysisTitle)
-                    }}
-                    className="text-white/40 hover:text-white/60 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-3">
-                  <h1 className="text-3xl font-extralight tracking-tight">
-                    {analysisTitle || 'Resume Analysis'}
-                  </h1>
-                  {currentAnalysisId && (
-                    <button
-                      onClick={() => {
-                        setEditedTitle(analysisTitle)
-                        setIsEditingTitle(true)
-                      }}
-                      className="p-2 text-white/30 hover:text-white/60 transition-colors"
-                      title="Rename"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                      </svg>
-                    </button>
-                  )}
-                </div>
-              )}
-              <p className="text-white/40 font-light">AI-powered career optimization</p>
-            </div>
-
-            <div className="flex items-center gap-4">
-              {(analysis || activeTab !== 'upload') && (
+    <div className="min-h-screen">
+      {/* Header */}
+      <div className="rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            {currentAnalysisId && (isEditingTitle ? (
+              <div className="flex items-center space-x-2">
+                <input
+                  type="text"
+                  value={editedTitle}
+                  onChange={(e) => setEditedTitle(e.target.value)}
+                  className="bg-white/20 border border-white/30 rounded-lg px-3 py-1 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
+                  placeholder="Enter title..."
+                  autoFocus
+                />
                 <button
-                  onClick={clearFile}
-                  className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm text-white/60 hover:text-white transition-all"
+                  onClick={handleRenameAnalysis}
+                  disabled={savingTitle}
+                  className="bg-white/20 hover:bg-white/30 rounded-lg px-3 py-1 text-sm"
+                >
+                  {savingTitle ? 'Saving...' : 'Save'}
+                </button>
+                <button
+                  onClick={() => {
+                    setIsEditingTitle(false)
+                    setEditedTitle(analysisTitle)
+                  }}
+                  className="text-white/60 hover:text-white"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <h1 className="text-2xl font-bold">
+                  {analysisTitle || 'Resume Analysis'}
+                </h1>
+                <button
+                  onClick={() => {
+                    setEditedTitle(analysisTitle)
+                    setIsEditingTitle(true)
+                  }}
+                  className="text-white/60 hover:text-white p-1"
+                  title="Rename analysis"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                   </svg>
-                  New
                 </button>
-              )}
-              <div className="flex items-center gap-3 px-4 py-2 bg-white/5 border border-white/10 rounded-lg">
-                <span className="text-white/40 text-sm">Credits</span>
-                <span className="text-amber-400 font-medium">{userCredits}</span>
               </div>
-              {analysisScore && (
-                <div className="flex items-center gap-3 px-4 py-2 bg-white/5 border border-white/10 rounded-lg">
-                  <span className="text-white/40 text-sm">Score</span>
-                  <span className={`text-2xl font-light ${getScoreColor(analysisScore)}`}>{analysisScore}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </header>
-
-        {/* Tab Navigation */}
-        <nav className="mb-8">
-          <div className="flex items-center gap-1 p-1 bg-white/5 rounded-xl w-fit">
-            {tabs.map((tab, index) => (
-              <button
-                key={tab.id}
-                onClick={() => !tab.disabled && setActiveTab(tab.id)}
-                disabled={tab.disabled}
-                className={`
-                  relative flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-300
-                  ${activeTab === tab.id
-                    ? 'bg-white/10 text-white shadow-lg'
-                    : tab.disabled
-                      ? 'text-white/20 cursor-not-allowed'
-                      : 'text-white/50 hover:text-white/80 hover:bg-white/5'
-                  }
-                `}
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                {tab.icon}
-                <span>{tab.label}</span>
-                {tab.id === 'analysis' && analysis && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                )}
-                {tab.id === 'rewrite' && rewrite && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                )}
-              </button>
             ))}
+            {!currentAnalysisId && (
+              <h1 className="text-2xl font-bold">Resume Analysis</h1>
+            )}
+            <p className="mt-1 text-indigo-100 text-sm">
+              AI-powered feedback and optimization
+            </p>
           </div>
-        </nav>
+          <div className="flex items-center space-x-3">
+            {/* New Analysis Button - show when there's existing analysis or not on upload tab */}
+            {(analysis || activeTab !== 'upload') && (
+              <button
+                onClick={clearFile}
+                className="flex items-center space-x-2 rounded-lg bg-white/20 hover:bg-white/30 px-3 py-1.5 text-sm transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                <span>New Analysis</span>
+              </button>
+            )}
+            <div className="rounded-lg bg-white/20 px-3 py-1.5 text-sm">
+              {userCredits} credits
+            </div>
+            {analysisScore && (
+              <div className="rounded-lg bg-white/20 px-3 py-1.5 text-sm font-semibold">
+                Score: {analysisScore}/100
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
 
-        {/* Error Display */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm animate-in slide-in-from-top-2">
-            {error}
+      {/* Tab Navigation */}
+      <div className="border-b border-slate-200 mb-6">
+        <nav className="flex space-x-1" aria-label="Tabs">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => !tab.disabled && setActiveTab(tab.id)}
+              disabled={tab.disabled}
+              className={`
+                flex items-center space-x-2 px-4 py-3 text-sm font-medium rounded-t-lg transition-all
+                ${activeTab === tab.id
+                  ? 'bg-white border border-b-0 border-slate-200 text-indigo-600 -mb-px'
+                  : tab.disabled
+                    ? 'text-slate-300 cursor-not-allowed'
+                    : 'text-slate-600 hover:text-indigo-600 hover:bg-slate-50'
+                }
+              `}
+            >
+              {tab.icon}
+              <span>{tab.label}</span>
+              {tab.optional && (
+                <span className="text-xs text-slate-400 ml-1">(optional)</span>
+              )}
+              {tab.id === 'analysis' && analysis && (
+                <span className="w-2 h-2 rounded-full bg-green-500" />
+              )}
+              {tab.id === 'rewrite' && rewrite && (
+                <span className="w-2 h-2 rounded-full bg-green-500" />
+              )}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      {/* Error Display */}
+      {error && (
+        <div className="mb-6 rounded-xl bg-red-50 border border-red-100 p-4 text-sm text-red-600">
+          {error}
+        </div>
+      )}
+
+      {/* Tab Content */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
+        {/* Loading State for Past Analysis */}
+        {loadingAnalysis && (
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="h-16 w-16 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
+            <p className="mt-6 text-lg text-slate-600">Loading analysis...</p>
           </div>
         )}
 
-        {/* Main Content */}
-        <main className="relative">
-          {/* Loading State */}
-          {loadingAnalysis && (
-            <div className="flex flex-col items-center justify-center py-32">
-              <div className="relative">
-                <div className="h-16 w-16 rounded-full border-2 border-amber-500/20 border-t-amber-500 animate-spin" />
-              </div>
-              <p className="mt-8 text-white/40 font-light">Loading analysis...</p>
-            </div>
-          )}
-
-          {/* Upload Tab */}
-          {!loadingAnalysis && activeTab === 'upload' && (
-            <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              {/* Upload Area */}
-              <div className="space-y-4">
-                <label className="block text-sm text-white/40 uppercase tracking-wider">Resume</label>
+        {/* Upload Tab */}
+        {!loadingAnalysis && activeTab === 'upload' && (
+          <div className="p-8">
+            <div className="max-w-2xl mx-auto space-y-8">
+              {/* File Upload */}
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900 mb-4">Upload Your Resume</h2>
 
                 {fileName ? (
-                  <div className="group relative p-6 bg-white/5 border border-white/10 rounded-2xl transition-all hover:border-amber-500/30">
+                  <div className="rounded-xl border-2 border-indigo-200 bg-indigo-50 p-6">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="p-3 bg-amber-500/10 rounded-xl">
-                          <svg className="h-6 w-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      <div className="flex items-center space-x-4">
+                        <div className="rounded-lg bg-indigo-100 p-3">
+                          <svg className="h-8 w-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                           </svg>
                         </div>
                         <div>
-                          <p className="font-medium text-white">{fileName}</p>
-                          <p className="text-sm text-white/40">
-                            {resumeText.length > 0 ? `${resumeText.split(' ').length} words` : 'Processing...'}
+                          <p className="font-semibold text-slate-900">{fileName}</p>
+                          <p className="text-sm text-slate-500">
+                            {resumeText.length > 0 ? `${resumeText.split(' ').length} words extracted` : 'Processing...'}
                           </p>
                         </div>
                       </div>
                       <button
                         onClick={clearFile}
-                        className="p-2 text-white/30 hover:text-white/60 transition-colors"
+                        className="rounded-lg p-2 text-slate-400 hover:bg-white hover:text-slate-600"
                       >
                         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                       </button>
                     </div>
                   </div>
                 ) : (
                   <div
-                    onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
-                    onDragLeave={() => setIsDragging(false)}
+                    onDragOver={(e) => e.preventDefault()}
                     onDrop={handleDrop}
-                    className={`
-                      relative p-12 border-2 border-dashed rounded-2xl text-center transition-all duration-300 cursor-pointer
-                      ${isDragging
-                        ? 'border-amber-500 bg-amber-500/5'
-                        : 'border-white/10 hover:border-white/20 hover:bg-white/5'
-                      }
-                    `}
+                    className="relative rounded-xl border-2 border-dashed border-slate-300 p-12 text-center transition-colors hover:border-indigo-400 hover:bg-indigo-50/50"
                   >
                     <input
                       ref={fileInputRef}
                       type="file"
                       accept=".pdf,.txt"
                       onChange={handleFileUpload}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      className="absolute inset-0 cursor-pointer opacity-0"
                       disabled={uploading}
                     />
                     {uploading ? (
                       <div className="flex flex-col items-center">
-                        <div className="h-10 w-10 rounded-full border-2 border-amber-500/20 border-t-amber-500 animate-spin" />
-                        <p className="mt-4 text-white/40">Processing...</p>
+                        <div className="h-12 w-12 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
+                        <p className="mt-4 text-slate-600">Processing file...</p>
                       </div>
                     ) : (
                       <>
-                        <div className="inline-flex p-4 bg-white/5 rounded-2xl mb-4">
-                          <svg className="h-8 w-8 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                          </svg>
-                        </div>
-                        <p className="text-white/60 font-light">
-                          Drop your resume here or <span className="text-amber-400">browse</span>
+                        <svg className="mx-auto h-16 w-16 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <p className="mt-4 text-lg font-medium text-slate-700">
+                          Drop your resume here or click to upload
                         </p>
-                        <p className="mt-2 text-sm text-white/30">PDF or TXT</p>
+                        <p className="mt-2 text-sm text-slate-500">
+                          PDF or TXT (max 5MB)
+                        </p>
                       </>
                     )}
                   </div>
                 )}
 
-                {/* Paste text option */}
-                <div className="relative">
+                {/* Or paste text */}
+                <div className="relative my-6">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-white/10" />
+                    <div className="w-full border-t border-slate-200" />
                   </div>
-                  <div className="relative flex justify-center">
-                    <span className="px-4 bg-[#0a0a0b] text-sm text-white/30">or paste text</span>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="bg-white px-4 text-slate-500">or paste text</span>
                   </div>
                 </div>
 
@@ -747,22 +733,22 @@ function ResumeRadarContent() {
                     setResumeText(e.target.value)
                     setFileName(null)
                   }}
-                  placeholder="Paste your resume content here..."
-                  className="w-full h-48 p-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/20 font-light resize-none focus:outline-none focus:border-amber-500/30 transition-colors"
+                  placeholder="Paste your resume text here..."
+                  className="w-full rounded-xl border border-slate-200 p-4 text-sm transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 min-h-[200px] resize-y"
                   disabled={loading || uploading}
                 />
               </div>
 
               {/* Job Description */}
-              <div className="space-y-4">
-                <label className="block text-sm text-white/40 uppercase tracking-wider">
-                  Target Role <span className="text-white/20">(Optional)</span>
-                </label>
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900 mb-4">
+                  Target Job Description <span className="text-slate-400 font-normal text-sm">(Optional)</span>
+                </h2>
                 <textarea
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}
-                  placeholder="Paste job description for tailored analysis..."
-                  className="w-full h-32 p-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/20 font-light resize-none focus:outline-none focus:border-amber-500/30 transition-colors"
+                  placeholder="Paste the job description for tailored analysis and keyword optimization..."
+                  className="w-full rounded-xl border border-slate-200 p-4 text-sm transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 min-h-[120px] resize-y"
                   disabled={loading}
                 />
               </div>
@@ -771,344 +757,346 @@ function ResumeRadarContent() {
               <button
                 onClick={handleAnalyze}
                 disabled={loading || uploading || !resumeText.trim()}
-                className="group relative w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl font-medium text-black overflow-hidden transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-amber-500/20"
+                className="w-full rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4 text-lg font-semibold text-white shadow-lg shadow-indigo-500/30 transition-all hover:shadow-xl hover:shadow-indigo-500/40 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <span className="relative z-10 flex items-center justify-center gap-2">
-                  {loading ? (
-                    <>
-                      <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                      Analyzing...
-                    </>
-                  ) : (
-                    <>
-                      Analyze Resume
-                      <span className="text-black/60">({tool.creditCost} credits)</span>
-                    </>
-                  )}
-                </span>
+                {loading ? (
+                  <span className="flex items-center justify-center space-x-2">
+                    <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    <span>Analyzing...</span>
+                  </span>
+                ) : (
+                  `Analyze Resume (${tool.creditCost} credits)`
+                )}
               </button>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Analysis Tab */}
-          {!loadingAnalysis && activeTab === 'analysis' && (
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              {loading ? (
-                <div className="flex flex-col items-center justify-center py-32">
-                  <div className="relative">
-                    <div className="h-16 w-16 rounded-full border-2 border-amber-500/20 border-t-amber-500 animate-spin" />
-                  </div>
-                  <p className="mt-8 text-white/40 font-light">Analyzing your resume...</p>
-                  <p className="mt-2 text-sm text-white/20">This may take 10-15 seconds</p>
-                </div>
-              ) : analysis ? (
-                <div className="max-w-3xl mx-auto">
-                  {/* Score Card */}
-                  {analysisScore && (
-                    <div className="mb-8 p-8 bg-white/5 border border-white/10 rounded-2xl">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-white/40 uppercase tracking-wider mb-2">Resume Score</p>
-                          <p className={`text-6xl font-extralight ${getScoreColor(analysisScore)}`}>
-                            {analysisScore}<span className="text-2xl text-white/20">/100</span>
-                          </p>
-                        </div>
+        {/* Analysis Tab */}
+        {!loadingAnalysis && activeTab === 'analysis' && (
+          <div className="p-8">
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-20">
+                <div className="h-16 w-16 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
+                <p className="mt-6 text-lg text-slate-600">Analyzing your resume...</p>
+                <p className="mt-2 text-sm text-slate-400">This may take 10-15 seconds</p>
+              </div>
+            ) : analysis ? (
+              <div className="max-w-3xl mx-auto">
+                {/* Score Card */}
+                {analysisScore && (
+                  <div className="mb-8 p-6 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-100">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-indigo-600">Resume Score</p>
+                        <p className="text-4xl font-bold text-slate-900">{analysisScore}/100</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-slate-500">Want to improve?</p>
                         <button
                           onClick={() => setActiveTab('rewrite')}
-                          className="px-6 py-3 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 rounded-xl font-medium transition-colors"
+                          className="text-indigo-600 font-medium hover:underline"
                         >
-                          Improve with AI →
+                          Get AI Rewrite →
                         </button>
                       </div>
                     </div>
-                  )}
-
-                  {/* Analysis Content */}
-                  <div className="prose prose-invert prose-lg max-w-none">
-                    <div
-                      className="space-y-6 text-white/70 font-light leading-relaxed"
-                      dangerouslySetInnerHTML={{
-                        __html: analysis
-                          .replace(/## (.*?)(\n|$)/g, '<h2 class="text-xl font-medium text-white mt-10 mb-4 pb-2 border-b border-white/10">$1</h2>')
-                          .replace(/### (.*?)(\n|$)/g, '<h3 class="text-lg font-medium text-white/90 mt-6 mb-3">$1</h3>')
-                          .replace(/\*\*(.*?)\*\*/g, '<strong class="font-medium text-white">$1</strong>')
-                          .replace(/- (.*?)(\n|$)/g, '<li class="ml-4 text-white/60 my-1">$1</li>')
-                          .replace(/→/g, '<span class="text-amber-400">→</span>')
-                          .replace(/\n\n/g, '</p><p class="my-4">')
-                      }}
-                    />
                   </div>
+                )}
 
-                  {/* Actions */}
-                  <div className="mt-12 pt-8 border-t border-white/10 flex gap-4">
-                    <button
-                      onClick={() => setActiveTab('upload')}
-                      className="flex-1 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white/60 hover:text-white font-medium transition-all"
-                    >
-                      ← Back
-                    </button>
-                    <button
-                      onClick={() => {
-                        setActiveTab('rewrite')
-                        if (!rewrite) handleRewrite()
-                      }}
-                      className="flex-1 py-3 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl font-medium text-black transition-all hover:shadow-lg hover:shadow-amber-500/20"
-                    >
-                      Get AI Rewrite ({tool.creditCost} credits) →
-                    </button>
-                  </div>
+                {/* Analysis Content */}
+                <div className="prose prose-slate max-w-none">
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: analysis
+                        .replace(/## (.*?)(\n|$)/g, '<h2 class="text-xl font-bold mt-8 mb-4 text-slate-900 border-b border-slate-200 pb-2">$1</h2>')
+                        .replace(/### (.*?)(\n|$)/g, '<h3 class="text-lg font-semibold mt-6 mb-3 text-slate-800">$1</h3>')
+                        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-slate-900">$1</strong>')
+                        .replace(/- (.*?)(\n|$)/g, '<li class="ml-4 text-slate-600 my-2">$1</li>')
+                        .replace(/→/g, '<span class="text-indigo-500 font-bold">→</span>')
+                        .replace(/\n\n/g, '</p><p class="my-4 text-slate-600">')
+                        .replace(/\n/g, '<br />')
+                    }}
+                  />
                 </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-32 text-center">
-                  <div className="p-6 bg-white/5 rounded-2xl mb-6">
-                    <svg className="h-12 w-12 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                  <p className="text-xl text-white/60 font-light">No analysis yet</p>
-                  <p className="mt-2 text-white/30">Upload your resume to get started</p>
+
+                {/* Action Buttons */}
+                <div className="mt-8 pt-8 border-t border-slate-200 flex flex-col sm:flex-row gap-4">
                   <button
                     onClick={() => setActiveTab('upload')}
-                    className="mt-6 text-amber-400 hover:text-amber-300 font-medium transition-colors"
+                    className="flex-1 rounded-xl border border-slate-200 px-6 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50"
                   >
-                    ← Go to Upload
+                    ← Back to Upload
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveTab('rewrite')
+                      if (!rewrite) handleRewrite()
+                    }}
+                    className="flex-1 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:shadow-xl"
+                  >
+                    Get AI Rewrite ({tool.creditCost} credits) →
                   </button>
                 </div>
-              )}
-            </div>
-          )}
-
-          {/* Rewrite Tab */}
-          {!loadingAnalysis && activeTab === 'rewrite' && (
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              {rewriteLoading ? (
-                <div className="flex flex-col items-center justify-center py-32">
-                  <div className="relative">
-                    <div className="h-16 w-16 rounded-full border-2 border-emerald-500/20 border-t-emerald-500 animate-spin" />
-                  </div>
-                  <p className="mt-8 text-white/40 font-light">Rewriting your resume...</p>
-                  <p className="mt-2 text-sm text-white/20">Creating an optimized version</p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <div className="rounded-full bg-slate-100 p-6">
+                  <svg className="h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
                 </div>
-              ) : rewrite ? (
-                <div className="max-w-4xl mx-auto">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-light text-white">AI-Optimized Resume</h2>
+                <p className="mt-6 text-lg font-medium text-slate-700">No analysis yet</p>
+                <p className="mt-2 text-sm text-slate-500">Upload your resume first to get detailed feedback</p>
+                <button
+                  onClick={() => setActiveTab('upload')}
+                  className="mt-6 text-indigo-600 font-medium hover:underline"
+                >
+                  ← Go to Upload
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Rewrite Tab */}
+        {!loadingAnalysis && activeTab === 'rewrite' && (
+          <div className="p-8">
+            {rewriteLoading ? (
+              <div className="flex flex-col items-center justify-center py-20">
+                <div className="h-16 w-16 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
+                <p className="mt-6 text-lg text-slate-600">Rewriting your resume...</p>
+                <p className="mt-2 text-sm text-slate-400">Creating an optimized version</p>
+              </div>
+            ) : rewrite ? (
+              <div className="max-w-4xl mx-auto">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold text-slate-900">AI-Optimized Resume</h2>
+                  <button
+                    onClick={copyToClipboard}
+                    className="flex items-center space-x-2 rounded-lg bg-emerald-100 px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-200"
+                  >
+                    {copied ? (
+                      <>
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                        </svg>
+                        <span>Copy Text</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Rewritten Resume */}
+                <div className="rounded-xl bg-slate-50 border border-slate-200 p-6 max-h-[600px] overflow-y-auto">
+                  <pre className="whitespace-pre-wrap text-sm text-slate-700 font-sans leading-relaxed">
+                    {rewrite}
+                  </pre>
+                </div>
+
+                {/* Preview CTA */}
+                <div className="mt-8 p-6 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold text-slate-900">Ready to preview and export?</h3>
+                      <p className="text-sm text-slate-600 mt-1">
+                        See the changes, choose a template, and download as PDF
+                      </p>
+                    </div>
                     <button
-                      onClick={copyToClipboard}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                        copied
-                          ? 'bg-emerald-500/10 text-emerald-400'
-                          : 'bg-white/5 hover:bg-white/10 text-white/60 hover:text-white'
+                      onClick={() => setActiveTab('preview')}
+                      className="rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:shadow-xl"
+                    >
+                      Preview & Export →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="max-w-2xl mx-auto text-center py-12">
+                <div className="rounded-full bg-emerald-100 p-6 w-fit mx-auto">
+                  <svg className="h-12 w-12 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </div>
+                <h2 className="mt-6 text-xl font-bold text-slate-900">AI Resume Rewrite</h2>
+                <p className="mt-3 text-slate-600 max-w-md mx-auto">
+                  Transform your resume with AI-powered optimization. We&apos;ll improve structure,
+                  strengthen bullet points, and optimize for ATS systems.
+                </p>
+                <button
+                  onClick={handleRewrite}
+                  disabled={rewriteLoading || !analysis}
+                  className="mt-8 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-8 py-4 text-lg font-semibold text-white shadow-lg hover:shadow-xl disabled:opacity-50"
+                >
+                  Rewrite My Resume ({tool.creditCost} credits)
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Preview & Export Tab */}
+        {!loadingAnalysis && activeTab === 'preview' && (
+          <div className="p-8">
+            {rewrite ? (
+              <div className="max-w-6xl mx-auto">
+                {/* View Toggle */}
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex rounded-lg bg-slate-100 p-1">
+                    <button
+                      onClick={() => setViewMode('changes')}
+                      className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                        viewMode === 'changes'
+                          ? 'bg-white shadow text-slate-900'
+                          : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
-                      {copied ? (
+                      View Changes
+                    </button>
+                    <button
+                      onClick={() => setViewMode('preview')}
+                      className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                        viewMode === 'preview'
+                          ? 'bg-white shadow text-slate-900'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      PDF Preview
+                    </button>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={handleSave}
+                      disabled={!currentAnalysisId || saving}
+                      className={`flex items-center space-x-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 ${
+                        saveSuccess
+                          ? 'border-green-300 bg-green-50 text-green-700'
+                          : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      {saving ? (
+                        <>
+                          <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                          <span>Saving...</span>
+                        </>
+                      ) : saveSuccess ? (
                         <>
                           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
-                          Copied!
+                          <span>Saved!</span>
                         </>
                       ) : (
                         <>
                           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
                           </svg>
-                          Copy
+                          <span>Save</span>
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={handleExport}
+                      disabled={!selectedTemplate || exportLoading}
+                      className="flex items-center space-x-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-lg hover:shadow-xl disabled:opacity-50"
+                    >
+                      {exportLoading ? (
+                        <>
+                          <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                          <span>Exporting...</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          <span>Export PDF</span>
                         </>
                       )}
                     </button>
                   </div>
-
-                  <div className="p-6 bg-white/5 border border-white/10 rounded-2xl max-h-[600px] overflow-y-auto">
-                    <pre className="whitespace-pre-wrap text-sm text-white/70 font-mono leading-relaxed">
-                      {rewrite}
-                    </pre>
-                  </div>
-
-                  <div className="mt-8 p-6 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-2xl">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-medium text-white">Ready to export?</h3>
-                        <p className="text-sm text-white/40 mt-1">Choose a template and download as PDF</p>
-                      </div>
-                      <button
-                        onClick={() => setActiveTab('preview')}
-                        className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl font-medium text-black transition-all hover:shadow-lg hover:shadow-amber-500/20"
-                      >
-                        Preview & Export →
-                      </button>
-                    </div>
-                  </div>
                 </div>
-              ) : (
-                <div className="max-w-xl mx-auto text-center py-16">
-                  <div className="inline-flex p-6 bg-emerald-500/10 rounded-2xl mb-6">
-                    <svg className="h-12 w-12 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </div>
-                  <h2 className="text-2xl font-light text-white mb-4">AI Resume Rewrite</h2>
-                  <p className="text-white/40 mb-8 max-w-md mx-auto font-light">
-                    Transform your resume with AI-powered optimization. Improve structure, strengthen bullet points, and optimize for ATS.
-                  </p>
-                  <button
-                    onClick={handleRewrite}
-                    disabled={rewriteLoading || !analysis}
-                    className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl font-medium text-black transition-all hover:shadow-lg hover:shadow-emerald-500/20 disabled:opacity-50"
-                  >
-                    Rewrite My Resume ({tool.creditCost} credits)
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
 
-          {/* Preview & Export Tab */}
-          {!loadingAnalysis && activeTab === 'preview' && (
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              {rewrite ? (
-                <div className="max-w-6xl mx-auto">
-                  {/* View Toggle & Actions */}
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-1 p-1 bg-white/5 rounded-xl">
-                      <button
-                        onClick={() => setViewMode('changes')}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                          viewMode === 'changes'
-                            ? 'bg-white/10 text-white'
-                            : 'text-white/40 hover:text-white/60'
-                        }`}
-                      >
-                        Changes
-                      </button>
-                      <button
-                        onClick={() => setViewMode('preview')}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                          viewMode === 'preview'
-                            ? 'bg-white/10 text-white'
-                            : 'text-white/40 hover:text-white/60'
-                        }`}
-                      >
-                        Preview
-                      </button>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={handleSave}
-                        disabled={!currentAnalysisId || saving}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                          saveSuccess
-                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                            : 'bg-white/5 hover:bg-white/10 border border-white/10 text-white/60 hover:text-white'
-                        } disabled:opacity-50`}
-                      >
-                        {saving ? (
-                          <>
-                            <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                            </svg>
-                            Saving...
-                          </>
-                        ) : saveSuccess ? (
-                          <>
-                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                            Saved!
-                          </>
-                        ) : (
-                          <>
-                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                            </svg>
-                            Save
-                          </>
-                        )}
-                      </button>
-                      <button
-                        onClick={handleExport}
-                        disabled={!selectedTemplate || exportLoading}
-                        className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-amber-500 to-orange-500 rounded-lg text-sm font-medium text-black transition-all hover:shadow-lg hover:shadow-amber-500/20 disabled:opacity-50"
-                      >
-                        {exportLoading ? (
-                          <>
-                            <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                            </svg>
-                            Exporting...
-                          </>
-                        ) : (
-                          <>
-                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            Export PDF
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-
-                  {viewMode === 'changes' ? (
-                    <>
-                      {changeSummary && (
-                        <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded-xl">
-                          <div className="grid grid-cols-4 gap-6 text-center">
-                            <div>
-                              <p className="text-2xl font-light text-white">{changeSummary.originalCount}</p>
-                              <p className="text-xs text-white/40 uppercase tracking-wider">Original Lines</p>
-                            </div>
-                            <div>
-                              <p className="text-2xl font-light text-white">{changeSummary.rewriteCount}</p>
-                              <p className="text-xs text-white/40 uppercase tracking-wider">New Lines</p>
-                            </div>
-                            <div>
-                              <p className="text-2xl font-light text-white">{changeSummary.originalWords}</p>
-                              <p className="text-xs text-white/40 uppercase tracking-wider">Original Words</p>
-                            </div>
-                            <div>
-                              <p className="text-2xl font-light text-white">{changeSummary.rewriteWords}</p>
-                              <p className="text-xs text-white/40 uppercase tracking-wider">New Words</p>
-                            </div>
+                {viewMode === 'changes' ? (
+                  <>
+                    {/* Change Summary */}
+                    {changeSummary && (
+                      <div className="mb-6 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <h3 className="font-semibold text-slate-900 mb-2">Changes Summary</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                          <div>
+                            <p className="text-slate-500">Original Lines</p>
+                            <p className="font-semibold text-slate-900">{changeSummary.originalCount}</p>
                           </div>
-                        </div>
-                      )}
-
-                      <div className="grid grid-cols-2 gap-6">
-                        <div>
-                          <div className="flex items-center gap-2 mb-3">
-                            <span className="w-2 h-2 rounded-full bg-red-400" />
-                            <h3 className="text-sm text-white/40 uppercase tracking-wider">Original</h3>
+                          <div>
+                            <p className="text-slate-500">Rewritten Lines</p>
+                            <p className="font-semibold text-slate-900">{changeSummary.rewriteCount}</p>
                           </div>
-                          <div className="p-4 bg-red-500/5 border border-red-500/10 rounded-xl max-h-[500px] overflow-y-auto">
-                            <pre className="whitespace-pre-wrap text-sm text-white/60 font-mono leading-relaxed">
-                              {resumeText}
-                            </pre>
+                          <div>
+                            <p className="text-slate-500">Original Words</p>
+                            <p className="font-semibold text-slate-900">{changeSummary.originalWords}</p>
                           </div>
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2 mb-3">
-                            <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                            <h3 className="text-sm text-white/40 uppercase tracking-wider">Rewritten</h3>
-                          </div>
-                          <div className="p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-xl max-h-[500px] overflow-y-auto">
-                            <pre className="whitespace-pre-wrap text-sm text-white/60 font-mono leading-relaxed">
-                              {rewrite}
-                            </pre>
+                          <div>
+                            <p className="text-slate-500">Rewritten Words</p>
+                            <p className="font-semibold text-slate-900">{changeSummary.rewriteWords}</p>
                           </div>
                         </div>
                       </div>
-                    </>
-                  ) : (
-                    <div className="grid grid-cols-3 gap-6">
+                    )}
+
+                    {/* Side by Side Comparison */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                       <div>
-                        <h3 className="text-sm text-white/40 uppercase tracking-wider mb-3">Template</h3>
+                        <h3 className="font-semibold text-slate-900 mb-3 flex items-center">
+                          <span className="w-3 h-3 rounded-full bg-red-400 mr-2" />
+                          Original
+                        </h3>
+                        <div className="rounded-xl bg-red-50 border border-red-100 p-4 max-h-[500px] overflow-y-auto">
+                          <pre className="whitespace-pre-wrap text-sm text-slate-700 font-sans leading-relaxed">
+                            {resumeText}
+                          </pre>
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-slate-900 mb-3 flex items-center">
+                          <span className="w-3 h-3 rounded-full bg-green-400 mr-2" />
+                          AI Rewritten
+                        </h3>
+                        <div className="rounded-xl bg-green-50 border border-green-100 p-4 max-h-[500px] overflow-y-auto">
+                          <pre className="whitespace-pre-wrap text-sm text-slate-700 font-sans leading-relaxed">
+                            {rewrite}
+                          </pre>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Template Selection & PDF Preview */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      {/* Template Picker */}
+                      <div className="lg:col-span-1">
+                        <h3 className="font-semibold text-slate-900 mb-3">Choose Template</h3>
                         <TemplatePicker
                           onSelect={handleTemplateSelect}
                           onExport={() => {}}
@@ -1118,13 +1106,15 @@ function ResumeRadarContent() {
                           compact
                         />
                       </div>
-                      <div className="col-span-2">
-                        <h3 className="text-sm text-white/40 uppercase tracking-wider mb-3">Preview</h3>
-                        <div className="bg-white/5 border border-white/10 rounded-xl min-h-[600px] flex items-center justify-center overflow-hidden">
+
+                      {/* PDF Preview */}
+                      <div className="lg:col-span-2">
+                        <h3 className="font-semibold text-slate-900 mb-3">Preview</h3>
+                        <div className="rounded-xl border border-slate-200 bg-slate-100 min-h-[600px] flex items-center justify-center">
                           {previewLoading ? (
                             <div className="flex flex-col items-center">
-                              <div className="h-10 w-10 rounded-full border-2 border-amber-500/20 border-t-amber-500 animate-spin" />
-                              <p className="mt-4 text-white/40">Generating preview...</p>
+                              <div className="h-12 w-12 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
+                              <p className="mt-4 text-slate-600">Generating preview...</p>
                             </div>
                           ) : pdfPreviewUrl ? (
                             <iframe
@@ -1133,38 +1123,41 @@ function ResumeRadarContent() {
                               title="Resume Preview"
                             />
                           ) : (
-                            <div className="text-center">
-                              <svg className="mx-auto h-16 w-16 text-white/10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            <div className="text-center text-slate-500">
+                              <svg className="mx-auto h-16 w-16 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                               </svg>
-                              <p className="mt-4 text-white/30">Select a template to preview</p>
+                              <p className="mt-4">Select a template to see preview</p>
                             </div>
                           )}
                         </div>
                       </div>
                     </div>
-                  )}
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-20">
+                <div className="rounded-full bg-slate-100 p-6 w-fit mx-auto">
+                  <svg className="h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
                 </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-32 text-center">
-                  <div className="p-6 bg-white/5 rounded-2xl mb-6">
-                    <svg className="h-12 w-12 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                  <p className="text-xl text-white/60 font-light">Preview & Export</p>
-                  <p className="mt-2 text-white/30">Get your AI-rewritten resume first</p>
-                  <button
-                    onClick={() => setActiveTab('rewrite')}
-                    className="mt-6 text-amber-400 hover:text-amber-300 font-medium transition-colors"
-                  >
-                    ← Go to Rewrite
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-        </main>
+                <h2 className="mt-6 text-xl font-bold text-slate-900">Preview & Export</h2>
+                <p className="mt-3 text-slate-600">
+                  Get your AI-rewritten resume first to preview and export.
+                </p>
+                <button
+                  onClick={() => setActiveTab('rewrite')}
+                  className="mt-6 text-indigo-600 font-medium hover:underline"
+                >
+                  ← Go to Rewrite
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )
