@@ -309,6 +309,11 @@ function ResumeRadarContent() {
     setAnalysisScore(null)
     setPdfPreviewUrl(null)
     setCurrentAnalysisId(null)
+    setAnalysisTitle('')
+    setJobDescription('')
+    setSelectedTemplateId(undefined)
+    setSelectedTemplate(null)
+    setActiveTab('upload')
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
@@ -551,6 +556,18 @@ function ResumeRadarContent() {
             </p>
           </div>
           <div className="flex items-center space-x-3">
+            {/* New Analysis Button - show when there's existing analysis or not on upload tab */}
+            {(analysis || activeTab !== 'upload') && (
+              <button
+                onClick={clearFile}
+                className="flex items-center space-x-2 rounded-lg bg-white/20 hover:bg-white/30 px-3 py-1.5 text-sm transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                <span>New Analysis</span>
+              </button>
+            )}
             <div className="rounded-lg bg-white/20 px-3 py-1.5 text-sm">
               {userCredits} credits
             </div>
