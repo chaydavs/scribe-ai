@@ -33,7 +33,7 @@ export const creditPacks: CreditPack[] = [
 ]
 
 export const toolCreditCosts: Record<string, number> = {
-  resumeradar: 5,
+  resumelab: 5,
 }
 
 export function getCreditPack(id: string): CreditPack | undefined {

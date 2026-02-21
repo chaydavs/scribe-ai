@@ -10,7 +10,7 @@ interface LoginFormProps {
   onSuccess?: () => void
 }
 
-export function LoginForm({ redirectTo = '/resumeradar', onSuccess }: LoginFormProps) {
+export function LoginForm({ redirectTo = '/resumelab', onSuccess }: LoginFormProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)

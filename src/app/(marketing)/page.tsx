@@ -39,7 +39,7 @@ export default function LandingPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <span className="text-lg font-bold text-slate-900">ResumeRadar</span>
+              <span className="text-lg font-bold text-slate-900">ResumeLab</span>
             </div>
             <div className="flex items-center space-x-4">
               <Link href="/login" className="text-sm font-medium text-slate-600 hover:text-slate-900">
@@ -168,7 +168,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Why ResumeRadar - Problem/Solution */}
+      {/* Why ResumeLab - Problem/Solution */}
       <section className="py-20 bg-white border-t border-slate-100">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-12 lg:grid-cols-2 items-center">
@@ -212,7 +212,7 @@ export default function LandingPage() {
 
             <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-8">
               <h3 className="text-xl font-semibold text-slate-900 mb-4">
-                ResumeRadar fixes this by:
+                ResumeLab fixes this by:
               </h3>
               <div className="space-y-4">
                 <div className="flex items-start">
@@ -536,7 +536,7 @@ export default function LandingPage() {
             Ready to improve your resume?
           </h2>
           <p className="mt-4 text-lg text-indigo-100">
-            Join thousands of job seekers who've improved their resumes with ResumeRadar.
+            Join thousands of job seekers who've improved their resumes with ResumeLab.
           </p>
           <Link
             href="/signup"
@@ -560,7 +560,7 @@ export default function LandingPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <span className="text-sm font-semibold text-slate-900">ResumeRadar</span>
+              <span className="text-sm font-semibold text-slate-900">ResumeLab</span>
             </div>
             <p className="text-sm text-slate-500">
               Powered by Claude AI

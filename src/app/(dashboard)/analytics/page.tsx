@@ -63,7 +63,7 @@ export default function AnalyticsPage() {
 
       // Calculate stats
       const totalCreditsUsed = usageLogs?.reduce((sum, log) => sum + (log.credits_used || 0), 0) || 0
-      const totalAnalyses = usageLogs?.filter(log => log.tool === 'resumeradar').length || 0
+      const totalAnalyses = usageLogs?.filter(log => log.tool === 'resumelab').length || 0
       const rewritesGenerated = usageLogs?.filter(log => log.tool === 'resume-rewrite').length || 0
 
       const scoresWithValues = analysesData?.filter(a => a.score) || []
@@ -186,9 +186,9 @@ export default function AnalyticsPage() {
                 <div key={log.id} className="flex items-center justify-between rounded-lg bg-slate-50 p-3">
                   <div className="flex items-center space-x-3">
                     <div className={`rounded-lg p-2 ${
-                      log.tool === 'resumeradar' ? 'bg-indigo-100' : 'bg-emerald-100'
+                      log.tool === 'resumelab' ? 'bg-indigo-100' : 'bg-emerald-100'
                     }`}>
-                      {log.tool === 'resumeradar' ? (
+                      {log.tool === 'resumelab' ? (
                         <svg className="h-4 w-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
@@ -200,7 +200,7 @@ export default function AnalyticsPage() {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-slate-700">
-                        {log.tool === 'resumeradar' ? 'Resume Analysis' : 'Resume Rewrite'}
+                        {log.tool === 'resumelab' ? 'Resume Analysis' : 'Resume Rewrite'}
                       </p>
                       <p className="text-xs text-slate-500">{formatDate(log.created_at)}</p>
                     </div>

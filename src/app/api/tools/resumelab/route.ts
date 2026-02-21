@@ -3,7 +3,7 @@ import { generateWithClaude, toolPrompts } from '@/lib/claude/client'
 import { getToolCreditCost } from '@/lib/stripe/credits'
 import { NextResponse } from 'next/server'
 
-const TOOL_NAME = 'resumeradar'
+const TOOL_NAME = 'resumelab'
 const CREDIT_COST = getToolCreditCost(TOOL_NAME)
 
 export async function POST(request: Request) {
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
 
     // Generate analysis with Claude
     const response = await generateWithClaude(
-      toolPrompts.resumeradar,
+      toolPrompts.resumelab,
       userMessage
     )
 
@@ -109,7 +109,7 @@ export async function POST(request: Request) {
       remainingCredits: profile.credits - CREDIT_COST,
     })
   } catch (error) {
-    console.error('ResumeRadar error:', error)
+    console.error('ResumeLab error:', error)
     return NextResponse.json(
       { error: 'Failed to analyze resume' },
       { status: 500 }

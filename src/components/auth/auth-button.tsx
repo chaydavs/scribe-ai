@@ -12,7 +12,7 @@ interface AuthButtonProps {
 
 export function AuthButton({
   provider,
-  redirectTo = '/resumeradar',
+  redirectTo = '/resumelab',
   mode = 'signin',
 }: AuthButtonProps) {
   const [loading, setLoading] = useState(false)

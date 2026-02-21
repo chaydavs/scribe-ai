@@ -276,7 +276,7 @@ function SettingsContent() {
                 </svg>
                 <h2 className="text-xl font-bold">Welcome Gift</h2>
               </div>
-              <p className="text-indigo-100">Claim your 10 free credits to try ResumeRadar.</p>
+              <p className="text-indigo-100">Claim your 10 free credits to try ResumeLab.</p>
             </div>
             <button
               onClick={handleClaimFreeCredits}

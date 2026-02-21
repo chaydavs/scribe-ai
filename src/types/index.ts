@@ -11,12 +11,12 @@ export interface Tool {
 
 export const tools: Tool[] = [
   {
-    id: 'resumeradar',
-    name: 'ResumeRadar',
-    description: 'AI-powered resume analysis, scoring, and optimization',
+    id: 'resumelab',
+    name: 'ResumeLab',
+    description: 'AI-powered resume analysis, creation, and optimization',
     creditCost: 5,
     icon: '📄',
-    href: '/resumeradar',
+    href: '/resumelab',
   },
 ]
 

@@ -249,7 +249,7 @@ export default function SignupPage() {
 
           <blockquote className="border-l-2 border-white/30 pl-4">
             <p className="text-lg font-medium">
-              "Got 3 interview calls within a week of using ResumeRadar. The specific feedback was exactly what I needed."
+              "Got 3 interview calls within a week of using ResumeLab. The specific feedback was exactly what I needed."
             </p>
             <footer className="mt-2 text-sm text-white/70">
               — Sarah K., Software Engineer

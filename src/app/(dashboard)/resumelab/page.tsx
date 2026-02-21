@@ -3,10 +3,10 @@
 import { useState, useRef, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { getTool } from '@/types'
-import { TemplatePicker } from '@/components/tools/resumeradar/template-picker'
+import { TemplatePicker } from '@/components/tools/resumelab/template-picker'
 import { TemplatePreview } from '@/types/templates'
 
-const tool = getTool('resumeradar')!
+const tool = getTool('resumelab')!
 
 type TabId = 'upload' | 'analysis' | 'rewrite' | 'preview'
 
@@ -19,19 +19,19 @@ interface Tab {
 }
 
 // Wrapper component to handle Suspense for useSearchParams
-export default function ResumeRadarPage() {
+export default function ResumeLabPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
         <div className="h-16 w-16 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
       </div>
     }>
-      <ResumeRadarContent />
+      <ResumeLabContent />
     </Suspense>
   )
 }
 
-function ResumeRadarContent() {
+function ResumeLabContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const analysisId = searchParams.get('id')
@@ -74,6 +74,24 @@ function ResumeRadarContent() {
   const [userCredits, setUserCredits] = useState(0)
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [editedTitle, setEditedTitle] = useState('')
+
+  // Mode state - analyze existing or create from scratch
+  const [mode, setMode] = useState<'analyze' | 'create'>('analyze')
+
+  // Create from scratch form state
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    location: '',
+    linkedin: '',
+    summary: '',
+    experience: [{ title: '', company: '', location: '', startDate: '', endDate: '', bullets: [''] }],
+    education: [{ school: '', degree: '', graduationDate: '', gpa: '' }],
+    skills: [''],
+    projects: [{ name: '', description: '', technologies: [''] }],
+  })
+  const [creatingPdf, setCreatingPdf] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -239,7 +257,7 @@ function ResumeRadarContent() {
     setAnalysis(null)
 
     try {
-      const response = await fetch('/api/tools/resumeradar', {
+      const response = await fetch('/api/tools/resumelab', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -318,7 +336,7 @@ function ResumeRadarContent() {
       fileInputRef.current.value = ''
     }
     // Clear URL params
-    router.push('/resumeradar')
+    router.push('/resumelab')
   }
 
   const copyToClipboard = async () => {
@@ -513,6 +531,197 @@ function ResumeRadarContent() {
 
   const changeSummary = getChangeSummary()
 
+  // Form helpers for Create from Scratch
+  const updateFormField = (field: string, value: string | string[]) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const addExperience = () => {
+    setFormData(prev => ({
+      ...prev,
+      experience: [...prev.experience, { title: '', company: '', location: '', startDate: '', endDate: '', bullets: [''] }]
+    }))
+  }
+
+  const updateExperience = (index: number, field: string, value: string | string[]) => {
+    setFormData(prev => ({
+      ...prev,
+      experience: prev.experience.map((exp, i) => i === index ? { ...exp, [field]: value } : exp)
+    }))
+  }
+
+  const removeExperience = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      experience: prev.experience.filter((_, i) => i !== index)
+    }))
+  }
+
+  const addEducation = () => {
+    setFormData(prev => ({
+      ...prev,
+      education: [...prev.education, { school: '', degree: '', graduationDate: '', gpa: '' }]
+    }))
+  }
+
+  const updateEducation = (index: number, field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      education: prev.education.map((edu, i) => i === index ? { ...edu, [field]: value } : edu)
+    }))
+  }
+
+  const removeEducation = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      education: prev.education.filter((_, i) => i !== index)
+    }))
+  }
+
+  const handleCreateResume = async () => {
+    if (!formData.fullName.trim()) {
+      setError('Please enter your full name')
+      return
+    }
+
+    if (!selectedTemplate) {
+      setError('Please select a template')
+      return
+    }
+
+    setError(null)
+    setCreatingPdf(true)
+
+    try {
+      // Format the resume data as text for the export API
+      const resumeText = formatResumeForExport(formData)
+
+      const response = await fetch('/api/tools/export-resume', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          resumeText,
+          templateId: selectedTemplate.id,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create resume')
+      }
+
+      if (data.format === 'pdf' && data.content) {
+        const byteCharacters = atob(data.content)
+        const byteNumbers = new Array(byteCharacters.length)
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i)
+        }
+        const byteArray = new Uint8Array(byteNumbers)
+        const blob = new Blob([byteArray], { type: 'application/pdf' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${formData.fullName.replace(/\s+/g, '_')}_Resume.pdf`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+
+        if (data.remainingCredits !== undefined) {
+          setUserCredits(data.remainingCredits)
+        }
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create resume')
+    } finally {
+      setCreatingPdf(false)
+    }
+  }
+
+  const formatResumeForExport = (data: typeof formData): string => {
+    let text = `${data.fullName}\n`
+    if (data.email) text += `${data.email}`
+    if (data.phone) text += ` | ${data.phone}`
+    if (data.location) text += ` | ${data.location}`
+    if (data.linkedin) text += ` | ${data.linkedin}`
+    text += '\n\n'
+
+    if (data.summary) {
+      text += `SUMMARY\n${data.summary}\n\n`
+    }
+
+    if (data.experience.some(e => e.title || e.company)) {
+      text += 'EXPERIENCE\n'
+      data.experience.forEach(exp => {
+        if (exp.title || exp.company) {
+          text += `${exp.title}${exp.company ? ` | ${exp.company}` : ''}${exp.location ? ` | ${exp.location}` : ''}\n`
+          if (exp.startDate || exp.endDate) {
+            text += `${exp.startDate} - ${exp.endDate || 'Present'}\n`
+          }
+          exp.bullets.filter(b => b.trim()).forEach(bullet => {
+            text += `• ${bullet}\n`
+          })
+          text += '\n'
+        }
+      })
+    }
+
+    if (data.education.some(e => e.school || e.degree)) {
+      text += 'EDUCATION\n'
+      data.education.forEach(edu => {
+        if (edu.school || edu.degree) {
+          text += `${edu.degree}${edu.school ? ` | ${edu.school}` : ''}${edu.graduationDate ? ` | ${edu.graduationDate}` : ''}\n`
+          if (edu.gpa) text += `GPA: ${edu.gpa}\n`
+          text += '\n'
+        }
+      })
+    }
+
+    const skills = data.skills.filter(s => s.trim())
+    if (skills.length > 0) {
+      text += `SKILLS\n${skills.join(', ')}\n\n`
+    }
+
+    if (data.projects.some(p => p.name || p.description)) {
+      text += 'PROJECTS\n'
+      data.projects.forEach(proj => {
+        if (proj.name || proj.description) {
+          text += `${proj.name}\n`
+          if (proj.description) text += `${proj.description}\n`
+          const techs = proj.technologies.filter(t => t.trim())
+          if (techs.length > 0) text += `Technologies: ${techs.join(', ')}\n`
+          text += '\n'
+        }
+      })
+    }
+
+    return text
+  }
+
+  const switchToAnalyze = () => {
+    setMode('analyze')
+    clearFile()
+  }
+
+  const switchToCreate = () => {
+    setMode('create')
+    setFormData({
+      fullName: '',
+      email: '',
+      phone: '',
+      location: '',
+      linkedin: '',
+      summary: '',
+      experience: [{ title: '', company: '', location: '', startDate: '', endDate: '', bullets: [''] }],
+      education: [{ school: '', degree: '', graduationDate: '', gpa: '' }],
+      skills: [''],
+      projects: [{ name: '', description: '', technologies: [''] }],
+    })
+    setSelectedTemplateId(undefined)
+    setSelectedTemplate(null)
+  }
+
   return (
     <div className="min-h-screen">
       {/* Header */}
@@ -566,15 +775,17 @@ function ResumeRadarContent() {
               </div>
             ))}
             {!currentAnalysisId && (
-              <h1 className="text-2xl font-bold">Resume Analysis</h1>
+              <h1 className="text-2xl font-bold">
+                {mode === 'create' ? 'Create Resume' : 'ResumeLab'}
+              </h1>
             )}
             <p className="mt-1 text-indigo-100 text-sm">
-              AI-powered feedback and optimization
+              {mode === 'create' ? 'Build your resume from scratch' : 'AI-powered feedback and optimization'}
             </p>
           </div>
           <div className="flex items-center space-x-3">
-            {/* New Analysis Button - show when there's existing analysis or not on upload tab */}
-            {(analysis || activeTab !== 'upload') && (
+            {/* Mode Toggle Buttons */}
+            {mode === 'analyze' && (analysis || activeTab !== 'upload') && (
               <button
                 onClick={clearFile}
                 className="flex items-center space-x-2 rounded-lg bg-white/20 hover:bg-white/30 px-3 py-1.5 text-sm transition-colors"
@@ -583,6 +794,28 @@ function ResumeRadarContent() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
                 <span>New Analysis</span>
+              </button>
+            )}
+            {mode === 'analyze' && activeTab === 'upload' && !analysis && (
+              <button
+                onClick={switchToCreate}
+                className="flex items-center space-x-2 rounded-lg bg-white/20 hover:bg-white/30 px-3 py-1.5 text-sm transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                <span>Create from Scratch</span>
+              </button>
+            )}
+            {mode === 'create' && (
+              <button
+                onClick={switchToAnalyze}
+                className="flex items-center space-x-2 rounded-lg bg-white/20 hover:bg-white/30 px-3 py-1.5 text-sm transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                <span>Analyze Existing</span>
               </button>
             )}
             <div className="rounded-lg bg-white/20 px-3 py-1.5 text-sm">
@@ -597,39 +830,41 @@ function ResumeRadarContent() {
         </div>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="border-b border-slate-200 mb-6">
-        <nav className="flex space-x-1" aria-label="Tabs">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => !tab.disabled && setActiveTab(tab.id)}
-              disabled={tab.disabled}
-              className={`
-                flex items-center space-x-2 px-4 py-3 text-sm font-medium rounded-t-lg transition-all
-                ${activeTab === tab.id
-                  ? 'bg-white border border-b-0 border-slate-200 text-indigo-600 -mb-px'
-                  : tab.disabled
-                    ? 'text-slate-300 cursor-not-allowed'
-                    : 'text-slate-600 hover:text-indigo-600 hover:bg-slate-50'
-                }
-              `}
-            >
-              {tab.icon}
-              <span>{tab.label}</span>
-              {tab.optional && (
-                <span className="text-xs text-slate-400 ml-1">(optional)</span>
-              )}
-              {tab.id === 'analysis' && analysis && (
-                <span className="w-2 h-2 rounded-full bg-green-500" />
-              )}
-              {tab.id === 'rewrite' && rewrite && (
-                <span className="w-2 h-2 rounded-full bg-green-500" />
-              )}
-            </button>
-          ))}
-        </nav>
-      </div>
+      {/* Tab Navigation - only in analyze mode */}
+      {mode === 'analyze' && (
+        <div className="border-b border-slate-200 mb-6">
+          <nav className="flex space-x-1" aria-label="Tabs">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => !tab.disabled && setActiveTab(tab.id)}
+                disabled={tab.disabled}
+                className={`
+                  flex items-center space-x-2 px-4 py-3 text-sm font-medium rounded-t-lg transition-all
+                  ${activeTab === tab.id
+                    ? 'bg-white border border-b-0 border-slate-200 text-indigo-600 -mb-px'
+                    : tab.disabled
+                      ? 'text-slate-300 cursor-not-allowed'
+                      : 'text-slate-600 hover:text-indigo-600 hover:bg-slate-50'
+                  }
+                `}
+              >
+                {tab.icon}
+                <span>{tab.label}</span>
+                {tab.optional && (
+                  <span className="text-xs text-slate-400 ml-1">(optional)</span>
+                )}
+                {tab.id === 'analysis' && analysis && (
+                  <span className="w-2 h-2 rounded-full bg-green-500" />
+                )}
+                {tab.id === 'rewrite' && rewrite && (
+                  <span className="w-2 h-2 rounded-full bg-green-500" />
+                )}
+              </button>
+            ))}
+          </nav>
+        </div>
+      )}
 
       {/* Error Display */}
       {error && (
@@ -638,10 +873,11 @@ function ResumeRadarContent() {
         </div>
       )}
 
-      {/* Tab Content */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
-        {/* Loading State for Past Analysis */}
-        {loadingAnalysis && (
+      {/* Tab Content - Analyze Mode */}
+      {mode === 'analyze' && (
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
+          {/* Loading State for Past Analysis */}
+          {loadingAnalysis && (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="h-16 w-16 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
             <p className="mt-6 text-lg text-slate-600">Loading analysis...</p>
@@ -1158,7 +1394,261 @@ function ResumeRadarContent() {
             )}
           </div>
         )}
-      </div>
+        </div>
+      )}
+
+      {/* Create Mode */}
+      {mode === 'create' && (
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Form Section */}
+              <div className="lg:col-span-2 space-y-8">
+                {/* Personal Info */}
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-900 mb-4">Personal Information</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input
+                      type="text"
+                      placeholder="Full Name *"
+                      value={formData.fullName}
+                      onChange={(e) => updateFormField('fullName', e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 p-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    />
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      value={formData.email}
+                      onChange={(e) => updateFormField('email', e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 p-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    />
+                    <input
+                      type="tel"
+                      placeholder="Phone"
+                      value={formData.phone}
+                      onChange={(e) => updateFormField('phone', e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 p-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Location (City, State)"
+                      value={formData.location}
+                      onChange={(e) => updateFormField('location', e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 p-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    />
+                    <input
+                      type="url"
+                      placeholder="LinkedIn URL"
+                      value={formData.linkedin}
+                      onChange={(e) => updateFormField('linkedin', e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 p-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 md:col-span-2"
+                    />
+                  </div>
+                </div>
+
+                {/* Summary */}
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-900 mb-4">Professional Summary</h2>
+                  <textarea
+                    placeholder="Brief professional summary..."
+                    value={formData.summary}
+                    onChange={(e) => updateFormField('summary', e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 p-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 min-h-[100px] resize-y"
+                  />
+                </div>
+
+                {/* Experience */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-semibold text-slate-900">Experience</h2>
+                    <button
+                      onClick={addExperience}
+                      className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+                    >
+                      + Add Experience
+                    </button>
+                  </div>
+                  {formData.experience.map((exp, index) => (
+                    <div key={index} className="mb-6 p-4 bg-slate-50 rounded-lg">
+                      <div className="flex justify-between items-start mb-3">
+                        <span className="text-sm font-medium text-slate-500">Position {index + 1}</span>
+                        {formData.experience.length > 1 && (
+                          <button
+                            onClick={() => removeExperience(index)}
+                            className="text-red-500 hover:text-red-700 text-sm"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <input
+                          type="text"
+                          placeholder="Job Title"
+                          value={exp.title}
+                          onChange={(e) => updateExperience(index, 'title', e.target.value)}
+                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-indigo-500 focus:outline-none"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Company"
+                          value={exp.company}
+                          onChange={(e) => updateExperience(index, 'company', e.target.value)}
+                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-indigo-500 focus:outline-none"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Location"
+                          value={exp.location}
+                          onChange={(e) => updateExperience(index, 'location', e.target.value)}
+                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-indigo-500 focus:outline-none"
+                        />
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="Start Date"
+                            value={exp.startDate}
+                            onChange={(e) => updateExperience(index, 'startDate', e.target.value)}
+                            className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-indigo-500 focus:outline-none"
+                          />
+                          <input
+                            type="text"
+                            placeholder="End Date"
+                            value={exp.endDate}
+                            onChange={(e) => updateExperience(index, 'endDate', e.target.value)}
+                            className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-indigo-500 focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                      <div className="mt-3">
+                        <label className="text-sm text-slate-500 mb-2 block">Key achievements (one per line)</label>
+                        <textarea
+                          placeholder="• Led team of 5 engineers...&#10;• Increased revenue by 20%..."
+                          value={exp.bullets.join('\n')}
+                          onChange={(e) => updateExperience(index, 'bullets', e.target.value.split('\n'))}
+                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-indigo-500 focus:outline-none min-h-[80px] resize-y"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Education */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-semibold text-slate-900">Education</h2>
+                    <button
+                      onClick={addEducation}
+                      className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+                    >
+                      + Add Education
+                    </button>
+                  </div>
+                  {formData.education.map((edu, index) => (
+                    <div key={index} className="mb-4 p-4 bg-slate-50 rounded-lg">
+                      <div className="flex justify-between items-start mb-3">
+                        <span className="text-sm font-medium text-slate-500">Education {index + 1}</span>
+                        {formData.education.length > 1 && (
+                          <button
+                            onClick={() => removeEducation(index)}
+                            className="text-red-500 hover:text-red-700 text-sm"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <input
+                          type="text"
+                          placeholder="School/University"
+                          value={edu.school}
+                          onChange={(e) => updateEducation(index, 'school', e.target.value)}
+                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-indigo-500 focus:outline-none"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Degree"
+                          value={edu.degree}
+                          onChange={(e) => updateEducation(index, 'degree', e.target.value)}
+                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-indigo-500 focus:outline-none"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Graduation Date"
+                          value={edu.graduationDate}
+                          onChange={(e) => updateEducation(index, 'graduationDate', e.target.value)}
+                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-indigo-500 focus:outline-none"
+                        />
+                        <input
+                          type="text"
+                          placeholder="GPA (optional)"
+                          value={edu.gpa}
+                          onChange={(e) => updateEducation(index, 'gpa', e.target.value)}
+                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-indigo-500 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Skills */}
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-900 mb-4">Skills</h2>
+                  <textarea
+                    placeholder="JavaScript, React, Node.js, Python, SQL..."
+                    value={formData.skills.join(', ')}
+                    onChange={(e) => updateFormField('skills', e.target.value.split(',').map(s => s.trim()))}
+                    className="w-full rounded-lg border border-slate-200 p-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 min-h-[60px] resize-y"
+                  />
+                  <p className="text-xs text-slate-400 mt-1">Separate skills with commas</p>
+                </div>
+              </div>
+
+              {/* Template Selection Sidebar */}
+              <div className="lg:col-span-1">
+                <div className="sticky top-6">
+                  <h2 className="text-lg font-semibold text-slate-900 mb-4">Choose Template</h2>
+                  <TemplatePicker
+                    onSelect={(template) => {
+                      setSelectedTemplateId(template.id)
+                      setSelectedTemplate(template)
+                    }}
+                    onExport={() => {}}
+                    selectedTemplateId={selectedTemplateId}
+                    loading={false}
+                    userCredits={userCredits}
+                    compact
+                  />
+
+                  {/* Create Button */}
+                  <button
+                    onClick={handleCreateResume}
+                    disabled={creatingPdf || !formData.fullName.trim() || !selectedTemplate}
+                    className="w-full mt-6 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4 text-lg font-semibold text-white shadow-lg shadow-indigo-500/30 transition-all hover:shadow-xl hover:shadow-indigo-500/40 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {creatingPdf ? (
+                      <span className="flex items-center justify-center space-x-2">
+                        <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                        <span>Creating...</span>
+                      </span>
+                    ) : (
+                      `Create & Download PDF`
+                    )}
+                  </button>
+                  {selectedTemplate && (
+                    <p className="text-center text-sm text-slate-500 mt-2">
+                      {selectedTemplate.creditCost} credits
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

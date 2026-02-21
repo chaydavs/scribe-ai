@@ -41,7 +41,7 @@ export async function generateWithClaude(
 }
 
 export const toolPrompts = {
-  resumeradar: `You are ResumeRadar. Analyze this resume using a rigorous, mathematically consistent framework.
+  resumelab: `You are ResumeLab. Analyze this resume using a rigorous, mathematically consistent framework.
 
 === SCORING INTEGRITY (CRITICAL) ===
 - The final score MUST equal the sum of subscores. Verify arithmetic before outputting.
