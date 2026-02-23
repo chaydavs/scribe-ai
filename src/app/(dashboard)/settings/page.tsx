@@ -100,8 +100,11 @@ function SettingsContent() {
     }
   }
 
+  const [purchaseError, setPurchaseError] = useState<string | null>(null)
+
   const handlePurchase = async (pack: CreditPack) => {
     setPurchasing(pack.id)
+    setPurchaseError(null)
     setMessage(null)
 
     try {
@@ -113,9 +116,13 @@ function SettingsContent() {
 
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'Failed to create checkout session')
+
+      if (!data.url) throw new Error('No checkout URL returned')
       window.location.href = data.url
     } catch (error) {
-      setMessage({ type: 'error', text: error instanceof Error ? error.message : 'Failed to start checkout' })
+      const msg = error instanceof Error ? error.message : 'Failed to start checkout'
+      console.error('Purchase error:', error)
+      setPurchaseError(msg)
       setPurchasing(null)
     }
   }
@@ -498,6 +505,11 @@ function SettingsContent() {
             </div>
           ))}
         </div>
+        {purchaseError && (
+          <div className="mt-3 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+            {purchaseError}
+          </div>
+        )}
       </div>
 
       {/* Danger Zone */}

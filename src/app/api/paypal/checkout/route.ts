@@ -33,8 +33,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ url: approvalUrl })
   } catch (error) {
     console.error('PayPal checkout error:', error)
+    const message = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { error: 'Failed to create checkout session' },
+      { error: `Failed to create checkout session: ${message}` },
       { status: 500 }
     )
   }
