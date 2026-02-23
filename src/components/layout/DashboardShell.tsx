@@ -22,6 +22,9 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [analyses, setAnalyses] = useState<Analysis[]>([])
   const [loadingAnalyses, setLoadingAnalyses] = useState(true)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingTitle, setEditingTitle] = useState('')
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
@@ -41,6 +44,41 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
       console.error('Failed to fetch analyses:', error)
     } finally {
       setLoadingAnalyses(false)
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Delete this analysis? This cannot be undone.')) return
+    setDeletingId(id)
+    try {
+      const response = await fetch(`/api/analyses/${id}`, { method: 'DELETE' })
+      if (!response.ok) throw new Error('Failed to delete')
+      setAnalyses(prev => prev.filter(a => a.id !== id))
+    } catch (error) {
+      console.error('Delete failed:', error)
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  const handleRename = async (id: string) => {
+    const trimmed = editingTitle.trim()
+    if (!trimmed) {
+      setEditingId(null)
+      return
+    }
+    try {
+      const response = await fetch(`/api/analyses/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: trimmed }),
+      })
+      if (!response.ok) throw new Error('Failed to rename')
+      setAnalyses(prev => prev.map(a => a.id === id ? { ...a, title: trimmed } : a))
+    } catch (error) {
+      console.error('Rename failed:', error)
+    } finally {
+      setEditingId(null)
     }
   }
 
@@ -155,25 +193,78 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
             ) : (
               <div className="space-y-1">
                 {analyses.map((analysis) => (
-                  <Link
-                    key={analysis.id}
-                    href={`/resumelab?id=${analysis.id}`}
-                    onClick={() => setSidebarOpen(false)}
-                    className="group flex items-center rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-all hover:bg-slate-50"
-                  >
-                    <svg className="mr-3 h-4 w-4 flex-shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium text-slate-700 group-hover:text-indigo-600">
-                        {analysis.title}
-                      </p>
-                      <p className="text-xs text-slate-400">
-                        {formatDate(analysis.created_at)}
-                        {analysis.score && <span className="ml-2">Score: {analysis.score}</span>}
-                      </p>
-                    </div>
-                  </Link>
+                  <div key={analysis.id} className="group relative flex items-center rounded-lg text-sm text-slate-600 transition-all hover:bg-slate-50">
+                    {editingId === analysis.id ? (
+                      <div className="flex w-full items-center px-3 py-2">
+                        <input
+                          type="text"
+                          value={editingTitle}
+                          onChange={(e) => setEditingTitle(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleRename(analysis.id)
+                            if (e.key === 'Escape') setEditingId(null)
+                          }}
+                          onBlur={() => handleRename(analysis.id)}
+                          autoFocus
+                          className="w-full rounded border border-indigo-300 bg-white px-2 py-1 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-indigo-400"
+                        />
+                      </div>
+                    ) : (
+                      <>
+                        <Link
+                          href={`/resumelab?id=${analysis.id}`}
+                          onClick={() => setSidebarOpen(false)}
+                          className="flex min-w-0 flex-1 items-center px-3 py-2.5"
+                        >
+                          <svg className="mr-3 h-4 w-4 flex-shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate font-medium text-slate-700 group-hover:text-indigo-600">
+                              {analysis.title}
+                            </p>
+                            <p className="text-xs text-slate-400">
+                              {formatDate(analysis.created_at)}
+                              {analysis.score && <span className="ml-2">Score: {analysis.score}</span>}
+                            </p>
+                          </div>
+                        </Link>
+                        {/* Hover actions */}
+                        <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center space-x-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault()
+                              setEditingId(analysis.id)
+                              setEditingTitle(analysis.title)
+                            }}
+                            className="rounded p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-600"
+                            title="Rename"
+                          >
+                            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault()
+                              handleDelete(analysis.id)
+                            }}
+                            disabled={deletingId === analysis.id}
+                            className="rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
+                            title="Delete"
+                          >
+                            {deletingId === analysis.id ? (
+                              <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-red-400 border-t-transparent" />
+                            ) : (
+                              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            )}
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 ))}
               </div>
             )}
