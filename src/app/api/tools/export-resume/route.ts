@@ -44,7 +44,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate LaTeX
-    const latex = convertResumeToLatex(resumeText, template.style as TemplateStyle)
+    let latex = convertResumeToLatex(resumeText, template.style as TemplateStyle)
+
+    // Inject watermark for preview mode
+    if (previewOnly) {
+      const watermarkCode = `\\AddToShipoutPictureBG*{%
+  \\AtPageCenter{%
+    \\rotatebox{45}{%
+      \\scalebox{5}{%
+        \\textcolor[gray]{0.85}{PREVIEW}%
+      }%
+    }%
+  }%
+}`
+      latex = latex.replace('\\begin{document}', `\\begin{document}\n${watermarkCode}`)
+    }
 
     // Compile LaTeX to PDF using external API
     // Using latex.ytotech.com free API

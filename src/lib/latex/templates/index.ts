@@ -1,3 +1,5 @@
 export { generateModernMinimalLatex } from './modern-minimal'
 export { generateClassicProfessionalLatex } from './classic-professional'
 export { generateTechFocusedLatex } from './tech-focused'
+export { generateCreativeBoldLatex } from './creative-bold'
+export { generateExecutiveLatex } from './executive'

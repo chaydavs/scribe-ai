@@ -4,30 +4,30 @@
 Premium resume template system with LaTeX export and copy protection.
 
 ## Phase 1: Template System
-- [ ] Research top 5 LinkedIn-viral resume templates
-- [ ] Create template data structure (`src/types/templates.ts`)
-- [ ] Store templates in Supabase (`resume_templates` table)
-- [ ] Build template selection UI component
-- [ ] Preview component showing template applied to user's resume
+- [x] Research top 5 LinkedIn-viral resume templates
+- [x] Create template data structure (`src/types/templates.ts`)
+- [x] Store templates in Supabase (`resume_templates` table)
+- [x] Build template selection UI component
+- [x] Preview component showing template applied to user's resume
 
 ## Phase 2: LaTeX Integration
-- [ ] Set up LaTeX compilation service (options: Overleaf API, latex.js, or self-hosted)
-- [ ] Create LaTeX template files for each design
-- [ ] Build resume-to-LaTeX converter function
-- [ ] Generate PDF from LaTeX on server-side
+- [x] Set up LaTeX compilation service (options: Overleaf API, latex.js, or self-hosted)
+- [x] Create LaTeX template files for each design (modern-minimal, classic-professional, tech-focused, creative-bold, executive)
+- [x] Build resume-to-LaTeX converter function
+- [x] Generate PDF from LaTeX on server-side
 
 ## Phase 3: Export & Monetization
-- [ ] Add PDF export endpoint (`/api/tools/export-resume`)
-- [ ] Set credit cost for export (suggest: 10-15 credits)
-- [ ] Implement payment flow for export
-- [ ] Generate watermarked preview (free) vs clean PDF (paid)
+- [x] Add PDF export endpoint (`/api/tools/export-resume`)
+- [x] Set credit cost for export (suggest: 10-15 credits)
+- [x] Implement payment flow for export
+- [x] Generate watermarked preview (free) vs clean PDF (paid)
 
 ## Phase 4: Copy Protection
-- [ ] Disable text selection on rewritten resume preview
-- [ ] Add CSS `user-select: none` to preview component
+- [x] Disable text selection on rewritten resume preview
+- [x] Add CSS `user-select: none` to preview component
 - [ ] Implement canvas-based rendering for preview (harder to copy)
-- [ ] Add watermark to preview text
-- [ ] Only allow plain text copy AFTER payment
+- [x] Add watermark to preview text
+- [x] Only allow plain text copy AFTER payment
 
 ## Database Changes Needed
 ```sql

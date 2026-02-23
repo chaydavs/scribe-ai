@@ -2,6 +2,8 @@ import { ParsedResume, TemplateStyle, ProjectEntry } from '@/types/templates'
 import { generateModernMinimalLatex } from './templates/modern-minimal'
 import { generateClassicProfessionalLatex } from './templates/classic-professional'
 import { generateTechFocusedLatex } from './templates/tech-focused'
+import { generateCreativeBoldLatex } from './templates/creative-bold'
+import { generateExecutiveLatex } from './templates/executive'
 
 /**
  * Parse a rewritten resume text into structured data
@@ -291,9 +293,9 @@ export function generateLatex(resume: ParsedResume, templateStyle: TemplateStyle
     case 'tech-focused':
       return generateTechFocusedLatex(resume)
     case 'creative-bold':
-      return generateModernMinimalLatex(resume)
+      return generateCreativeBoldLatex(resume)
     case 'executive':
-      return generateClassicProfessionalLatex(resume)
+      return generateExecutiveLatex(resume)
     default:
       return generateModernMinimalLatex(resume)
   }
