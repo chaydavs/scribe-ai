@@ -74,7 +74,7 @@ function SettingsContent() {
         .from('credit_transactions')
         .select('id')
         .eq('user_id', user.id)
-        .eq('description', 'Welcome bonus - 10 free credits')
+        .eq('description', 'Welcome bonus - 25 free credits')
         .single()
       setHasClaimedFree(!!data)
     }
@@ -90,7 +90,7 @@ function SettingsContent() {
 
       if (!response.ok) throw new Error(data.error || 'Failed to claim free credits')
 
-      setMessage({ type: 'success', text: 'You claimed 10 free credits!' })
+      setMessage({ type: 'success', text: 'You claimed 25 free credits!' })
       setHasClaimedFree(true)
       fetchProfile()
     } catch (error) {
@@ -276,14 +276,14 @@ function SettingsContent() {
                 </svg>
                 <h2 className="text-xl font-bold">Welcome Gift</h2>
               </div>
-              <p className="text-indigo-100">Claim your 10 free credits to try ResumeLab.</p>
+              <p className="text-indigo-100">Claim your 25 free credits to try every feature.</p>
             </div>
             <button
               onClick={handleClaimFreeCredits}
               disabled={claimingFree}
               className="rounded-xl bg-white px-6 py-3 text-sm font-semibold text-indigo-600 shadow-lg transition-all hover:bg-indigo-50 disabled:opacity-50"
             >
-              {claimingFree ? 'Claiming...' : 'Claim 10 Free Credits'}
+              {claimingFree ? 'Claiming...' : 'Claim 25 Free Credits'}
             </button>
           </div>
         </div>

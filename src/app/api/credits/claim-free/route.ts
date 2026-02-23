@@ -16,17 +16,17 @@ export async function POST() {
       .from('credit_transactions')
       .select('id')
       .eq('user_id', user.id)
-      .eq('description', 'Welcome bonus - 10 free credits')
+      .eq('description', 'Welcome bonus - 25 free credits')
       .single()
 
     if (existingClaim) {
       return NextResponse.json({ error: 'Free credits already claimed' }, { status: 400 })
     }
 
-    // Add 10 free credits
+    // Add 25 free credits (enough to try analysis + rewrite + export)
     const { error: updateError } = await supabase
       .from('profiles')
-      .update({ credits: 10 })
+      .update({ credits: 25 })
       .eq('id', user.id)
       .eq('credits', 0) // Only if they have 0 credits
 
@@ -39,16 +39,16 @@ export async function POST() {
       .from('credit_transactions')
       .insert({
         user_id: user.id,
-        amount: 10,
+        amount: 25,
         type: 'purchase',
-        description: 'Welcome bonus - 10 free credits'
+        description: 'Welcome bonus - 25 free credits'
       })
 
     if (transactionError) {
       throw transactionError
     }
 
-    return NextResponse.json({ success: true, credits: 10 })
+    return NextResponse.json({ success: true, credits: 25 })
   } catch (error) {
     console.error('Claim free credits error:', error)
     return NextResponse.json(

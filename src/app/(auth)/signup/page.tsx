@@ -191,7 +191,7 @@ export default function SignupPage() {
 
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-slate-900">
-              Start with 10 free credits
+              Start with 25 free credits
             </h1>
             <p className="mt-2 text-slate-600">
               No credit card required. Try all tools free.
@@ -224,13 +224,13 @@ export default function SignupPage() {
                 <svg className="h-5 w-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span>10 free credits to try all tools</span>
+                <span>25 free credits to try every feature</span>
               </li>
               <li className="flex items-center space-x-3">
                 <svg className="h-5 w-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span>2 resume analyses included</span>
+                <span>Analyze, rewrite, and export included</span>
               </li>
               <li className="flex items-center space-x-3">
                 <svg className="h-5 w-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

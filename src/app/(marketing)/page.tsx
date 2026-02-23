@@ -85,7 +85,7 @@ export default function LandingPage() {
               </Link>
             </div>
             <p className="mt-4 text-sm text-slate-500">
-              No credit card required • 2 free analyses • Results in seconds
+              No credit card required • 25 free credits • Try every feature
             </p>
           </div>
         </div>
@@ -427,14 +427,14 @@ export default function LandingPage() {
               </span>
               <h3 className="text-lg font-semibold text-slate-900">Free</h3>
               <p className="mt-2 text-3xl font-bold text-slate-900">$0</p>
-              <p className="text-slate-500">10 credits</p>
+              <p className="text-slate-500">25 credits</p>
               <p className="mt-4 text-sm text-slate-600">Perfect for trying it out</p>
               <ul className="mt-4 space-y-2 text-sm text-slate-600">
                 <li className="flex items-center">
                   <svg className="mr-2 h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  2 resume analyses
+                  Full analysis + rewrite + export
                 </li>
                 <li className="flex items-center">
                   <svg className="mr-2 h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
