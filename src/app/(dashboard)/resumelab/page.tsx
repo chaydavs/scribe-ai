@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { getTool } from '@/types'
 import { TemplatePicker } from '@/components/tools/resumelab/template-picker'
+import { CanvasResumePreview } from '@/components/tools/resumelab/canvas-resume-preview'
 import { TemplatePreview } from '@/types/templates'
 
 const tool = getTool('resumelab')!
@@ -1161,14 +1162,15 @@ function ResumeLabContent() {
                 </div>
 
                 {/* Rewritten Resume */}
-                <div className="rounded-xl bg-slate-50 border border-slate-200 p-6 max-h-[600px] overflow-y-auto">
-                  <pre
-                    className={`whitespace-pre-wrap text-sm text-slate-700 font-sans leading-relaxed${!hasExported ? ' select-none' : ''}`}
-                    onContextMenu={!hasExported ? (e) => e.preventDefault() : undefined}
-                  >
-                    {rewrite}
-                  </pre>
-                </div>
+                {hasExported ? (
+                  <div className="rounded-xl bg-slate-50 border border-slate-200 p-6 max-h-[600px] overflow-y-auto">
+                    <pre className="whitespace-pre-wrap text-sm text-slate-700 font-sans leading-relaxed">
+                      {rewrite}
+                    </pre>
+                  </div>
+                ) : (
+                  <CanvasResumePreview text={rewrite} />
+                )}
 
                 {/* Preview CTA */}
                 <div className="mt-8 p-6 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-100">

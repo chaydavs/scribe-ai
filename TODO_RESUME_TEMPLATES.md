@@ -25,7 +25,7 @@ Premium resume template system with LaTeX export and copy protection.
 ## Phase 4: Copy Protection
 - [x] Disable text selection on rewritten resume preview
 - [x] Add CSS `user-select: none` to preview component
-- [ ] Implement canvas-based rendering for preview (harder to copy)
+- [x] Implement canvas-based rendering for preview (harder to copy)
 - [x] Add watermark to preview text
 - [x] Only allow plain text copy AFTER payment
 
