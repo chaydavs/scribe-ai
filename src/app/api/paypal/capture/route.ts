@@ -1,23 +1,28 @@
 import { capturePayPalOrder } from '@/lib/paypal/client'
-import { createServiceClient } from '@/lib/supabase/server'
+import { createClient as createSupabaseAdmin } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+
+// Use direct Supabase admin client (no cookies needed — this is a redirect from PayPal)
+function getAdminClient() {
+  return createSupabaseAdmin(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 export async function GET(request: NextRequest) {
   const token = request.nextUrl.searchParams.get('token') // PayPal order ID
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
   if (!token) {
-    return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_APP_URL}/settings?error=missing_token`
-    )
+    return NextResponse.redirect(`${baseUrl}/settings?error=missing_token`)
   }
 
   try {
     const { status, metadata } = await capturePayPalOrder(token)
 
     if (status !== 'COMPLETED') {
-      return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_APP_URL}/settings?error=payment_failed`
-      )
+      return NextResponse.redirect(`${baseUrl}/settings?error=payment_failed`)
     }
 
     const userId = metadata.userId
@@ -25,32 +30,44 @@ export async function GET(request: NextRequest) {
     const packId = metadata.packId
 
     if (!userId || !credits) {
-      console.error('Missing metadata in PayPal order')
-      return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_APP_URL}/settings?error=invalid_metadata`
-      )
+      console.error('Missing metadata in PayPal order:', { metadata, token })
+      return NextResponse.redirect(`${baseUrl}/settings?error=invalid_metadata`)
     }
 
-    const supabase = await createServiceClient()
+    const supabase = getAdminClient()
 
-    // Update user credits
-    const { error: updateError } = await supabase.rpc('increment_credits', {
-      user_id: userId,
-      amount: credits,
-    })
+    // Check for duplicate capture (idempotency)
+    const { data: existingTx } = await supabase
+      .from('credit_transactions')
+      .select('id')
+      .eq('stripe_session_id', token)
+      .single()
 
-    // If RPC doesn't exist, fall back to manual update
+    if (existingTx) {
+      // Already processed this payment — just redirect
+      return NextResponse.redirect(`${baseUrl}/settings?success=true`)
+    }
+
+    // Get current credits and add new ones
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('credits')
+      .eq('id', userId)
+      .single()
+
+    if (profileError || !profile) {
+      console.error('Failed to fetch profile:', profileError)
+      return NextResponse.redirect(`${baseUrl}/settings?error=profile_not_found`)
+    }
+
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ credits: profile.credits + credits })
+      .eq('id', userId)
+
     if (updateError) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('credits')
-        .eq('id', userId)
-        .single()
-
-      await supabase
-        .from('profiles')
-        .update({ credits: (profile?.credits || 0) + credits })
-        .eq('id', userId)
+      console.error('Failed to update credits:', updateError)
+      return NextResponse.redirect(`${baseUrl}/settings?error=credit_update_failed`)
     }
 
     // Log the transaction
@@ -58,17 +75,13 @@ export async function GET(request: NextRequest) {
       user_id: userId,
       amount: credits,
       type: 'purchase',
-      stripe_session_id: token, // reusing column for PayPal order ID
+      stripe_session_id: token,
       description: `Purchased ${packId} pack (${credits} credits)`,
     })
 
-    return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_APP_URL}/settings?success=true`
-    )
+    return NextResponse.redirect(`${baseUrl}/settings?success=true`)
   } catch (error) {
     console.error('PayPal capture error:', error)
-    return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_APP_URL}/settings?error=capture_failed`
-    )
+    return NextResponse.redirect(`${baseUrl}/settings?error=capture_failed`)
   }
 }
