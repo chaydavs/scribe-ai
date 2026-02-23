@@ -96,6 +96,23 @@ export default function AnalyticsPage() {
     })
   }
 
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Delete this analysis? This cannot be undone.')) return
+
+    setDeletingId(id)
+    try {
+      const response = await fetch(`/api/analyses/${id}`, { method: 'DELETE' })
+      if (!response.ok) throw new Error('Failed to delete')
+      setAnalyses(prev => prev.filter(a => a.id !== id))
+    } catch (error) {
+      console.error('Delete failed:', error)
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -222,22 +239,38 @@ export default function AnalyticsPage() {
           ) : (
             <div className="space-y-3">
               {analyses.slice(0, 10).map((analysis) => (
-                <div key={analysis.id} className="flex items-center justify-between rounded-lg bg-slate-50 p-3">
+                <div key={analysis.id} className="flex items-center justify-between rounded-lg bg-slate-50 p-3 group">
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-slate-700">
                       {analysis.title}
                     </p>
                     <p className="text-xs text-slate-500">{formatDate(analysis.created_at)}</p>
                   </div>
-                  {analysis.score && (
-                    <div className={`ml-3 rounded-full px-3 py-1 text-xs font-medium ${
-                      analysis.score >= 80 ? 'bg-green-100 text-green-700' :
-                      analysis.score >= 60 ? 'bg-yellow-100 text-yellow-700' :
-                      'bg-red-100 text-red-700'
-                    }`}>
-                      {analysis.score}/100
-                    </div>
-                  )}
+                  <div className="flex items-center space-x-2">
+                    {analysis.score && (
+                      <div className={`rounded-full px-3 py-1 text-xs font-medium ${
+                        analysis.score >= 80 ? 'bg-green-100 text-green-700' :
+                        analysis.score >= 60 ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-red-100 text-red-700'
+                      }`}>
+                        {analysis.score}/100
+                      </div>
+                    )}
+                    <button
+                      onClick={() => handleDelete(analysis.id)}
+                      disabled={deletingId === analysis.id}
+                      className="rounded-lg p-1.5 text-slate-400 opacity-0 transition-opacity hover:bg-red-50 hover:text-red-500 group-hover:opacity-100 disabled:opacity-50"
+                      title="Delete analysis"
+                    >
+                      {deletingId === analysis.id ? (
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-red-400 border-t-transparent" />
+                      ) : (
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

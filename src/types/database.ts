@@ -13,7 +13,7 @@ export interface CreditTransaction {
   amount: number
   type: 'purchase' | 'usage'
   tool: string | null
-  stripe_session_id: string | null
+  stripe_session_id: string | null // legacy field, also used for paypal_order_id
   description: string | null
   created_at: string
 }

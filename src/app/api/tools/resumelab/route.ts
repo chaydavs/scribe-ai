@@ -1,6 +1,6 @@
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { generateWithClaude, toolPrompts } from '@/lib/claude/client'
-import { getToolCreditCost } from '@/lib/stripe/credits'
+import { getToolCreditCost } from '@/lib/paypal/credits'
 import { NextResponse } from 'next/server'
 
 const TOOL_NAME = 'resumelab'

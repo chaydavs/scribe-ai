@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { creditPacks, type CreditPack } from '@/lib/stripe/credits'
+import { creditPacks, type CreditPack } from '@/lib/paypal/credits'
 import { formatCurrency } from '@/lib/utils'
 
 type MessageType = { type: 'success' | 'error'; text: string } | null
@@ -105,7 +105,7 @@ function SettingsContent() {
     setMessage(null)
 
     try {
-      const response = await fetch('/api/stripe/checkout', {
+      const response = await fetch('/api/paypal/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ packId: pack.id }),
