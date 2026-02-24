@@ -101,9 +101,9 @@ function BeforeAfter({ before, after, label }: { before: string; after: string; 
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-slate-50">
       {/* Navigation */}
-      <nav className="border-b border-slate-100 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+      <nav className="border-b border-slate-200/60 bg-white/90 backdrop-blur-md sticky top-0 z-50 shadow-sm shadow-slate-100/50">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -131,7 +131,7 @@ export default function LandingPage() {
 
       {/* Hero Section — Loss Aversion + Product Demo */}
       <section className="relative overflow-hidden pt-16 pb-8 sm:pt-24 sm:pb-12">
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-50 via-white to-emerald-50" />
+        <div className="absolute inset-0 bg-gradient-to-b from-white via-teal-50/40 to-slate-50" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-teal-100/30 rounded-full blur-3xl" />
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
@@ -175,7 +175,7 @@ export default function LandingPage() {
       </section>
 
       {/* How It's Different — Before/After Transformation */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white/70">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">
@@ -207,7 +207,7 @@ export default function LandingPage() {
       </section>
 
       {/* How It Works — 3 Steps */}
-      <section className="py-20 border-t border-slate-100 bg-slate-50">
+      <section className="py-20 bg-slate-100/60">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">
@@ -248,7 +248,7 @@ export default function LandingPage() {
       </section>
 
       {/* Problem/Solution with specifics */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white/70">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-12 lg:grid-cols-2 items-center">
             <div>
@@ -337,7 +337,7 @@ export default function LandingPage() {
       </section>
 
       {/* Social Proof */}
-      <section className="py-20 bg-slate-50 border-t border-slate-100">
+      <section className="py-20 bg-slate-100/60">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">
@@ -416,7 +416,7 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white/70">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">
@@ -561,7 +561,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 py-8 bg-white">
+      <footer className="border-t border-slate-200/60 py-8 bg-white/80">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">

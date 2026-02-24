@@ -25,7 +25,7 @@ export function Navbar({ userName, userEmail }: NavbarProps) {
   }
 
   return (
-    <nav className="border-b border-gray-200 bg-white">
+    <nav className="border-b border-slate-200/60 bg-white/90 backdrop-blur-md shadow-sm shadow-slate-100/50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 justify-between">
           <div className="flex">
