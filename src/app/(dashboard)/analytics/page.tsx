@@ -116,7 +116,7 @@ export default function AnalyticsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-teal-500 border-t-transparent" />
       </div>
     )
   }
@@ -133,8 +133,8 @@ export default function AnalyticsPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center space-x-3">
-            <div className="rounded-xl bg-indigo-100 p-3">
-              <svg className="h-6 w-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="rounded-xl bg-teal-100 p-3">
+              <svg className="h-6 w-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
@@ -161,8 +161,8 @@ export default function AnalyticsPage() {
 
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center space-x-3">
-            <div className="rounded-xl bg-purple-100 p-3">
-              <svg className="h-6 w-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="rounded-xl bg-emerald-100 p-3">
+              <svg className="h-6 w-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
               </svg>
             </div>
@@ -334,7 +334,7 @@ export default function AnalyticsPage() {
                 {/* Legend */}
                 <div className="mt-3 flex items-center justify-center space-x-6 text-xs text-slate-500">
                   <div className="flex items-center space-x-1.5">
-                    <div className="h-2.5 w-2.5 rounded-full bg-indigo-500" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-teal-500" />
                     <span>Your Score</span>
                   </div>
                   <div className="flex items-center space-x-1.5">
@@ -343,7 +343,7 @@ export default function AnalyticsPage() {
                   </div>
                   {highestScore > 0 && (
                     <div className="flex items-center space-x-1.5">
-                      <div className="h-2.5 w-2.5 rounded-full border-2 border-indigo-500 bg-indigo-500" />
+                      <div className="h-2.5 w-2.5 rounded-full border-2 border-teal-500 bg-teal-500" />
                       <span>Best: {highestScore}</span>
                     </div>
                   )}
@@ -387,10 +387,10 @@ export default function AnalyticsPage() {
                 <div key={log.id} className="flex items-center justify-between rounded-lg bg-slate-50 p-3">
                   <div className="flex items-center space-x-3">
                     <div className={`rounded-lg p-2 ${
-                      log.tool === 'resumelab' ? 'bg-indigo-100' : 'bg-emerald-100'
+                      log.tool === 'resumelab' ? 'bg-teal-100' : 'bg-emerald-100'
                     }`}>
                       {log.tool === 'resumelab' ? (
-                        <svg className="h-4 w-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="h-4 w-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                       ) : (
@@ -463,9 +463,9 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Tips */}
-      <div className="rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white">
+      <div className="rounded-2xl bg-gradient-to-r from-teal-500 to-emerald-600 p-6 text-white">
         <h3 className="text-lg font-semibold">Pro Tips</h3>
-        <ul className="mt-3 space-y-2 text-sm text-indigo-100">
+        <ul className="mt-3 space-y-2 text-sm text-teal-100">
           <li className="flex items-start">
             <svg className="mr-2 mt-0.5 h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />

@@ -2,164 +2,107 @@ import { ParsedResume } from '@/types/templates'
 
 /**
  * Creative Bold Template
- * - Teal accent color for section headings and name
- * - Bold name at 22pt with accent color
- * - Section headings with colored left rule
- * - Skills displayed as bold inline tags
- * - Optimized for single page
+ * - Teal accent color for name, section headers, bullets
+ * - Bold name at 22pt with teal color
+ * - Section headers with colored thick rule
+ * - Skills as bold inline tags separated by dots
+ * - Eye-catching design for creative roles
  */
 export function generateCreativeBoldLatex(resume: ParsedResume): string {
-  const escapeTex = (str: string): string => {
+  const esc = (str: string): string => {
     if (!str) return ''
     return str
       .replace(/\\/g, '\\textbackslash{}')
-      .replace(/&/g, '\\&')
-      .replace(/%/g, '\\%')
-      .replace(/\$/g, '\\$')
-      .replace(/#/g, '\\#')
-      .replace(/_/g, '\\_')
-      .replace(/\{/g, '\\{')
-      .replace(/\}/g, '\\}')
+      .replace(/[&%$#_{}]/g, m => '\\' + m)
       .replace(/~/g, '\\textasciitilde{}')
       .replace(/\^/g, '\\textasciicircum{}')
       .replace(/\|/g, '\\textbar{}')
   }
 
-  const limitBullets = (bullets: string[], max: number = 4): string[] => {
-    return bullets.slice(0, max)
-  }
-
-  const limitedExperience = resume.experience.slice(0, 4)
-
-  // Build experience section
-  const experienceSection = limitedExperience.map(exp => `
-    \\noindent\\textbf{${escapeTex(exp.title)}} \\hfill \\textit{${escapeTex(exp.startDate)} -- ${escapeTex(exp.endDate)}} \\\\
-    \\textit{${escapeTex(exp.company)}}${exp.location ? ` \\textbar{} ${escapeTex(exp.location)}` : ''} \\\\[-0.3em]
-    \\begin{itemize}[leftmargin=1.2em, topsep=0.1em, parsep=0.05em, itemsep=0.05em]
-${limitBullets(exp.bullets).map(b => `      \\item ${escapeTex(b)}`).join('\n')}
-    \\end{itemize}
-    \\vspace{0.15cm}
-`).join('\n')
-
-  // Build education section
-  const limitedEducation = resume.education.slice(0, 2)
-  const educationSection = limitedEducation.map(edu => `
-    \\noindent\\textbf{${escapeTex(edu.school)}} \\hfill ${escapeTex(edu.graduationDate)} \\\\
-    ${escapeTex(edu.degree)}${edu.gpa ? ` \\textbar{} GPA: ${escapeTex(edu.gpa)}` : ''}
-`).join('\n\\vspace{0.1cm}\n')
-
-  // Build skills as bold inline tags
-  const skillsSection = resume.skills.length > 0
-    ? resume.skills.slice(0, 15).map(s => `\\textbf{${escapeTex(s)}}`).join(' \\enspace $\\cdot$ \\enspace ')
-    : ''
-
-  // Build projects section
-  const limitedProjects = resume.projects?.slice(0, 2) || []
-  const projectsSection = limitedProjects.length > 0
-    ? limitedProjects.map(p => `
-    \\noindent\\textbf{${escapeTex(p.name)}} --- ${escapeTex(p.description).slice(0, 150)}${p.description.length > 150 ? '...' : ''}${p.technologies && p.technologies.length > 0 ? ` \\textbar{} \\textit{${p.technologies.slice(0, 5).map(t => escapeTex(t)).join(', ')}}` : ''}
-`).join('\n\\vspace{0.08cm}\n')
-    : ''
-
-  // Contact info
   const contactParts = [
-    resume.email ? escapeTex(resume.email) : '',
-    resume.phone ? escapeTex(resume.phone) : '',
-    resume.linkedin ? `\\href{${resume.linkedin}}{LinkedIn}` : '',
-    resume.location ? escapeTex(resume.location) : ''
-  ].filter(Boolean)
+    resume.email || '',
+    resume.phone || '',
+    resume.location || '',
+    resume.linkedin ? 'LinkedIn' : '',
+  ].filter(Boolean).map(esc)
 
-  const contactLine = contactParts.join(' $|$ ')
+  const experienceSection = resume.experience.slice(0, 4).map(exp =>
+    `\\textbf{${esc(exp.title)}} \\hfill \\textit{${esc(exp.startDate)} -- ${esc(exp.endDate)}} \\\\
+\\textit{${esc(exp.company)}}${exp.location ? ` $|$ ${esc(exp.location)}` : ''}
+\\begin{itemize}[leftmargin=1.2em, topsep=2pt, parsep=1pt, itemsep=1pt]
+${exp.bullets.slice(0, 4).map(b => `  \\item ${esc(b)}`).join('\n')}
+\\end{itemize}`
+  ).join('\n\\vspace{5pt}\n')
+
+  const educationSection = resume.education.slice(0, 2).map(edu =>
+    `\\textbf{${esc(edu.school)}} \\hfill ${esc(edu.graduationDate)} \\\\
+${esc(edu.degree)}${edu.gpa ? ` $|$ GPA: ${esc(edu.gpa)}` : ''}`
+  ).join('\n\\vspace{4pt}\n')
+
+  const skillsTags = resume.skills.slice(0, 15).map(s => `\\textbf{${esc(s)}}`).join(' $\\cdot$ ')
+
+  const projectsSection = (resume.projects || []).slice(0, 2).map(p =>
+    `\\textbf{${esc(p.name)}} --- ${esc(p.description).slice(0, 150)}${p.technologies?.length ? ` $|$ \\textit{${p.technologies.slice(0, 5).map(esc).join(', ')}}` : ''}`
+  ).join('\n\\vspace{3pt}\n')
 
   return `\\documentclass[10pt, letterpaper]{article}
 
-% Packages
-\\usepackage[
-    ignoreheadfoot,
-    top=0.5cm,
-    bottom=0.5cm,
-    left=1.2cm,
-    right=1.2cm,
-    footskip=0.5cm
-]{geometry}
+\\usepackage[top=0.5cm, bottom=0.5cm, left=1.2cm, right=1.2cm]{geometry}
 \\usepackage{titlesec}
 \\usepackage[dvipsnames]{xcolor}
 \\usepackage{enumitem}
 \\usepackage[
-    pdftitle={${escapeTex(resume.fullName)}'s Resume},
-    pdfauthor={${escapeTex(resume.fullName)}},
-    colorlinks=true,
-    urlcolor={rgb:red,0;green,128;blue,128}
+  pdftitle={${esc(resume.fullName)}'s Resume},
+  pdfauthor={${esc(resume.fullName)}},
+  colorlinks=true,
+  urlcolor=teal
 ]{hyperref}
-\\usepackage[pscoord]{eso-pic}
-\\usepackage{calc}
-\\usepackage{bookmark}
 \\usepackage{iftex}
 
-% ATS-friendly settings
 \\ifPDFTeX
-    \\input{glyphtounicode}
-    \\pdfgentounicode=1
-    \\usepackage[T1]{fontenc}
-    \\usepackage[utf8]{inputenc}
+  \\input{glyphtounicode}
+  \\pdfgentounicode=1
+  \\usepackage[T1]{fontenc}
+  \\usepackage[utf8]{inputenc}
 \\fi
 
 \\usepackage{charter}
 
-% Colors
 \\definecolor{accent}{RGB}{0, 128, 128}
 
-% Layout
-\\raggedright
 \\pagestyle{empty}
-\\setcounter{secnumdepth}{0}
 \\setlength{\\parindent}{0pt}
 \\setlength{\\parskip}{0pt}
-\\pagenumbering{gobble}
 
-% Section formatting with colored left rule
-\\titleformat{\\section}{
-  \\needspace{4\\baselineskip}\\color{accent}\\bfseries\\normalsize
-}{}{0pt}{\\hspace{-0.3em}}[\\vspace{-0.5em}\\color{accent}\\titlerule[1.5pt]]
-\\titlespacing{\\section}{0pt}{0.2cm}{0.15cm}
+% Section headers: bold, colored, with thick colored rule below
+\\titleformat{\\section}{\\color{accent}\\bfseries\\normalsize}{}{0pt}{}[\\vspace{-0.3em}{\\color{accent}\\titlerule[1.5pt]}]
+\\titlespacing{\\section}{0pt}{10pt}{6pt}
 
-% Bullet style
-\\renewcommand\\labelitemi{\\textcolor{accent}{$\\vcenter{\\hbox{\\scriptsize$\\bullet$}}$}}
+% Colored bullets
+\\renewcommand{\\labelitemi}{\\textcolor{accent}{\\scriptsize$\\bullet$}}
 
 \\begin{document}
 
-    % Header
-    \\begin{center}
-        {\\fontsize{22pt}{22pt}\\selectfont\\textbf{\\textcolor{accent}{${escapeTex(resume.fullName)}}}}
+\\begin{center}
+  {\\fontsize{22pt}{24pt}\\selectfont\\textbf{\\textcolor{accent}{${esc(resume.fullName)}}}}
 
-        \\vspace{4pt}
+  \\vspace{4pt}
 
-        {\\footnotesize ${contactLine}}
-    \\end{center}
+  {\\footnotesize ${contactParts.join(' $|$ ')}}
+\\end{center}
 
-    \\vspace{3pt}
+\\vspace{4pt}
 
-${resume.summary ? `    % Summary
-    \\section{Summary}
-    \\noindent ${escapeTex(resume.summary)}
-    \\vspace{0.1cm}
-
-` : ''}
-    % Experience
-    \\section{Experience}
+${resume.summary ? `\\section{Summary}\n${esc(resume.summary.slice(0, 300))}\n\n` : ''}\\section{Experience}
 ${experienceSection}
 
-    % Education
-    \\section{Education}
+\\section{Education}
 ${educationSection}
 
-    % Skills
-    \\section{Skills}
-    \\noindent ${skillsSection}
+\\section{Skills}
+${skillsTags}
 
-${projectsSection ? `    % Projects
-    \\section{Projects}
-${projectsSection}` : ''}
+${projectsSection ? `\\section{Projects}\n${projectsSection}` : ''}
 
 \\end{document}`
 }

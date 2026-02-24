@@ -39,7 +39,7 @@ export default function ForgotPasswordPage() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 px-4 py-12">
       <div className="w-full max-w-md">
         <Link href="/" className="flex items-center justify-center space-x-2 mb-8">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600">
             <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
@@ -70,7 +70,7 @@ export default function ForgotPasswordPage() {
                 Didn't receive the email? Check your spam folder or{' '}
                 <button
                   onClick={() => setSent(false)}
-                  className="text-indigo-600 hover:text-indigo-500"
+                  className="text-teal-600 hover:text-teal-500"
                 >
                   try again
                 </button>
@@ -97,7 +97,7 @@ export default function ForgotPasswordPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="mt-1 w-full rounded-xl border border-slate-200 p-3 text-sm transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    className="mt-1 w-full rounded-xl border border-slate-200 p-3 text-sm transition-colors focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
                     placeholder="you@example.com"
                   />
                 </div>
@@ -105,7 +105,7 @@ export default function ForgotPasswordPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl hover:shadow-indigo-500/30 disabled:opacity-50"
+                  className="w-full rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-teal-500/25 transition-all hover:shadow-xl hover:shadow-teal-500/30 disabled:opacity-50"
                 >
                   {loading ? 'Sending...' : 'Send Reset Link'}
                 </button>
@@ -116,7 +116,7 @@ export default function ForgotPasswordPage() {
 
         <p className="mt-6 text-center text-sm text-slate-600">
           Remember your password?{' '}
-          <Link href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+          <Link href="/login" className="font-medium text-teal-600 hover:text-teal-500">
             Sign in
           </Link>
         </p>

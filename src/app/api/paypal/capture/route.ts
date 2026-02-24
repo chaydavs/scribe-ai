@@ -19,7 +19,9 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    console.log('[PayPal Capture] Starting capture for token:', token)
     const { status, metadata } = await capturePayPalOrder(token)
+    console.log('[PayPal Capture] Order status:', status, 'metadata:', metadata)
 
     if (status !== 'COMPLETED') {
       return NextResponse.redirect(`${baseUrl}/settings?error=payment_failed`)
@@ -30,21 +32,26 @@ export async function GET(request: NextRequest) {
     const packId = metadata.packId
 
     if (!userId || !credits) {
-      console.error('Missing metadata in PayPal order:', { metadata, token })
+      console.error('[PayPal Capture] Missing metadata:', { metadata, token })
       return NextResponse.redirect(`${baseUrl}/settings?error=invalid_metadata`)
     }
 
     const supabase = getAdminClient()
 
     // Check for duplicate capture (idempotency)
-    const { data: existingTx } = await supabase
+    const { data: existingTx, error: idempotencyError } = await supabase
       .from('credit_transactions')
       .select('id')
       .eq('stripe_session_id', token)
       .single()
 
+    if (idempotencyError && idempotencyError.code !== 'PGRST116') {
+      // PGRST116 = "no rows found" which is expected for new transactions
+      console.error('[PayPal Capture] Idempotency check error:', idempotencyError)
+    }
+
     if (existingTx) {
-      // Already processed this payment — just redirect
+      console.log('[PayPal Capture] Already processed token:', token)
       return NextResponse.redirect(`${baseUrl}/settings?success=true`)
     }
 
@@ -56,9 +63,11 @@ export async function GET(request: NextRequest) {
       .single()
 
     if (profileError || !profile) {
-      console.error('Failed to fetch profile:', profileError)
+      console.error('[PayPal Capture] Profile fetch failed:', profileError)
       return NextResponse.redirect(`${baseUrl}/settings?error=profile_not_found`)
     }
+
+    console.log('[PayPal Capture] Current credits:', profile.credits, '+ adding:', credits)
 
     const { error: updateError } = await supabase
       .from('profiles')
@@ -66,12 +75,12 @@ export async function GET(request: NextRequest) {
       .eq('id', userId)
 
     if (updateError) {
-      console.error('Failed to update credits:', updateError)
+      console.error('[PayPal Capture] Credit update failed:', updateError)
       return NextResponse.redirect(`${baseUrl}/settings?error=credit_update_failed`)
     }
 
     // Log the transaction
-    await supabase.from('credit_transactions').insert({
+    const { error: txError } = await supabase.from('credit_transactions').insert({
       user_id: userId,
       amount: credits,
       type: 'purchase',
@@ -79,9 +88,15 @@ export async function GET(request: NextRequest) {
       description: `Purchased ${packId} pack (${credits} credits)`,
     })
 
+    if (txError) {
+      console.error('[PayPal Capture] Transaction log failed (credits already added):', txError)
+      // Don't fail the redirect — credits were already added successfully
+    }
+
+    console.log('[PayPal Capture] Success! User:', userId, 'new balance:', profile.credits + credits)
     return NextResponse.redirect(`${baseUrl}/settings?success=true`)
   } catch (error) {
-    console.error('PayPal capture error:', error)
+    console.error('[PayPal Capture] Unexpected error:', error)
     return NextResponse.redirect(`${baseUrl}/settings?error=capture_failed`)
   }
 }

@@ -24,6 +24,7 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
   const [loadingAnalyses, setLoadingAnalyses] = useState(true)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const pathname = usePathname()
   const router = useRouter()
@@ -48,8 +49,8 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this analysis? This cannot be undone.')) return
     setDeletingId(id)
+    setConfirmDeleteId(null)
     try {
       const response = await fetch(`/api/analyses/${id}`, { method: 'DELETE' })
       if (!response.ok) throw new Error('Failed to delete')
@@ -112,14 +113,14 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
           </svg>
         </button>
         <Link href="/resumelab" className="flex items-center space-x-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600">
             <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           </div>
           <span className="font-bold text-slate-900">ResumeLab</span>
         </Link>
-        <Link href="/settings" className="rounded-lg bg-indigo-100 px-3 py-1.5 text-sm font-medium text-indigo-600">
+        <Link href="/settings" className="rounded-lg bg-teal-100 px-3 py-1.5 text-sm font-medium text-teal-600">
           {profile?.credits || 0}
         </Link>
       </header>
@@ -143,12 +144,12 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
           {/* Logo */}
           <div className="flex h-16 items-center justify-between border-b border-slate-200 px-4">
             <Link href="/resumelab" className="flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600">
                 <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <span className="text-lg font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              <span className="text-lg font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
                 ResumeLab
               </span>
             </Link>
@@ -167,7 +168,7 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
             <Link
               href="/resumelab"
               onClick={() => setSidebarOpen(false)}
-              className="flex w-full items-center justify-center space-x-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl"
+              className="flex w-full items-center justify-center space-x-2 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-teal-500/25 transition-all hover:shadow-xl"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -184,7 +185,7 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
 
             {loadingAnalyses ? (
               <div className="flex items-center justify-center py-8">
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent" />
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-teal-500 border-t-transparent" />
               </div>
             ) : analyses.length === 0 ? (
               <p className="px-2 py-4 text-sm text-slate-500">
@@ -206,7 +207,7 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
                           }}
                           onBlur={() => handleRename(analysis.id)}
                           autoFocus
-                          className="w-full rounded border border-indigo-300 bg-white px-2 py-1 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-indigo-400"
+                          className="w-full rounded border border-teal-300 bg-white px-2 py-1 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-teal-400"
                         />
                       </div>
                     ) : (
@@ -220,7 +221,7 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                           </svg>
                           <div className="min-w-0 flex-1">
-                            <p className="truncate font-medium text-slate-700 group-hover:text-indigo-600">
+                            <p className="truncate font-medium text-slate-700 group-hover:text-teal-600">
                               {analysis.title}
                             </p>
                             <p className="text-xs text-slate-400">
@@ -230,38 +231,56 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
                           </div>
                         </Link>
                         {/* Hover actions */}
-                        <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center space-x-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault()
-                              setEditingId(analysis.id)
-                              setEditingTitle(analysis.title)
-                            }}
-                            className="rounded p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-600"
-                            title="Rename"
-                          >
-                            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault()
-                              handleDelete(analysis.id)
-                            }}
-                            disabled={deletingId === analysis.id}
-                            className="rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
-                            title="Delete"
-                          >
-                            {deletingId === analysis.id ? (
-                              <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-red-400 border-t-transparent" />
-                            ) : (
+                        {confirmDeleteId === analysis.id ? (
+                          <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center space-x-1 bg-white rounded-lg shadow-sm border border-slate-200 px-2 py-1">
+                            <span className="text-xs text-slate-500 mr-1">Delete?</span>
+                            <button
+                              onClick={(e) => { e.preventDefault(); handleDelete(analysis.id) }}
+                              className="rounded px-2 py-0.5 text-xs font-medium text-white bg-red-500 hover:bg-red-600"
+                            >
+                              Yes
+                            </button>
+                            <button
+                              onClick={(e) => { e.preventDefault(); setConfirmDeleteId(null) }}
+                              className="rounded px-2 py-0.5 text-xs font-medium text-slate-600 hover:bg-slate-100"
+                            >
+                              No
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center space-x-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault()
+                                setEditingId(analysis.id)
+                                setEditingTitle(analysis.title)
+                              }}
+                              className="rounded p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-600"
+                              title="Rename"
+                            >
                               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                               </svg>
-                            )}
-                          </button>
-                        </div>
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault()
+                                setConfirmDeleteId(analysis.id)
+                              }}
+                              disabled={deletingId === analysis.id}
+                              className="rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
+                              title="Delete"
+                            >
+                              {deletingId === analysis.id ? (
+                                <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-red-400 border-t-transparent" />
+                              ) : (
+                                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              )}
+                            </button>
+                          </div>
+                        )}
                       </>
                     )}
                   </div>
@@ -277,7 +296,7 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
               onClick={() => setSidebarOpen(false)}
               className={`flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
                 pathname === '/analytics'
-                  ? 'bg-indigo-50 text-indigo-600'
+                  ? 'bg-teal-50 text-teal-600'
                   : 'text-slate-600 hover:bg-slate-50'
               }`}
             >
@@ -291,7 +310,7 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
               onClick={() => setSidebarOpen(false)}
               className={`flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
                 pathname === '/settings'
-                  ? 'bg-indigo-50 text-indigo-600'
+                  ? 'bg-teal-50 text-teal-600'
                   : 'text-slate-600 hover:bg-slate-50'
               }`}
             >
@@ -309,11 +328,11 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
             <Link
               href="/settings"
               onClick={() => setSidebarOpen(false)}
-              className="mb-3 block rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 p-3 text-white transition-transform hover:scale-[1.02]"
+              className="mb-3 block rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 p-3 text-white transition-transform hover:scale-[1.02]"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-medium text-indigo-100">Credits</p>
+                  <p className="text-xs font-medium text-teal-100">Credits</p>
                   <p className="text-xl font-bold">{profile?.credits || 0}</p>
                 </div>
                 <div className="rounded-full bg-white/20 p-2">
@@ -327,7 +346,7 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
             {/* User Info */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 text-sm font-medium text-white">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-teal-400 to-emerald-500 text-sm font-medium text-white">
                   {(profile?.full_name || user.email || 'U')[0].toUpperCase()}
                 </div>
                 <div className="max-w-[140px]">

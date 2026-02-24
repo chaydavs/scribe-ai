@@ -268,7 +268,7 @@ export default function InteractiveAnalysis({
           {!sidebarOpen && (
             <button
               onClick={() => setSidebarOpen(true)}
-              className="fixed bottom-6 right-6 z-30 flex items-center gap-2 px-4 py-3 bg-indigo-600 text-white rounded-full shadow-xl shadow-indigo-500/30 hover:bg-indigo-700"
+              className="fixed bottom-6 right-6 z-30 flex items-center gap-2 px-4 py-3 bg-teal-600 text-white rounded-full shadow-xl shadow-teal-500/30 hover:bg-teal-700"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
@@ -315,7 +315,7 @@ export default function InteractiveAnalysis({
       </div>
 
       {/* Bottom CTA */}
-      <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-indigo-50 to-purple-50 border-t border-indigo-100 rounded-b-xl">
+      <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-teal-50 to-emerald-50 border-t border-teal-100 rounded-b-xl">
         <div>
           <p className="text-sm font-bold text-slate-900">
             {appliedCount === 0 ? 'Want all fixes applied automatically?' : `${appliedCount} fixes applied manually. Want the rest?`}
@@ -381,8 +381,8 @@ function SidebarContent({
             onClick={() => onSeverityFilter(pill.key)}
             className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
               severityFilter === pill.key
-                ? 'bg-indigo-600 text-white'
-                : 'bg-white text-slate-600 border border-slate-200 hover:border-indigo-300'
+                ? 'bg-teal-600 text-white'
+                : 'bg-white text-slate-600 border border-slate-200 hover:border-teal-300'
             }`}
           >
             {pill.label}
@@ -417,7 +417,7 @@ function SidebarContent({
                 isApplied
                   ? 'border-green-200 bg-green-50/50 opacity-60'
                   : isActive
-                    ? 'border-indigo-400 bg-white shadow-md ring-1 ring-indigo-200'
+                    ? 'border-teal-400 bg-white shadow-md ring-1 ring-teal-200'
                     : 'border-slate-200 bg-white hover:border-slate-300'
               }`}
             >
@@ -466,7 +466,7 @@ function SidebarContent({
                   <div className="flex items-center gap-2">
                     <button
                       onClick={(e) => { e.stopPropagation(); onApplyFix(fix.id, fix.index) }}
-                      className="flex-1 px-3 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-md hover:bg-indigo-700 transition-colors"
+                      className="flex-1 px-3 py-1.5 bg-teal-600 text-white text-xs font-semibold rounded-md hover:bg-teal-700 transition-colors"
                     >
                       Apply Fix
                     </button>
@@ -557,7 +557,7 @@ function SidebarContent({
           <div className="space-y-1.5">
             {structuredAnalysis.quickWins.map((win, i) => (
               <div key={i} className="flex items-start gap-2">
-                <span className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px] font-bold flex-shrink-0">{i + 1}</span>
+                <span className="w-5 h-5 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center text-[10px] font-bold flex-shrink-0">{i + 1}</span>
                 <p className="text-xs text-slate-600">{win}</p>
               </div>
             ))}
