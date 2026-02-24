@@ -9,7 +9,9 @@ import { generateExecutiveLatex } from './templates/executive'
  * Date pattern: matches "Mon YYYY", "Month YYYY", "YYYY", "Present", "Current"
  */
 const MONTHS = 'Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?'
-const DATE_TOKEN = `(?:(?:Expected\\s+)?(?:${MONTHS})\\s+\\d{4}|\\d{4}|Present|Current)`
+// Year must be 19xx or 20xx to avoid matching course numbers like "CS 2104"
+// Standalone year requires word boundary to avoid matching mid-word
+const DATE_TOKEN = `(?:(?:Expected\\s+)?(?:${MONTHS})\\s+\\d{4}|\\b(?:19|20)\\d{2}\\b|Present|Current)`
 const DATE_RANGE_RE = new RegExp(`(${DATE_TOKEN})\\s*[-–—]\\s*(${DATE_TOKEN})`, 'i')
 const SINGLE_DATE_RE = new RegExp(`(${DATE_TOKEN})`, 'i')
 
@@ -132,7 +134,7 @@ function splitSkills(text: string): string[] {
 // Section header patterns
 const SECTION_HEADERS: Record<string, string[]> = {
   summary: ['SUMMARY', 'PROFESSIONAL SUMMARY', 'OBJECTIVE', 'PROFILE'],
-  experience: ['EXPERIENCE', 'PROFESSIONAL EXPERIENCE', 'WORK EXPERIENCE', 'EMPLOYMENT', 'RESEARCH & WORK EXPERIENCE', 'RESEARCH EXPERIENCE', 'WORK HISTORY'],
+  experience: ['EXPERIENCE', 'PROFESSIONAL EXPERIENCE', 'WORK EXPERIENCE', 'RELEVANT WORK EXPERIENCE', 'RELEVANT EXPERIENCE', 'EMPLOYMENT', 'RESEARCH & WORK EXPERIENCE', 'RESEARCH EXPERIENCE', 'WORK HISTORY'],
   education: ['EDUCATION', 'ACADEMIC BACKGROUND', 'ACADEMICS'],
   skills: ['SKILLS', 'TECHNICAL SKILLS', 'CORE COMPETENCIES', 'TECHNOLOGIES', 'TECH STACK'],
   projects: ['PROJECTS', 'SELECTED PROJECTS', 'PERSONAL PROJECTS', 'KEY PROJECTS'],
@@ -142,6 +144,14 @@ const SECTION_HEADERS: Record<string, string[]> = {
 }
 
 function detectSection(line: string): string {
+  // If the line has a colon with substantial content after it (like "Relevant Coursework: Calc, Algebra, ..."),
+  // it's NOT a section header — it's inline data. Only treat as section if colon part is short or absent.
+  const colonIdx = line.indexOf(':')
+  if (colonIdx >= 0) {
+    const afterColon = line.slice(colonIdx + 1).trim()
+    if (afterColon.length > 20) return '' // substantial content after colon → not a section header
+  }
+
   const upper = line.toUpperCase().replace(/[^A-Z\s&]/g, '').trim()
   for (const [section, headers] of Object.entries(SECTION_HEADERS)) {
     if (headers.some(h => upper === h || upper.startsWith(h))) {
@@ -208,12 +218,12 @@ export function parseResumeText(resumeText: string): ParsedResume {
 
     // ── Header area (name + contact) ──
     if (!currentSection) {
-      if (!resume.fullName && !line.includes('|') && !line.includes('@')) {
+      if (!resume.fullName && !line.includes('|') && !line.includes('•') && !line.includes('@')) {
         resume.fullName = line
         continue
       }
-      if (line.includes('|') || line.includes('@')) {
-        const parts = line.split(/\s*\|\s*/)
+      if (line.includes('|') || line.includes('•') || line.includes('@')) {
+        const parts = line.split(/\s*[|•]\s*/)
         for (const part of parts) {
           const t = part.trim()
           if (t.includes('@') && t.includes('.') && !resume.email) {
@@ -224,7 +234,7 @@ export function parseResumeText(resumeText: string): ParsedResume {
             resume.linkedin = t
           } else if (t.toLowerCase().includes('github') || t.includes('github.com')) {
             // skip
-          } else if (t.match(/^[A-Za-z\s,]+$/) && t.length < 50 && !resume.location) {
+          } else if (t.match(/^[A-Za-z\s,]+$/) && t.length < 50 && !resume.location && !/citizen|authorized|visa|permit/i.test(t)) {
             resume.location = t
           }
         }
@@ -268,12 +278,14 @@ export function parseResumeText(resumeText: string): ParsedResume {
       // Also detect: line with @ that's not an email
       const hasAtSeparator = /\s@\s/.test(line) && !line.includes('@.')
 
-      if (looksLikeHeader || hasAtSeparator) {
-        // Save previous entry
-        if (currentExperience) {
-          resume.experience.push(currentExperience)
-        }
+      // Detect company/location line: ends with state abbreviation, country, or city pattern
+      // e.g. "Peraton, Blacksburg, VA" or "Kshema General Insurance Ltd., Hyderabad, India"
+      const looksLikeCompanyLine = !hasDate && !hasPipe && (
+        /,\s*[A-Z]{2}\s*$/.test(line) ||  // ends with state abbreviation
+        /,\s*[A-Z][a-z]+\s*$/.test(line)   // ends with country/city name
+      )
 
+      if (looksLikeHeader || hasAtSeparator || looksLikeCompanyLine) {
         let title = '', company = '', location = '', startDate = '', endDate = ''
 
         if (dateInfo) {
@@ -290,7 +302,25 @@ export function parseResumeText(resumeText: string): ParsedResume {
           location = parsed.location
         }
 
-        currentExperience = { title, company, location, startDate, endDate, bullets: [] }
+        // Two-line format merge: if previous entry has no dates AND no bullets,
+        // it's likely just a company/location line (e.g. "Peraton, Blacksburg, VA")
+        // and THIS line is the title+date line. Merge them.
+        if (currentExperience && !currentExperience.startDate && currentExperience.bullets.length === 0 && startDate) {
+          // Previous entry's "title" is actually the company name
+          const prevCompany = currentExperience.title
+          const prevLocation = [currentExperience.company, currentExperience.location].filter(Boolean).join(', ')
+          currentExperience.title = title
+          currentExperience.company = company || prevCompany
+          currentExperience.location = location || prevLocation
+          currentExperience.startDate = startDate
+          currentExperience.endDate = endDate
+        } else {
+          // Save previous entry and create new one
+          if (currentExperience) {
+            resume.experience.push(currentExperience)
+          }
+          currentExperience = { title, company, location, startDate, endDate, bullets: [] }
+        }
       } else if (currentExperience && line.length > 0) {
         // Non-bullet, non-header line → add as bullet to preserve content
         currentExperience.bullets.push(line)
@@ -305,30 +335,89 @@ export function parseResumeText(resumeText: string): ParsedResume {
     if (currentSection === 'education') {
       if (isBullet(line)) continue
 
-      // Check if this is a detail line for current education (GPA, minor, coursework)
       const dateInfo = extractDateRange(line)
       const hasPipe = line.includes('|')
-      const isNewEntry = hasPipe || (dateInfo && !currentEducation)
 
-      // If we have a current education and this line has no pipe and no date,
-      // or it's a GPA/minor/coursework line, treat as detail
+      // Detail line: no pipe, no date, we have a current entry
       if (currentEducation && !hasPipe && !dateInfo) {
-        // GPA line
+        // Degree line: "Bachelor of Science in ...", "Master of ...", "Associate ..."
+        if (/^(bachelor|master|associate|doctor|b\.?s\.?|b\.?a\.?|m\.?s\.?|m\.?a\.?|ph\.?d|m\.?b\.?a)/i.test(line) && !currentEducation.degree) {
+          currentEducation.degree = line
+          continue
+        }
+        // GPA line (could have pipe or standalone)
         if (/gpa/i.test(line) && !currentEducation.gpa) {
           const gpaMatch = line.match(/gpa[:\s]*([0-9.]+)/i)
           if (gpaMatch) currentEducation.gpa = gpaMatch[1]
+          // Don't continue — also check for honors/in-major info below
         }
-        // Minor/honors
-        if (/minor|honors|dean|magna|summa|cum laude|coursework/i.test(line)) {
+        // "Relevant Coursework: ..." line — extract after colon and store
+        if (/coursework/i.test(line)) {
+          const colonIdx = line.indexOf(':')
+          const courseworkText = colonIdx >= 0 ? line.slice(colonIdx + 1).trim() : line
+          if (!currentEducation.honors) currentEducation.honors = []
+          currentEducation.honors.push(`Relevant Coursework: ${courseworkText}`)
+          continue
+        }
+        // Minor/honors (but NOT degree lines like "Bachelor of Science (Honors)")
+        if (/minor|dean|magna|summa|cum laude/i.test(line)) {
           if (!currentEducation.honors) currentEducation.honors = []
           currentEducation.honors.push(line)
         }
         continue
       }
 
-      // Date-only line for current education
+      // Date-only line for current education (e.g. "Expected May 2026")
       if (currentEducation && !currentEducation.graduationDate && dateInfo && !hasPipe) {
         currentEducation.graduationDate = dateInfo.endDate || dateInfo.startDate
+        continue
+      }
+
+      // GPA-only pipe line: "GPA: 3.82/4.0 | In-major GPA: 4.0/4.0"
+      // All pipe-parts are GPA-related → treat as detail, not new entry
+      if (currentEducation && hasPipe && !dateInfo) {
+        const pipeParts = line.split(/\s*\|\s*/).filter(Boolean)
+        const allGpa = pipeParts.every(p => /gpa/i.test(p))
+        if (allGpa) {
+          for (const part of pipeParts) {
+            const gpaMatch = part.match(/gpa[:\s]*([0-9.]+)/i)
+            if (gpaMatch && !currentEducation.gpa) {
+              currentEducation.gpa = gpaMatch[1]
+            }
+          }
+          // Store full GPA line as honor for display (e.g. "In-major GPA: 4.0/4.0")
+          if (pipeParts.length > 1) {
+            if (!currentEducation.honors) currentEducation.honors = []
+            currentEducation.honors.push(pipeParts.slice(1).join(' | '))
+          }
+          continue
+        }
+      }
+
+      // Line with pipe and/or date — could be new entry or details for school-only entry
+      // If currentEducation has school but no degree yet, MERGE into it
+      if (currentEducation && currentEducation.school && !currentEducation.degree && (hasPipe || dateInfo)) {
+        // This line provides the degree details for the existing school entry
+        const textWithoutDate = dateInfo ? dateInfo.text : line
+        if (dateInfo && !currentEducation.graduationDate) {
+          currentEducation.graduationDate = dateInfo.endDate || dateInfo.startDate
+        }
+
+        // Parse pipe-separated parts for degree, minor, GPA
+        const parts = textWithoutDate.split(/\s*\|\s*/).filter(Boolean)
+        const nonGpaParts: string[] = []
+        for (const part of parts) {
+          const gpaMatch = part.match(/gpa[:\s]*([0-9.]+)/i)
+          if (gpaMatch && !currentEducation.gpa) {
+            currentEducation.gpa = gpaMatch[1]
+          } else if (/minor/i.test(part)) {
+            if (!currentEducation.honors) currentEducation.honors = []
+            currentEducation.honors.push(part.trim())
+          } else {
+            nonGpaParts.push(part.trim())
+          }
+        }
+        currentEducation.degree = nonGpaParts.join(', ')
         continue
       }
 
@@ -343,44 +432,37 @@ export function parseResumeText(resumeText: string): ParsedResume {
         graduationDate = dateInfo.endDate || dateInfo.startDate
       }
 
-      // Split by pipe
       const parts = textWithoutDate.split(/\s*\|\s*/).filter(Boolean)
+      const schoolKw = /university|college|institute|school|tech(?!nol)|academy/i
 
       if (parts.length >= 2) {
-        // Detect which part is school (contains university/college/tech/institute)
-        const schoolKw = /university|college|institute|school|tech(?!nol)|academy/i
         const schoolIdx = parts.findIndex(p => schoolKw.test(p))
-        if (schoolIdx >= 0) {
-          school = parts[schoolIdx].trim()
-          degree = parts.filter((_, idx) => idx !== schoolIdx).join(', ').trim()
-        } else {
-          // Assume first is school, second is degree
-          school = parts[0].trim()
-          degree = parts.slice(1).join(', ').trim()
+        const nonGpaParts: string[] = []
+        let gpa = ''
+        for (let pi = 0; pi < parts.length; pi++) {
+          const gpaMatch = parts[pi].match(/gpa[:\s]*([0-9.]+)/i)
+          if (gpaMatch) {
+            gpa = gpaMatch[1]
+          } else if (pi === schoolIdx) {
+            school = parts[pi].trim()
+          } else {
+            nonGpaParts.push(parts[pi].trim())
+          }
         }
-      } else if (parts.length === 1) {
-        // Single text — check if it contains school keywords
-        const schoolKw = /university|college|institute|school|tech(?!nol)|academy/i
-        if (schoolKw.test(parts[0])) {
-          school = parts[0].trim()
-        } else {
-          degree = parts[0].trim()
+        if (!school && nonGpaParts.length > 0) {
+          school = nonGpaParts.shift()!
         }
+        degree = nonGpaParts.join(', ')
+        currentEducation = { degree, school, graduationDate, gpa: gpa || undefined }
+      } else {
+        // Single part — school name or degree
+        if (schoolKw.test(parts[0] || '')) {
+          school = (parts[0] || '').trim()
+        } else {
+          degree = (parts[0] || '').trim()
+        }
+        currentEducation = { degree, school, graduationDate }
       }
-
-      // Extract and remove GPA from degree/school to prevent duplication
-      const gpaInDegree = degree.match(/\s*\|?\s*gpa[:\s]*([0-9.]+)/i)
-      const gpaInSchool = school.match(/\s*\|?\s*gpa[:\s]*([0-9.]+)/i)
-      let gpa = ''
-      if (gpaInDegree) {
-        gpa = gpaInDegree[1]
-        degree = degree.replace(gpaInDegree[0], '').trim()
-      } else if (gpaInSchool) {
-        gpa = gpaInSchool[1]
-        school = school.replace(gpaInSchool[0], '').trim()
-      }
-
-      currentEducation = { degree, school, graduationDate, gpa: gpa || undefined }
       continue
     }
 
@@ -388,8 +470,15 @@ export function parseResumeText(resumeText: string): ParsedResume {
     if (currentSection === 'skills') {
       if (line.includes(':')) {
         const colonIdx = line.indexOf(':')
+        const category = line.slice(0, colonIdx).trim()
         const skillsPart = line.slice(colonIdx + 1).trim()
-        if (skillsPart) {
+
+        // Detect "Certifications: ..." inside skills section → route to certifications
+        if (/certif/i.test(category)) {
+          if (skillsPart) {
+            resume.certifications!.push(...splitSkills(skillsPart))
+          }
+        } else if (skillsPart) {
           resume.skills.push(...splitSkills(skillsPart))
         }
       } else {
@@ -446,6 +535,19 @@ export function parseResumeText(resumeText: string): ParsedResume {
       continue
     }
 
+    // ── Coursework → attach to most recent education entry ──
+    if (currentSection === 'coursework') {
+      if (currentEducation) {
+        if (!currentEducation.honors) currentEducation.honors = []
+        currentEducation.honors.push(line)
+      } else if (resume.education.length > 0) {
+        const lastEdu = resume.education[resume.education.length - 1]
+        if (!lastEdu.honors) lastEdu.honors = []
+        lastEdu.honors.push(line)
+      }
+      continue
+    }
+
     // ── Leadership / Other sections → store as experience-like entries ──
     if (currentSection === 'leadership') {
       // Treat leadership entries similar to experience
@@ -464,8 +566,22 @@ export function parseResumeText(resumeText: string): ParsedResume {
         const endDate = dateInfo?.endDate || ''
         const parsed = splitTitleCompany(dateInfo?.text || line)
         currentExperience = { title: parsed.title, company: parsed.company, location: parsed.location, startDate, endDate, bullets: [] }
-      } else if (currentExperience) {
-        currentExperience.bullets.push(line)
+      } else if (line.includes(':')) {
+        // Handle "Name: Description" format (e.g. "Data Bridge Research Initiative: Collaborative...")
+        if (currentExperience) {
+          resume.experience.push(currentExperience)
+        }
+        const colonIdx = line.indexOf(':')
+        const name = line.slice(0, colonIdx).trim()
+        const desc = line.slice(colonIdx + 1).trim()
+        currentExperience = { title: name, company: '', startDate: '', endDate: '', bullets: desc ? [desc] : [] }
+      } else if (line.length > 0) {
+        // Any other line — either start new entry or add as bullet
+        if (!currentExperience) {
+          currentExperience = { title: line, company: '', startDate: '', endDate: '', bullets: [] }
+        } else {
+          currentExperience.bullets.push(line)
+        }
       }
       continue
     }
