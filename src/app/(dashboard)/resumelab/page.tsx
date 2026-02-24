@@ -47,14 +47,6 @@ interface StructuredAnalysis {
 
 type TabId = 'upload' | 'analysis' | 'rewrite' | 'preview'
 
-interface Tab {
-  id: TabId
-  label: string
-  icon: React.ReactNode
-  disabled?: boolean
-  optional?: boolean
-}
-
 // Wrapper component to handle Suspense for useSearchParams
 export default function ResumeLabPage() {
   return (
@@ -217,52 +209,6 @@ function ResumeLabContent() {
     }
     fetchCredits()
   }, [analysis, rewrite])
-
-  // Tab definitions
-  const tabs: Tab[] = [
-    {
-      id: 'upload',
-      label: 'Upload',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-        </svg>
-      ),
-    },
-    {
-      id: 'analysis',
-      label: 'Analysis',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-        </svg>
-      ),
-      disabled: !analysis,
-    },
-    {
-      id: 'rewrite',
-      label: 'Rewrite',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-        </svg>
-      ),
-      disabled: !analysis,
-      optional: true,
-    },
-    {
-      id: 'preview',
-      label: 'Preview & Export',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-        </svg>
-      ),
-      disabled: !rewrite,
-      optional: true,
-    },
-  ]
 
   // Handlers
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -791,147 +737,127 @@ function ResumeLabContent() {
     setSelectedTemplate(null)
   }
 
+  // Stepper state
+  const stepperSteps = [
+    { id: 'upload' as const, label: 'Upload', done: !!resumeText },
+    { id: 'analysis' as const, label: 'Analyze', done: !!analysis },
+    { id: 'rewrite' as const, label: 'Rewrite', done: !!rewrite },
+    { id: 'preview' as const, label: 'Export', done: false },
+  ]
+
   return (
     <div className="min-h-screen">
-      {/* Header */}
-      <div className="rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white mb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            {currentAnalysisId && (isEditingTitle ? (
-              <div className="flex items-center space-x-2">
-                <input
-                  type="text"
-                  value={editedTitle}
-                  onChange={(e) => setEditedTitle(e.target.value)}
-                  className="bg-white/20 border border-white/30 rounded-lg px-3 py-1 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
-                  placeholder="Enter title..."
-                  autoFocus
-                />
+      {/* Compact Header Bar */}
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-3 min-w-0">
+          {currentAnalysisId && isEditingTitle ? (
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={editedTitle}
+                onChange={(e) => setEditedTitle(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleRenameAnalysis(); if (e.key === 'Escape') setIsEditingTitle(false) }}
+                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                placeholder="Enter title..."
+                autoFocus
+              />
+              <button onClick={handleRenameAnalysis} disabled={savingTitle} className="text-sm font-medium text-indigo-600 hover:text-indigo-800">
+                {savingTitle ? 'Saving...' : 'Save'}
+              </button>
+              <button onClick={() => { setIsEditingTitle(false); setEditedTitle(analysisTitle) }} className="text-sm text-slate-400 hover:text-slate-600">
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <h1 className="text-xl font-bold text-slate-900 truncate">
+              {currentAnalysisId ? (analysisTitle || 'Resume Analysis') : mode === 'create' ? 'Create Resume' : 'ResumeLab'}
+              {currentAnalysisId && (
                 <button
-                  onClick={handleRenameAnalysis}
-                  disabled={savingTitle}
-                  className="bg-white/20 hover:bg-white/30 rounded-lg px-3 py-1 text-sm"
+                  onClick={() => { setEditedTitle(analysisTitle); setIsEditingTitle(true) }}
+                  className="ml-2 text-slate-400 hover:text-slate-600 align-middle"
+                  title="Rename"
                 >
-                  {savingTitle ? 'Saving...' : 'Save'}
-                </button>
-                <button
-                  onClick={() => {
-                    setIsEditingTitle(false)
-                    setEditedTitle(analysisTitle)
-                  }}
-                  className="text-white/60 hover:text-white"
-                >
-                  Cancel
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-2">
-                <h1 className="text-2xl font-bold">
-                  {analysisTitle || 'Resume Analysis'}
-                </h1>
-                <button
-                  onClick={() => {
-                    setEditedTitle(analysisTitle)
-                    setIsEditingTitle(true)
-                  }}
-                  className="text-white/60 hover:text-white p-1"
-                  title="Rename analysis"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                   </svg>
                 </button>
-              </div>
-            ))}
-            {!currentAnalysisId && (
-              <h1 className="text-2xl font-bold">
-                {mode === 'create' ? 'Create Resume' : 'ResumeLab'}
-              </h1>
-            )}
-            <p className="mt-1 text-indigo-100 text-sm">
-              {mode === 'create' ? 'Build your resume from scratch' : 'AI-powered feedback and optimization'}
-            </p>
-          </div>
-          <div className="flex items-center space-x-3">
-            {/* Mode Toggle Buttons */}
-            {mode === 'analyze' && (analysis || activeTab !== 'upload') && (
-              <button
-                onClick={clearFile}
-                className="flex items-center space-x-2 rounded-lg bg-white/20 hover:bg-white/30 px-3 py-1.5 text-sm transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                <span>New Analysis</span>
-              </button>
-            )}
-            {mode === 'analyze' && activeTab === 'upload' && !analysis && (
-              <button
-                onClick={switchToCreate}
-                className="flex items-center space-x-2 rounded-lg bg-white/20 hover:bg-white/30 px-3 py-1.5 text-sm transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                <span>Create from Scratch</span>
-              </button>
-            )}
-            {mode === 'create' && (
-              <button
-                onClick={switchToAnalyze}
-                className="flex items-center space-x-2 rounded-lg bg-white/20 hover:bg-white/30 px-3 py-1.5 text-sm transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                <span>Analyze Existing</span>
-              </button>
-            )}
-            <div className="rounded-lg bg-white/20 px-3 py-1.5 text-sm">
-              {userCredits} credits
+              )}
+            </h1>
+          )}
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {mode === 'analyze' && (analysis || activeTab !== 'upload') && (
+            <button onClick={clearFile} className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+              New
+            </button>
+          )}
+          {mode === 'analyze' && activeTab === 'upload' && !analysis && (
+            <button onClick={switchToCreate} className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+              Create from Scratch
+            </button>
+          )}
+          {mode === 'create' && (
+            <button onClick={switchToAnalyze} className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+              Analyze Existing
+            </button>
+          )}
+          {analysisScore && (
+            <div className="rounded-lg bg-indigo-50 border border-indigo-100 px-3 py-1.5 text-sm font-semibold text-indigo-700">
+              Score: {analysisScore}/100
             </div>
-            {analysisScore && (
-              <div className="rounded-lg bg-white/20 px-3 py-1.5 text-sm font-semibold">
-                Score: {analysisScore}/100
-              </div>
-            )}
+          )}
+          <div className="rounded-lg bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-600">
+            {userCredits} credits
           </div>
         </div>
       </div>
 
-      {/* Tab Navigation - only in analyze mode */}
+      {/* Progress Stepper - only in analyze mode */}
       {mode === 'analyze' && (
-        <div className="border-b border-slate-200 mb-6">
-          <nav className="flex space-x-1" aria-label="Tabs">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => !tab.disabled && setActiveTab(tab.id)}
-                disabled={tab.disabled}
-                className={`
-                  flex items-center space-x-2 px-4 py-3 text-sm font-medium rounded-t-lg transition-all
-                  ${activeTab === tab.id
-                    ? 'bg-white border border-b-0 border-slate-200 text-indigo-600 -mb-px'
-                    : tab.disabled
-                      ? 'text-slate-300 cursor-not-allowed'
-                      : 'text-slate-600 hover:text-indigo-600 hover:bg-slate-50'
-                  }
-                `}
-              >
-                {tab.icon}
-                <span>{tab.label}</span>
-                {tab.optional && (
-                  <span className="text-xs text-slate-400 ml-1">(optional)</span>
-                )}
-                {tab.id === 'analysis' && analysis && (
-                  <span className="w-2 h-2 rounded-full bg-green-500" />
-                )}
-                {tab.id === 'rewrite' && rewrite && (
-                  <span className="w-2 h-2 rounded-full bg-green-500" />
-                )}
-              </button>
-            ))}
-          </nav>
+        <div className="mb-6">
+          <div className="flex items-center">
+            {stepperSteps.map((step, i) => {
+              const isActive = activeTab === step.id
+              const isClickable = step.id === 'upload' || (step.id === 'analysis' && analysis) || (step.id === 'rewrite' && analysis) || (step.id === 'preview' && rewrite)
+
+              return (
+                <div key={step.id} className="flex items-center flex-1 last:flex-none">
+                  <button
+                    onClick={() => isClickable && setActiveTab(step.id)}
+                    disabled={!isClickable}
+                    className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                      isActive
+                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/25'
+                        : step.done
+                          ? 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100'
+                          : isClickable
+                            ? 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                            : 'bg-slate-50 text-slate-300 border border-slate-100 cursor-not-allowed'
+                    }`}
+                  >
+                    {step.done && !isActive ? (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                        isActive ? 'bg-white/20' : 'bg-slate-200/50'
+                      }`}>
+                        {i + 1}
+                      </span>
+                    )}
+                    {step.label}
+                  </button>
+                  {i < stepperSteps.length - 1 && (
+                    <div className={`flex-1 h-px mx-2 ${step.done ? 'bg-green-300' : 'bg-slate-200'}`} />
+                  )}
+                </div>
+              )
+            })}
+          </div>
         </div>
       )}
 
@@ -944,149 +870,159 @@ function ResumeLabContent() {
 
       {/* Tab Content - Analyze Mode */}
       {mode === 'analyze' && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
+        <div>
           {/* Loading State for Past Analysis */}
           {loadingAnalysis && (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="h-16 w-16 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
-            <p className="mt-6 text-lg text-slate-600">Loading analysis...</p>
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center py-20">
+            <div className="h-12 w-12 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
+            <p className="mt-6 text-slate-600">Loading analysis...</p>
           </div>
         )}
 
         {/* Upload Tab */}
         {!loadingAnalysis && activeTab === 'upload' && (
-          <div className="p-8">
-            <div className="max-w-2xl mx-auto space-y-8">
-              {/* File Upload */}
-              <div>
-                <h2 className="text-lg font-semibold text-slate-900 mb-4">Upload Your Resume</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            {/* Main upload area */}
+            <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 lg:p-8">
+              <h2 className="text-lg font-semibold text-slate-900 mb-1">Upload Your Resume</h2>
+              <p className="text-sm text-slate-500 mb-6">Drop a PDF or paste your resume text to get started</p>
 
-                {fileName ? (
-                  <div className="rounded-xl border-2 border-indigo-200 bg-indigo-50 p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className="rounded-lg bg-indigo-100 p-3">
-                          <svg className="h-8 w-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <p className="font-semibold text-slate-900">{fileName}</p>
-                          <p className="text-sm text-slate-500">
-                            {resumeText.length > 0 ? `${resumeText.split(' ').length} words extracted` : 'Processing...'}
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={clearFile}
-                        className="rounded-lg p-2 text-slate-400 hover:bg-white hover:text-slate-600"
-                      >
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              {fileName ? (
+                <div className="rounded-xl border-2 border-green-200 bg-green-50 p-5 mb-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-lg bg-green-100 p-2.5">
+                        <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
-                      </button>
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-900 text-sm">{fileName}</p>
+                        <p className="text-xs text-slate-500">
+                          {resumeText.length > 0 ? `${resumeText.split(' ').length} words extracted` : 'Processing...'}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <div
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={handleDrop}
-                    className="relative rounded-xl border-2 border-dashed border-slate-300 p-12 text-center transition-colors hover:border-indigo-400 hover:bg-indigo-50/50"
-                  >
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept=".pdf,.txt"
-                      onChange={handleFileUpload}
-                      className="absolute inset-0 cursor-pointer opacity-0"
-                      disabled={uploading}
-                    />
-                    {uploading ? (
-                      <div className="flex flex-col items-center">
-                        <div className="h-12 w-12 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
-                        <p className="mt-4 text-slate-600">Processing file...</p>
-                      </div>
-                    ) : (
-                      <>
-                        <svg className="mx-auto h-16 w-16 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                        </svg>
-                        <p className="mt-4 text-lg font-medium text-slate-700">
-                          Drop your resume here or click to upload
-                        </p>
-                        <p className="mt-2 text-sm text-slate-500">
-                          PDF or TXT (max 5MB)
-                        </p>
-                      </>
-                    )}
-                  </div>
-                )}
-
-                {/* Or paste text */}
-                <div className="relative my-6">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-slate-200" />
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="bg-white px-4 text-slate-500">or paste text</span>
+                    <button onClick={clearFile} className="rounded-lg p-1.5 text-slate-400 hover:bg-white hover:text-slate-600">
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
+              ) : (
+                <div
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={handleDrop}
+                  className="relative rounded-xl border-2 border-dashed border-slate-200 p-8 text-center transition-all hover:border-indigo-400 hover:bg-indigo-50/30 mb-6 group"
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf,.txt"
+                    onChange={handleFileUpload}
+                    className="absolute inset-0 cursor-pointer opacity-0"
+                    disabled={uploading}
+                  />
+                  {uploading ? (
+                    <div className="flex flex-col items-center py-4">
+                      <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
+                      <p className="mt-3 text-sm text-slate-600">Processing file...</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="mx-auto w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition-colors">
+                        <svg className="h-6 w-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                      </div>
+                      <p className="mt-3 text-sm font-medium text-slate-700">
+                        Drop your resume here or <span className="text-indigo-600">browse</span>
+                      </p>
+                      <p className="mt-1 text-xs text-slate-400">PDF or TXT, max 5MB</p>
+                    </>
+                  )}
+                </div>
+              )}
 
-                <textarea
-                  value={resumeText}
-                  onChange={(e) => {
-                    setResumeText(e.target.value)
-                    setFileName(null)
-                  }}
-                  placeholder="Paste your resume text here..."
-                  className="w-full rounded-xl border border-slate-200 p-4 text-sm transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 min-h-[200px] resize-y"
-                  disabled={loading || uploading}
-                />
+              {/* Or paste text */}
+              <div className="relative my-5">
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200" /></div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="bg-white px-3 text-slate-400 uppercase tracking-wider">or paste text</span>
+                </div>
               </div>
 
-              {/* Job Description */}
-              <div>
-                <h2 className="text-lg font-semibold text-slate-900 mb-4">
-                  Target Job Description <span className="text-slate-400 font-normal text-sm">(Optional)</span>
-                </h2>
+              <textarea
+                value={resumeText}
+                onChange={(e) => { setResumeText(e.target.value); setFileName(null) }}
+                placeholder="Paste your resume text here..."
+                className="w-full rounded-xl border border-slate-200 p-4 text-sm transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 min-h-[180px] resize-y"
+                disabled={loading || uploading}
+              />
+            </div>
+
+            {/* Sidebar: Job description + analyze */}
+            <div className="lg:col-span-2 space-y-6">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <h3 className="text-sm font-semibold text-slate-900 mb-1">Target Job Description</h3>
+                <p className="text-xs text-slate-400 mb-3">Optional — get keyword-matched analysis</p>
                 <textarea
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}
-                  placeholder="Paste the job description for tailored analysis and keyword optimization..."
-                  className="w-full rounded-xl border border-slate-200 p-4 text-sm transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 min-h-[120px] resize-y"
+                  placeholder="Paste the job description here..."
+                  className="w-full rounded-lg border border-slate-200 p-3 text-sm transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 min-h-[140px] resize-y"
                   disabled={loading}
                 />
               </div>
 
-              {/* Analyze Button */}
               <button
                 onClick={handleAnalyze}
                 disabled={loading || uploading || !resumeText.trim()}
-                className="w-full rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4 text-lg font-semibold text-white shadow-lg shadow-indigo-500/30 transition-all hover:shadow-xl hover:shadow-indigo-500/40 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4 text-base font-semibold text-white shadow-lg shadow-indigo-500/30 transition-all hover:shadow-xl hover:shadow-indigo-500/40 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
               >
                 {loading ? (
-                  <span className="flex items-center justify-center space-x-2">
+                  <span className="flex items-center justify-center gap-2">
                     <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
-                    <span>Analyzing...</span>
+                    Analyzing...
                   </span>
                 ) : (
                   `Analyze Resume (${tool.creditCost} credits)`
                 )}
               </button>
+
+              {/* Quick tips */}
+              <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
+                <h4 className="text-xs font-semibold text-amber-800 uppercase tracking-wider mb-2">Tips for best results</h4>
+                <ul className="space-y-1.5 text-xs text-amber-700">
+                  <li className="flex items-start gap-1.5">
+                    <span className="mt-0.5">•</span>
+                    <span>Upload a PDF for best formatting preservation</span>
+                  </li>
+                  <li className="flex items-start gap-1.5">
+                    <span className="mt-0.5">•</span>
+                    <span>Add a job description for keyword-specific scoring</span>
+                  </li>
+                  <li className="flex items-start gap-1.5">
+                    <span className="mt-0.5">•</span>
+                    <span>Each analysis costs {tool.creditCost} credits — you have {userCredits}</span>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         )}
 
         {/* Analysis Tab */}
         {!loadingAnalysis && activeTab === 'analysis' && (
-          <div className="p-8">
+          <div>
             {loading ? (
-              <div className="flex flex-col items-center justify-center py-20">
-                <div className="h-16 w-16 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
-                <p className="mt-6 text-lg text-slate-600">Analyzing your resume...</p>
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center py-20">
+                <div className="h-12 w-12 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
+                <p className="mt-6 text-slate-600">Analyzing your resume...</p>
                 <p className="mt-2 text-sm text-slate-400">Our AI is reading every line like a recruiter would</p>
               </div>
             ) : analysis && structuredAnalysis ? (
@@ -1101,7 +1037,7 @@ function ResumeLabContent() {
               />
             ) : analysis ? (
               /* Fallback for non-structured analysis (old format) */
-              <div className="max-w-3xl mx-auto">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 max-w-3xl mx-auto">
                 {analysisScore && (
                   <div className="mb-8 p-6 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-100">
                     <div className="flex items-center justify-between">
@@ -1139,18 +1075,15 @@ function ResumeLabContent() {
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="rounded-full bg-slate-100 p-6">
-                  <svg className="h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center py-20 text-center">
+                <div className="rounded-full bg-slate-100 p-5">
+                  <svg className="h-10 w-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
-                <p className="mt-6 text-lg font-medium text-slate-700">No analysis yet</p>
-                <p className="mt-2 text-sm text-slate-500">Upload your resume first to get detailed feedback</p>
-                <button
-                  onClick={() => setActiveTab('upload')}
-                  className="mt-6 text-indigo-600 font-medium hover:underline"
-                >
+                <p className="mt-5 text-base font-medium text-slate-700">No analysis yet</p>
+                <p className="mt-1 text-sm text-slate-500">Upload your resume first to get detailed feedback</p>
+                <button onClick={() => setActiveTab('upload')} className="mt-5 text-sm text-indigo-600 font-medium hover:underline">
                   Go to Upload
                 </button>
               </div>
@@ -1160,7 +1093,7 @@ function ResumeLabContent() {
 
         {/* Rewrite Tab */}
         {!loadingAnalysis && activeTab === 'rewrite' && (
-          <div className="p-8">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 lg:p-8">
             {rewriteLoading ? (
               <div className="flex flex-col items-center justify-center py-20">
                 <div className="h-16 w-16 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
@@ -1258,7 +1191,7 @@ function ResumeLabContent() {
 
         {/* Preview & Export Tab */}
         {!loadingAnalysis && activeTab === 'preview' && (
-          <div className="p-8">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 lg:p-8">
             {rewrite ? (
               <div className="max-w-6xl mx-auto">
                 {/* View Toggle */}
