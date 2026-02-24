@@ -48,18 +48,35 @@ ${exp.bullets.map(b => `  \\item ${esc(b)}`).join('\n')}
     const school = edu.school ? `\\textbf{${esc(edu.school)}}` : ''
     const date = edu.graduationDate ? esc(edu.graduationDate) : ''
     const firstLine = school && date ? `${school} \\hfill ${date}` : school || date
-    const details = [edu.degree ? esc(edu.degree) : '', edu.gpa ? `GPA: ${esc(edu.gpa)}` : '', ...(edu.honors || []).map(esc)].filter(Boolean).join(' \\enspace ')
-    return details ? `${firstLine} \\\\\n${details}` : firstLine
+    const lines = [firstLine]
+    // Degree + GPA on one line
+    const degreeParts = [edu.degree ? esc(edu.degree) : '', edu.gpa ? `GPA: ${esc(edu.gpa)}` : ''].filter(Boolean)
+    if (degreeParts.length > 0) lines.push(degreeParts.join(' $|$ '))
+    // Honors (minor, etc.) on their own line — but NOT coursework
+    const honors = (edu.honors || []).filter(h => !/coursework/i.test(h))
+    if (honors.length > 0) lines.push(honors.map(esc).join(' $|$ '))
+    // Coursework on a separate line with italic label
+    const coursework = (edu.honors || []).find(h => /coursework/i.test(h))
+    if (coursework) {
+      const cwText = coursework.replace(/^Relevant Coursework:\s*/i, '')
+      lines.push(`\\textit{Relevant Coursework:} ${esc(cwText)}`)
+    }
+    return lines.join(' \\\\\n')
   }
   const educationSection = resume.education.map(fmtEdu).join('\n\\vspace{4pt}\n')
 
   const skillsSection = resume.skills.length > 0
-    ? `\\textbf{Skills:} ${resume.skills.map(esc).join(', ')}`
+    ? resume.skills.map(esc).join(', ')
     : ''
 
-  const projectsSection = (resume.projects || []).map(p =>
-    `\\textbf{${esc(p.name)}}${p.description ? ` --- ${esc(p.description)}` : ''}${p.technologies?.length ? ` \\enspace \\textit{${p.technologies.map(esc).join(', ')}}` : ''}`
-  ).join('\n\\vspace{4pt}\n')
+  const projectsSection = (resume.projects || []).map(p => {
+    const header = `\\textbf{${esc(p.name)}}${p.technologies?.length ? ` $|$ \\textit{${p.technologies.map(esc).join(', ')}}` : ''}`
+    if (!p.description) return header
+    return `${header}
+\\begin{itemize}[leftmargin=1.2em, topsep=2pt, parsep=1pt, itemsep=1pt]
+  \\item ${esc(p.description)}
+\\end{itemize}`
+  }).join('\n\\vspace{4pt}\n')
 
   const certificationsSection = (resume.certifications || []).map(c => esc(c)).join(' $\\cdot$ ')
 
