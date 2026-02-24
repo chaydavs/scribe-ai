@@ -85,6 +85,22 @@ export async function POST(request: Request) {
       try {
         parsedAnalysis = JSON.parse(jsonMatch[1])
         score = parsedAnalysis.score || null
+
+        // Post-process: strip bracket placeholders from "fixed" fields
+        // This is a safety net — the prompt tells the AI not to use brackets,
+        // but if any slip through, we clean them here so users never see them
+        if (parsedAnalysis.fixes && Array.isArray(parsedAnalysis.fixes)) {
+          for (const fix of parsedAnalysis.fixes) {
+            if (fix.fixed && typeof fix.fixed === 'string') {
+              // Remove bracket placeholders like [specific finding], [X hours], etc.
+              fix.fixed = fix.fixed.replace(/\s*\[[^\]]*?\]/g, '').replace(/\s{2,}/g, ' ').trim()
+              // If the fix became empty or too short after stripping, fall back to current
+              if (fix.fixed.length < 10) {
+                fix.fixed = fix.current || fix.fixed
+              }
+            }
+          }
+        }
       } catch {
         // Fall back to regex if JSON parsing fails
         const scoreMatch = response.content.match(/Resume Score:\s*(\d+)\/100/i)

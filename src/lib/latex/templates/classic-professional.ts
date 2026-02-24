@@ -31,26 +31,35 @@ export function generateClassicProfessionalLatex(resume: ParsedResume): string {
     ? `\\section{Professional Summary}\n${esc(resume.summary)}\n\n`
     : ''
 
-  const experienceSection = resume.experience.map(exp =>
-    `\\textbf{${esc(exp.title)}} \\hfill ${esc(exp.startDate)} -- ${esc(exp.endDate)} \\\\
-\\textit{${esc(exp.company)}}${exp.location ? `, ${esc(exp.location)}` : ''}
+  const fmtExp = (exp: typeof resume.experience[0]) => {
+    const dates = exp.startDate ? (exp.endDate ? `${esc(exp.startDate)} -- ${esc(exp.endDate)}` : esc(exp.startDate)) : ''
+    const header = dates ? `\\textbf{${esc(exp.title)}} \\hfill ${dates}` : `\\textbf{${esc(exp.title)}}`
+    const company = [exp.company ? `\\textit{${esc(exp.company)}}` : '', exp.location ? esc(exp.location) : ''].filter(Boolean).join(', ')
+    const headerLine = company ? `${header} \\\\\n${company}` : header
+    if (exp.bullets.length === 0) return headerLine
+    return `${headerLine}
 \\begin{itemize}[leftmargin=1.2em, topsep=2pt, parsep=1pt, itemsep=1pt]
 ${exp.bullets.map(b => `  \\item ${esc(b)}`).join('\n')}
 \\end{itemize}`
-  ).join('\n\\vspace{4pt}\n')
+  }
+  const experienceSection = resume.experience.map(fmtExp).join('\n\\vspace{4pt}\n')
 
-  const educationSection = resume.education.map(edu =>
-    `\\textbf{${esc(edu.school)}} \\hfill ${esc(edu.graduationDate)} \\\\
-${esc(edu.degree)}${edu.gpa ? ` \\enspace GPA: ${esc(edu.gpa)}` : ''}${edu.honors?.length ? ` \\enspace ${edu.honors.map(esc).join(', ')}` : ''}`
-  ).join('\n\\vspace{4pt}\n')
+  const fmtEdu = (edu: typeof resume.education[0]) => {
+    const school = edu.school ? `\\textbf{${esc(edu.school)}}` : ''
+    const date = edu.graduationDate ? esc(edu.graduationDate) : ''
+    const firstLine = school && date ? `${school} \\hfill ${date}` : school || date
+    const details = [edu.degree ? esc(edu.degree) : '', edu.gpa ? `GPA: ${esc(edu.gpa)}` : '', ...(edu.honors || []).map(esc)].filter(Boolean).join(' \\enspace ')
+    return details ? `${firstLine} \\\\\n${details}` : firstLine
+  }
+  const educationSection = resume.education.map(fmtEdu).join('\n\\vspace{4pt}\n')
 
   const skillsSection = resume.skills.length > 0
     ? `\\textbf{Skills:} ${resume.skills.map(esc).join(', ')}`
     : ''
 
   const projectsSection = (resume.projects || []).map(p =>
-    `\\textbf{${esc(p.name)}} --- ${esc(p.description)}${p.technologies?.length ? ` \\enspace \\textit{${p.technologies.map(esc).join(', ')}}` : ''}`
-  ).join('\n\\vspace{3pt}\n')
+    `\\textbf{${esc(p.name)}}${p.description ? ` --- ${esc(p.description)}` : ''}${p.technologies?.length ? ` \\enspace \\textit{${p.technologies.map(esc).join(', ')}}` : ''}`
+  ).join('\n\\vspace{4pt}\n')
 
   const certificationsSection = (resume.certifications || []).map(c => esc(c)).join(' $\\cdot$ ')
 
