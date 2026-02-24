@@ -129,10 +129,11 @@ export default function InteractiveAnalysis({
     }, 100)
   }, [])
 
-  // Apply a fix
-  const applyFix = useCallback((fixId: string, fixIndex: number) => {
+  // Apply a fix (with optional custom text)
+  const applyFix = useCallback((fixId: string, fixIndex: number, customText?: string) => {
     const fix = structuredAnalysis.fixes[fixIndex]
-    const newText = workingText.replace(fix.current, fix.fixed)
+    const replacement = customText || fix.fixed
+    const newText = workingText.replace(fix.current, replacement)
     setWorkingText(newText)
     setAppliedFixes(prev => { const next = new Set(Array.from(prev)); next.add(fixId); return next })
     setActiveAnnotationId(null)
@@ -363,10 +364,13 @@ function SidebarContent({
   sidebarFixRefs: React.MutableRefObject<Record<string, HTMLElement>>
   onSeverityFilter: (f: SeverityFilter) => void
   onFixClick: (id: string) => void
-  onApplyFix: (fixId: string, fixIndex: number) => void
+  onApplyFix: (fixId: string, fixIndex: number, customText?: string) => void
   onUndoFix: (fixId: string, fixIndex: number) => void
   onRequestRewrite: () => void
 }) {
+  const [editingFixId, setEditingFixId] = useState<string | null>(null)
+  const [editText, setEditText] = useState('')
+
   return (
     <div className="p-4 space-y-4">
       {/* Filter Pills */}
@@ -457,19 +461,59 @@ function SidebarContent({
                     <p className="text-xs text-slate-700 italic">&ldquo;{fix.current}&rdquo;</p>
                   </div>
 
-                  {/* After */}
-                  <div className="rounded-md bg-green-50 border border-green-200 p-2">
-                    <p className="text-[10px] font-bold text-green-600 uppercase mb-0.5">Suggested</p>
-                    <p className="text-xs text-slate-700">&ldquo;{fix.fixed}&rdquo;</p>
-                  </div>
+                  {/* After — show textarea if editing, otherwise show suggestion */}
+                  {editingFixId === fix.id ? (
+                    <div className="rounded-md bg-teal-50 border border-teal-200 p-2">
+                      <p className="text-[10px] font-bold text-teal-600 uppercase mb-1">Your Version</p>
+                      <textarea
+                        value={editText}
+                        onChange={(e) => setEditText(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        rows={3}
+                        className="w-full text-xs text-slate-800 bg-white border border-teal-200 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-teal-400 resize-y"
+                        autoFocus
+                      />
+                    </div>
+                  ) : (
+                    <div className="rounded-md bg-green-50 border border-green-200 p-2">
+                      <p className="text-[10px] font-bold text-green-600 uppercase mb-0.5">Suggested</p>
+                      <p className="text-xs text-slate-700">&ldquo;{fix.fixed}&rdquo;</p>
+                    </div>
+                  )}
 
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); onApplyFix(fix.id, fix.index) }}
-                      className="flex-1 px-3 py-1.5 bg-teal-600 text-white text-xs font-semibold rounded-md hover:bg-teal-700 transition-colors"
-                    >
-                      Apply Fix
-                    </button>
+                    {editingFixId === fix.id ? (
+                      <>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onApplyFix(fix.id, fix.index, editText); setEditingFixId(null) }}
+                          disabled={!editText.trim()}
+                          className="flex-1 px-3 py-1.5 bg-teal-600 text-white text-xs font-semibold rounded-md hover:bg-teal-700 transition-colors disabled:opacity-50"
+                        >
+                          Apply Your Edit
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setEditingFixId(null) }}
+                          className="px-3 py-1.5 text-xs font-medium text-slate-500 border border-slate-200 rounded-md hover:bg-slate-50"
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onApplyFix(fix.id, fix.index) }}
+                          className="flex-1 px-3 py-1.5 bg-teal-600 text-white text-xs font-semibold rounded-md hover:bg-teal-700 transition-colors"
+                        >
+                          Apply Fix
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setEditingFixId(fix.id); setEditText(fix.fixed) }}
+                          className="px-3 py-1.5 text-xs font-medium text-teal-600 border border-teal-200 rounded-md hover:bg-teal-50 transition-colors"
+                        >
+                          Edit
+                        </button>
+                      </>
+                    )}
                   </div>
 
                   <p className="text-[10px] text-green-600 flex items-center gap-1">
