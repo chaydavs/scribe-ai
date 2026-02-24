@@ -11,11 +11,12 @@ export function generateTechFocusedLatex(resume: ParsedResume): string {
   const esc = (str: string): string => {
     if (!str) return ''
     return str
-      .replace(/\\/g, '\\textbackslash{}')
+      .replace(/\\/g, '\x00BACKSLASH\x00')
       .replace(/[&%$#_{}]/g, m => '\\' + m)
       .replace(/~/g, '\\textasciitilde{}')
       .replace(/\^/g, '\\textasciicircum{}')
       .replace(/\|/g, '\\textbar{}')
+      .replace(/\x00BACKSLASH\x00/g, '\\textbackslash{}')
   }
 
   // Categorize skills
@@ -34,31 +35,33 @@ export function generateTechFocusedLatex(resume: ParsedResume): string {
 
   const skillsLines = Object.entries(cats)
     .filter(([, list]) => list.length > 0)
-    .map(([cat, list]) => `\\textbf{${cat}:} ${list.slice(0, 10).map(esc).join(', ')}`)
+    .map(([cat, list]) => `\\textbf{${cat}:} ${list.map(esc).join(', ')}`)
     .join(' \\\\\n')
 
   const contactParts = [
     resume.email || '',
     resume.phone || '',
     resume.location || '',
-    resume.linkedin ? 'LinkedIn' : '',
-  ].filter(Boolean).map(esc)
+    resume.linkedin ? `\\href{${esc(resume.linkedin)}}{LinkedIn}` : '',
+  ].filter(Boolean)
 
-  const educationSection = resume.education.slice(0, 2).map(edu =>
+  const educationSection = resume.education.map(edu =>
     `\\textbf{${esc(edu.school)}} \\hfill ${esc(edu.graduationDate)} \\\\
-${esc(edu.degree)}${edu.gpa ? ` \\enspace GPA: ${esc(edu.gpa)}` : ''}`
+${esc(edu.degree)}${edu.gpa ? ` \\enspace GPA: ${esc(edu.gpa)}` : ''}${edu.honors?.length ? ` \\enspace ${edu.honors.map(esc).join(', ')}` : ''}`
   ).join('\n\\vspace{4pt}\n')
 
-  const experienceSection = resume.experience.slice(0, 4).map(exp =>
+  const experienceSection = resume.experience.map(exp =>
     `\\textbf{${esc(exp.title)}}, ${esc(exp.company)} \\hfill ${esc(exp.startDate)} -- ${esc(exp.endDate)}
 \\begin{itemize}[leftmargin=1.2em, topsep=2pt, parsep=1pt, itemsep=1pt]
-${exp.bullets.slice(0, 4).map(b => `  \\item ${esc(b)}`).join('\n')}
+${exp.bullets.map(b => `  \\item ${esc(b)}`).join('\n')}
 \\end{itemize}`
   ).join('\n\\vspace{4pt}\n')
 
-  const projectsSection = (resume.projects || []).slice(0, 2).map(p =>
-    `\\textbf{${esc(p.name)}} --- ${esc(p.description).slice(0, 150)}${p.technologies?.length ? ` \\enspace \\textit{${p.technologies.slice(0, 5).map(esc).join(', ')}}` : ''}`
+  const projectsSection = (resume.projects || []).map(p =>
+    `\\textbf{${esc(p.name)}} --- ${esc(p.description)}${p.technologies?.length ? ` \\enspace \\textit{${p.technologies.map(esc).join(', ')}}` : ''}`
   ).join('\n\\vspace{3pt}\n')
+
+  const certificationsSection = (resume.certifications || []).map(c => esc(c)).join(' $\\cdot$ ')
 
   return `\\documentclass[10pt, letterpaper]{article}
 
@@ -106,6 +109,8 @@ ${skillsLines}
 ${experienceSection}
 
 ${projectsSection ? `\\section{Projects}\n${projectsSection}` : ''}
+
+${certificationsSection ? `\\section{Certifications}\n${certificationsSection}` : ''}
 
 \\end{document}`
 }

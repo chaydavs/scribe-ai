@@ -15,34 +15,37 @@ export function generateExecutiveLatex(resume: ParsedResume): string {
   const esc = (str: string): string => {
     if (!str) return ''
     return str
-      .replace(/\\/g, '\\textbackslash{}')
+      .replace(/\\/g, '\x00BACKSLASH\x00')
       .replace(/[&%$#_{}]/g, m => '\\' + m)
       .replace(/~/g, '\\textasciitilde{}')
       .replace(/\^/g, '\\textasciicircum{}')
       .replace(/\|/g, '\\textbar{}')
+      .replace(/\x00BACKSLASH\x00/g, '\\textbackslash{}')
   }
 
   const contactParts = [
     resume.email || '',
     resume.phone || '',
     resume.location || '',
-    resume.linkedin ? 'LinkedIn' : '',
-  ].filter(Boolean).map(esc)
+    resume.linkedin ? `\\href{${esc(resume.linkedin)}}{LinkedIn}` : '',
+  ].filter(Boolean)
 
-  const experienceSection = resume.experience.slice(0, 5).map(exp =>
+  const experienceSection = resume.experience.map(exp =>
     `\\textbf{${esc(exp.title)}} \\hfill ${esc(exp.startDate)} -- ${esc(exp.endDate)} \\\\
 \\textit{${esc(exp.company)}}${exp.location ? `, ${esc(exp.location)}` : ''}
 \\begin{itemize}[leftmargin=1.2em, topsep=2pt, parsep=1pt, itemsep=1pt]
-${exp.bullets.slice(0, 3).map(b => `  \\item ${esc(b)}`).join('\n')}
+${exp.bullets.map(b => `  \\item ${esc(b)}`).join('\n')}
 \\end{itemize}`
   ).join('\n\\vspace{4pt}\n')
 
-  const educationSection = resume.education.slice(0, 2).map(edu =>
+  const educationSection = resume.education.map(edu =>
     `\\textbf{${esc(edu.school)}} \\hfill ${esc(edu.graduationDate)} \\\\
-${esc(edu.degree)}${edu.gpa ? ` $|$ GPA: ${esc(edu.gpa)}` : ''}`
+${esc(edu.degree)}${edu.gpa ? ` $|$ GPA: ${esc(edu.gpa)}` : ''}${edu.honors?.length ? ` $|$ ${edu.honors.map(esc).join(', ')}` : ''}`
   ).join('\n\\vspace{4pt}\n')
 
-  const competencies = resume.skills.slice(0, 18).map(esc).join(' $\\cdot$ ')
+  const competencies = resume.skills.map(esc).join(' $\\cdot$ ')
+
+  const certificationsSection = (resume.certifications || []).map(c => esc(c)).join(' $\\cdot$ ')
 
   return `\\documentclass[10pt, letterpaper]{article}
 
@@ -92,13 +95,15 @@ ${esc(edu.degree)}${edu.gpa ? ` $|$ GPA: ${esc(edu.gpa)}` : ''}`
 
 \\vspace{4pt}
 
-${resume.summary ? `\\section{Executive Summary}\n${esc(resume.summary.slice(0, 300))}\n\n` : ''}\\section{Professional Experience}
+${resume.summary ? `\\section{Executive Summary}\n${esc(resume.summary)}\n\n` : ''}\\section{Professional Experience}
 ${experienceSection}
 
 \\section{Education}
 ${educationSection}
 
 ${competencies ? `\\section{Core Competencies}\n${competencies}` : ''}
+
+${certificationsSection ? `\\section{Certifications}\n${certificationsSection}` : ''}
 
 \\end{document}`
 }

@@ -159,8 +159,6 @@ If the original has 5 bullets under a job, the output must have 5 bullets (restr
 1. Restructure bullet wording (impact first)
 2. Remove weak phrases ("Responsible for", "Helped with")
 3. Improve clarity and conciseness
-4. Fix formatting inconsistencies
-5. Group skills logically
 
 === WHAT YOU CANNOT DO ===
 1. Remove or skip any bullets, jobs, or sections
@@ -169,6 +167,9 @@ If the original has 5 bullets under a job, the output must have 5 bullets (restr
 4. Remove specific tech names to "simplify"
 5. Change numbers, dates, company names, or job titles
 6. Use bracket placeholders like [X hours], [specific metric], [specific result] — NEVER output brackets. Write complete, ready-to-use sentences using only the facts available.
+7. Change formatting, spacing, or section order — keep the exact same structure
+8. Add or remove line breaks, separators, or whitespace — preserve the original layout
+9. Change how contact info, dates, or locations are formatted — keep them exactly as written
 
 === RESTRUCTURE RULES ===
 
@@ -229,6 +230,13 @@ PROJECTS
 
 [Include ALL other sections from original]
 
+=== CRITICAL: ONE-PAGE PRESERVATION ===
+If the original resume fits on one page, your rewritten version MUST also fit on one page.
+- Do NOT add extra bullets, sections, or content that would push it to two pages
+- Do NOT expand abbreviations or add verbose descriptions
+- Keep the same number of bullets per job — restructure wording only
+- The output should be the SAME LENGTH as the input (±10% words)
+
 === VERIFICATION ===
 Before outputting, verify:
 - Every job from original is included
@@ -237,7 +245,9 @@ Before outputting, verify:
 - Every project from original is included
 - All sections from original are present
 - No metrics were added that weren't in original
-- No tech was removed to "simplify"`,
+- No tech was removed to "simplify"
+- The formatting structure matches the original (same sections in same order)
+- No dates, locations, or contact info were reformatted`,
 
   // Helper function to extract keywords from job description
   keywordExtraction: `Extract the most important keywords from this job description for resume optimization.
