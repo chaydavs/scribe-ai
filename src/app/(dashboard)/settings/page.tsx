@@ -54,10 +54,22 @@ function SettingsContent() {
 
   useEffect(() => {
     const success = searchParams.get('success')
+    const error = searchParams.get('error')
     const canceled = searchParams.get('canceled')
 
     if (success) {
       setMessage({ type: 'success', text: 'Credits purchased successfully!' })
+      setActiveTab('credits')
+      // PayPal capture may still be processing — poll for updated credits
+      const pollCredits = async () => {
+        for (let i = 0; i < 5; i++) {
+          await new Promise(r => setTimeout(r, 1500))
+          await fetchProfile()
+        }
+      }
+      pollCredits()
+    } else if (error) {
+      setMessage({ type: 'error', text: `Payment issue: ${error.replace(/_/g, ' ')}` })
       setActiveTab('credits')
     } else if (canceled) {
       setMessage({ type: 'error', text: 'Purchase was canceled.' })

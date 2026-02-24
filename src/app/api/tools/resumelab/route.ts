@@ -76,9 +76,24 @@ export async function POST(request: Request) {
       output_tokens: response.outputTokens,
     })
 
-    // Extract score from analysis (look for "Resume Score: XX/100")
-    const scoreMatch = response.content.match(/Resume Score:\s*(\d+)\/100/i)
-    const score = scoreMatch ? parseInt(scoreMatch[1], 10) : null
+    // Parse structured JSON from the response
+    const jsonMatch = response.content.match(/```json\s*([\s\S]*?)\s*```/)
+    let parsedAnalysis = null
+    let score: number | null = null
+
+    if (jsonMatch) {
+      try {
+        parsedAnalysis = JSON.parse(jsonMatch[1])
+        score = parsedAnalysis.score || null
+      } catch {
+        // Fall back to regex if JSON parsing fails
+        const scoreMatch = response.content.match(/Resume Score:\s*(\d+)\/100/i)
+        score = scoreMatch ? parseInt(scoreMatch[1], 10) : null
+      }
+    } else {
+      const scoreMatch = response.content.match(/Resume Score:\s*(\d+)\/100/i)
+      score = scoreMatch ? parseInt(scoreMatch[1], 10) : null
+    }
 
     // Generate title from resume text
     const firstLine = resumeText.split('\n').find((l: string) => l.trim())?.trim() || ''
@@ -103,6 +118,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       analysis: response.content,
+      structured: parsedAnalysis,
       analysisId: savedAnalysis?.id,
       score,
       creditsUsed: CREDIT_COST,
