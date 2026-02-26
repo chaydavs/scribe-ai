@@ -407,6 +407,33 @@ function SidebarContent({
 
   return (
     <div className="p-4 space-y-4">
+      {/* Apply All / Filter Row */}
+      <div className="flex items-center gap-2">
+        {appliedCount < totalFixes && (
+          <button
+            onClick={() => {
+              // Apply all unapplied fixes at once
+              filteredFixes.forEach(fix => {
+                if (!appliedFixes.has(fix.id)) {
+                  onApplyFix(fix.id, fix.index)
+                }
+              })
+            }}
+            className="flex-1 px-3 py-2 bg-teal-600 text-white text-xs font-semibold rounded-lg hover:bg-teal-700 transition-colors"
+          >
+            Apply All AI Fixes ({totalFixes - appliedCount})
+          </button>
+        )}
+        {appliedCount > 0 && appliedCount === totalFixes && (
+          <div className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-green-50 rounded-lg border border-green-200">
+            <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+            <span className="text-xs font-bold text-green-700">All fixes applied!</span>
+          </div>
+        )}
+      </div>
+
       {/* Filter Pills */}
       <div className="flex flex-wrap gap-1.5">
         {[
@@ -441,7 +468,7 @@ function SidebarContent({
         </div>
       )}
 
-      {/* Fix Cards */}
+      {/* Fix Cards — ALL expanded, showing before/after at once */}
       <div className="space-y-2">
         {filteredFixes.map(fix => {
           const isApplied = appliedFixes.has(fix.id)
@@ -453,13 +480,13 @@ function SidebarContent({
               ref={el => { if (el) sidebarFixRefs.current[fix.id] = el }}
               className={`rounded-lg border transition-all duration-200 overflow-hidden ${
                 isApplied
-                  ? 'border-green-200 bg-green-50/50 opacity-60'
+                  ? 'border-green-200 bg-green-50/50'
                   : isActive
                     ? 'border-teal-400 bg-white shadow-md ring-1 ring-teal-200'
                     : 'border-slate-200 bg-white hover:border-slate-300'
               }`}
             >
-              {/* Header — always visible */}
+              {/* Header */}
               <button
                 onClick={() => onFixClick(fix.id)}
                 className="w-full flex items-start gap-2 p-3 text-left"
@@ -473,9 +500,6 @@ function SidebarContent({
                   <p className={`text-sm font-medium ${isApplied ? 'line-through text-slate-400' : 'text-slate-900'}`}>
                     {fix.title}
                   </p>
-                  {!isActive && !isApplied && (
-                    <p className="text-xs text-slate-400 mt-0.5 truncate">&ldquo;{fix.current}&rdquo;</p>
-                  )}
                 </div>
                 {isApplied && (
                   <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -484,18 +508,16 @@ function SidebarContent({
                 )}
               </button>
 
-              {/* Expanded detail — when active */}
-              {isActive && !isApplied && (
-                <div className="px-3 pb-3 space-y-2.5 border-t border-slate-100 pt-2.5">
-                  <p className="text-xs text-slate-600">{fix.problem}</p>
-
+              {/* Always-visible before/after for unapplied fixes */}
+              {!isApplied && (
+                <div className="px-3 pb-3 space-y-2 border-t border-slate-100 pt-2">
                   {/* Before */}
                   <div className="rounded-md bg-red-50 border border-red-200 p-2">
                     <p className="text-[10px] font-bold text-red-500 uppercase mb-0.5">Current</p>
                     <p className="text-xs text-slate-700 italic">&ldquo;{fix.current}&rdquo;</p>
                   </div>
 
-                  {/* After — show textarea if editing, otherwise show suggestion */}
+                  {/* After — textarea if editing, otherwise suggestion */}
                   {editingFixId === fix.id ? (
                     <div className="rounded-md bg-teal-50 border border-teal-200 p-2">
                       <p className="text-[10px] font-bold text-teal-600 uppercase mb-1">Your Version</p>
@@ -515,6 +537,7 @@ function SidebarContent({
                     </div>
                   )}
 
+                  {/* Actions */}
                   <div className="flex items-center gap-2">
                     {editingFixId === fix.id ? (
                       <>
@@ -549,19 +572,12 @@ function SidebarContent({
                       </>
                     )}
                   </div>
-
-                  <p className="text-[10px] text-green-600 flex items-center gap-1">
-                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    {fix.impact}
-                  </p>
                 </div>
               )}
 
               {/* Undo for applied fixes */}
-              {isActive && isApplied && (
-                <div className="px-3 pb-3 border-t border-green-100 pt-2">
+              {isApplied && (
+                <div className="px-3 pb-2 border-t border-green-100 pt-2">
                   <button
                     onClick={(e) => { e.stopPropagation(); onUndoFix(fix.id, fix.index) }}
                     className="text-xs text-slate-500 hover:text-slate-700 underline"
