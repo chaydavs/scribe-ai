@@ -165,16 +165,23 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
 
           {/* New Analysis Button */}
           <div className="p-3">
-            <Link
-              href="/resumelab"
-              onClick={() => setSidebarOpen(false)}
+            <button
+              onClick={() => {
+                setSidebarOpen(false)
+                if (pathname === '/resumelab' || pathname.startsWith('/resumelab?')) {
+                  // Force full reload to reset all state
+                  window.location.href = '/resumelab'
+                } else {
+                  router.push('/resumelab')
+                }
+              }}
               className="flex w-full items-center justify-center space-x-2 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-teal-500/25 transition-all hover:shadow-xl"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
               <span>New Analysis</span>
-            </Link>
+            </button>
           </div>
 
           {/* Analysis History */}
