@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { KeywordMatcher } from '@/components/tools/resumelab/keyword-matcher'
 
 // Interactive annotation mockup for the hero
 function AnnotationDemo() {
@@ -72,32 +73,6 @@ function AnnotationDemo() {
   )
 }
 
-// Before/After bullet comparison
-function BeforeAfter({ before, after, label }: { before: string; after: string; label: string }) {
-  return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5">
-      <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">{label}</div>
-      <div className="space-y-3">
-        <div className="flex items-start gap-2">
-          <div className="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full bg-red-100 flex items-center justify-center">
-            <svg className="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </div>
-          <p className="text-sm text-slate-500 line-through">{before}</p>
-        </div>
-        <div className="flex items-start gap-2">
-          <div className="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
-            <svg className="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <p className="text-sm text-slate-800 font-medium">{after}</p>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 export default function LandingPage() {
   return (
@@ -135,28 +110,28 @@ export default function LandingPage() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-teal-100/30 rounded-full blur-3xl" />
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
-            <div className="inline-flex items-center rounded-full bg-red-50 border border-red-200 px-4 py-1.5 text-sm font-medium text-red-700 mb-6">
+            <div className="inline-flex items-center rounded-full bg-teal-50 border border-teal-200 px-4 py-1.5 text-sm font-medium text-teal-700 mb-6">
               <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
-              80% of resumes get rejected before a human sees them
+              The only resume editor with built-in AI fixes
             </div>
             <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
-              Your resume is{' '}
-              <span className="bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">
-                costing you
+              Fix your resume{' '}
+              <span className="bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
+                right here
               </span>
-              {' '}interviews
+              {' '}&mdash; not in another tab
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-600 leading-relaxed">
-              See exactly what recruiters see wrong in 30 seconds. Our AI marks up your resume like an expert editor — highlighting weak bullets, missing keywords, and the exact fixes to land more interviews.
+              Upload your resume, see exactly what&apos;s wrong with inline highlights, fix it with one click, and export as PDF. 60 seconds. No subscription.
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link
                 href="/signup"
                 className="group rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 px-8 py-4 text-base font-semibold text-white shadow-lg shadow-teal-500/30 transition-all hover:shadow-xl hover:shadow-teal-500/40 hover:-translate-y-0.5"
               >
-                See What&apos;s Wrong With My Resume
+                Fix My Resume Now
                 <svg className="inline-block ml-2 h-5 w-5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
@@ -174,34 +149,85 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* How It's Different — Before/After Transformation */}
+      {/* Why ResumeLab Is Different — Competitor Comparison */}
       <section className="py-20 bg-white/70">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">
-              Not another generic AI review
+              Why ResumeLab is different
             </h2>
             <p className="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
-              ResumeLab doesn&apos;t just tell you what&apos;s wrong — it shows you exactly what to change and rewrites it for you.
+              Other tools give you a report. We give you an editor.
             </p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
-            <BeforeAfter
-              label="Vague bullet"
-              before="Responsible for backend API development"
-              after="Built REST APIs serving 50K+ daily requests with 99.9% uptime, reducing response latency by 40%"
-            />
-            <BeforeAfter
-              label="Missing metrics"
-              before="Improved team productivity"
-              after="Increased sprint velocity 35% by implementing automated testing pipeline"
-            />
-            <BeforeAfter
-              label="Weak action verb"
-              before="Helped with migrating services to the cloud"
-              after="Led migration of 12 microservices to AWS, cutting infrastructure costs by $8K/month"
-            />
+          <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
+            {/* Other tools column */}
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+              <div className="flex items-center gap-2 mb-6">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200">
+                  <svg className="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-slate-500">Other resume tools</h3>
+              </div>
+              <ul className="space-y-4">
+                {[
+                  { text: 'Give you a score and a report', detail: 'You still have to open Word/Docs to make changes' },
+                  { text: 'Charge $29-50/month', detail: 'Subscription for a tool you need for 2 weeks' },
+                  { text: 'Generate generic AI rewrites', detail: 'Same corporate-speak for everyone' },
+                  { text: 'Require Chrome extensions & job trackers', detail: 'Feature bloat you didn\'t ask for' },
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <div className="mt-1 flex-shrink-0 w-5 h-5 rounded-full bg-red-100 flex items-center justify-center">
+                      <svg className="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-slate-700">{item.text}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">{item.detail}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* ResumeLab column */}
+            <div className="rounded-2xl border-2 border-teal-500 bg-gradient-to-br from-teal-50 to-emerald-50 p-6 relative">
+              <div className="absolute -top-3 left-6 rounded-full bg-teal-500 px-3 py-0.5 text-xs font-medium text-white">
+                ResumeLab
+              </div>
+              <div className="flex items-center gap-2 mb-6">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-100">
+                  <svg className="h-4 w-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-teal-700">A better way</h3>
+              </div>
+              <ul className="space-y-4">
+                {[
+                  { text: 'Edit and fix directly on your resume', detail: 'Inline highlights + one-click apply, like Google Docs suggestions' },
+                  { text: 'Pay $10 once, not $50/month', detail: 'Credits for your job search — no recurring charge' },
+                  { text: 'Rewrites using YOUR real experience', detail: 'Nothing fabricated — your voice, stronger impact' },
+                  { text: 'One tool that does the whole job', detail: 'Upload → fix → export PDF. That\'s it.' },
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <div className="mt-1 flex-shrink-0 w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
+                      <svg className="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-slate-800">{item.text}</p>
+                      <p className="text-xs text-slate-600 mt-0.5">{item.detail}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       </section>
@@ -415,6 +441,25 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Free Keyword Match Checker */}
+      <section className="py-20 bg-white/70" id="match">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center rounded-full bg-green-50 border border-green-200 px-4 py-1.5 text-sm font-medium text-green-700 mb-4">
+              Free tool — no signup needed
+            </div>
+            <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">
+              Does your resume match the job?
+            </h2>
+            <p className="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
+              Paste your resume and a job description to instantly see which keywords you&apos;re missing.
+              Other tools charge $50/month for this.
+            </p>
+          </div>
+          <KeywordMatcher />
+        </div>
+      </section>
+
       {/* Pricing */}
       <section className="py-20 bg-white/70">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
@@ -423,8 +468,15 @@ export default function LandingPage() {
               One price, everything included
             </h2>
             <p className="mt-4 text-lg text-slate-600">
-              Every plan includes full analysis, inline fixes, AI rewrite, and PDF export
+              No subscription. Buy credits, use them when you need them. They never expire.
             </p>
+          </div>
+
+          <div className="flex items-center justify-center gap-6 mb-10 flex-wrap">
+            <span className="text-sm text-slate-400 line-through">Jobscan: $50/mo</span>
+            <span className="text-sm text-slate-400 line-through">Teal: $36/mo</span>
+            <span className="text-sm text-slate-400 line-through">Rezi: $29/mo</span>
+            <span className="text-sm font-semibold text-teal-600">ResumeLab: $10 total</span>
           </div>
 
           <div className="grid gap-6 md:grid-cols-3">

@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useRef, useCallback, useEffect } from 'react'
 import ResumeAnnotator, { parseSections, type Annotation } from './resume-annotator'
+import { ScoreCard } from './score-card'
 
 // Types matching the StructuredAnalysis in page.tsx
 interface StructuredAnalysis {
@@ -58,6 +59,7 @@ export default function InteractiveAnalysis({
   const [workingText, setWorkingText] = useState(resumeText)
   const [severityFilter, setSeverityFilter] = useState<SeverityFilter>('all')
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [showShareCard, setShowShareCard] = useState(false)
 
   const sidebarFixRefs = useRef<Record<string, HTMLElement>>({})
   const documentRef = useRef<HTMLDivElement>(null)
@@ -220,7 +222,39 @@ export default function InteractiveAnalysis({
             <span className="text-xs font-bold text-green-400">{appliedCount}/{totalFixes}</span>
           </div>
         )}
+
+        {/* Share Score */}
+        <button
+          onClick={() => setShowShareCard(!showShareCard)}
+          className="flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-medium text-white hover:bg-white/20 transition-colors"
+        >
+          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+          </svg>
+          Share
+        </button>
       </div>
+
+      {/* Shareable Score Card Panel */}
+      {showShareCard && (
+        <div className="border-b border-slate-200 bg-slate-50 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm font-medium text-slate-700">Share your score</p>
+            <button
+              onClick={() => setShowShareCard(false)}
+              className="text-slate-400 hover:text-slate-600"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <ScoreCard
+            score={structuredAnalysis.score}
+            scoreBreakdown={structuredAnalysis.scoreBreakdown}
+          />
+        </div>
+      )}
 
       {/* Main Layout */}
       <div className="flex flex-1 min-h-0 relative">
