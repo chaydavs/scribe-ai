@@ -101,9 +101,9 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
   }
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-slate-50 to-teal-50/30">
       {/* Mobile Header */}
-      <header className="fixed top-0 left-0 right-0 z-40 flex h-14 items-center justify-between border-b border-slate-200/60 bg-white/90 backdrop-blur-md px-4 lg:hidden">
+      <header className="fixed top-0 left-0 right-0 z-40 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 lg:hidden">
         <button
           onClick={() => setSidebarOpen(true)}
           className="rounded-lg p-2 text-slate-600 hover:bg-slate-100"
@@ -135,27 +135,27 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
 
       {/* Sidebar */}
       <aside className={`
-        fixed inset-y-0 left-0 z-50 w-72 border-r border-slate-200 bg-slate-100
+        fixed inset-y-0 left-0 z-50 w-72 border-r border-slate-800 bg-slate-900
         transform transition-transform duration-300 ease-in-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0
       `}>
         <div className="flex h-full flex-col">
           {/* Logo */}
-          <div className="flex h-16 items-center justify-between border-b border-slate-200 px-4">
+          <div className="flex h-16 items-center justify-between border-b border-slate-700/50 px-4">
             <Link href="/resumelab" className="flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-400 to-emerald-500">
                 <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <span className="text-lg font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
+              <span className="text-lg font-bold text-white">
                 ResumeLab
               </span>
             </Link>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 lg:hidden"
+              className="rounded-lg p-2 text-slate-400 hover:bg-slate-800 lg:hidden"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -179,13 +179,13 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
 
           {/* Analysis History */}
           <div className="flex-1 overflow-y-auto px-3">
-            <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+            <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
               History
             </p>
 
             {loadingAnalyses ? (
               <div className="flex items-center justify-center py-8">
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-teal-500 border-t-transparent" />
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-teal-400 border-t-transparent" />
               </div>
             ) : analyses.length === 0 ? (
               <p className="px-2 py-4 text-sm text-slate-500">
@@ -194,7 +194,7 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
             ) : (
               <div className="space-y-1">
                 {analyses.map((analysis) => (
-                  <div key={analysis.id} className="group relative flex items-center rounded-lg text-sm text-slate-600 transition-all hover:bg-slate-50">
+                  <div key={analysis.id} className="group relative flex items-center rounded-lg text-sm text-slate-300 transition-all hover:bg-slate-800">
                     {editingId === analysis.id ? (
                       <div className="flex w-full items-center px-3 py-2">
                         <input
@@ -207,7 +207,7 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
                           }}
                           onBlur={() => handleRename(analysis.id)}
                           autoFocus
-                          className="w-full rounded border border-teal-300 bg-white px-2 py-1 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-teal-400"
+                          className="w-full rounded border border-teal-500 bg-slate-800 px-2 py-1 text-sm text-white outline-none focus:ring-2 focus:ring-teal-400"
                         />
                       </div>
                     ) : (
@@ -217,14 +217,14 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
                           onClick={() => setSidebarOpen(false)}
                           className="flex min-w-0 flex-1 items-center px-3 py-2.5"
                         >
-                          <svg className="mr-3 h-4 w-4 flex-shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="mr-3 h-4 w-4 flex-shrink-0 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                           </svg>
                           <div className="min-w-0 flex-1">
-                            <p className="truncate font-medium text-slate-700 group-hover:text-teal-600">
+                            <p className="truncate font-medium text-slate-300 group-hover:text-teal-400">
                               {analysis.title}
                             </p>
-                            <p className="text-xs text-slate-400">
+                            <p className="text-xs text-slate-500">
                               {formatDate(analysis.created_at)}
                               {analysis.score && <span className="ml-2">Score: {analysis.score}</span>}
                             </p>
@@ -232,8 +232,8 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
                         </Link>
                         {/* Hover actions */}
                         {confirmDeleteId === analysis.id ? (
-                          <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center space-x-1 bg-white rounded-lg shadow-sm border border-slate-200 px-2 py-1">
-                            <span className="text-xs text-slate-500 mr-1">Delete?</span>
+                          <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center space-x-1 bg-slate-800 rounded-lg shadow-sm border border-slate-700 px-2 py-1">
+                            <span className="text-xs text-slate-400 mr-1">Delete?</span>
                             <button
                               onClick={(e) => { e.preventDefault(); handleDelete(analysis.id) }}
                               className="rounded px-2 py-0.5 text-xs font-medium text-white bg-red-500 hover:bg-red-600"
@@ -242,7 +242,7 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
                             </button>
                             <button
                               onClick={(e) => { e.preventDefault(); setConfirmDeleteId(null) }}
-                              className="rounded px-2 py-0.5 text-xs font-medium text-slate-600 hover:bg-slate-100"
+                              className="rounded px-2 py-0.5 text-xs font-medium text-slate-300 hover:bg-slate-700"
                             >
                               No
                             </button>
@@ -255,7 +255,7 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
                                 setEditingId(analysis.id)
                                 setEditingTitle(analysis.title)
                               }}
-                              className="rounded p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-600"
+                              className="rounded p-1.5 text-slate-500 hover:bg-slate-700 hover:text-slate-300"
                               title="Rename"
                             >
                               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -268,7 +268,7 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
                                 setConfirmDeleteId(analysis.id)
                               }}
                               disabled={deletingId === analysis.id}
-                              className="rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
+                              className="rounded p-1.5 text-slate-500 hover:bg-red-900/30 hover:text-red-400 disabled:opacity-50"
                               title="Delete"
                             >
                               {deletingId === analysis.id ? (
@@ -290,14 +290,14 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
           </div>
 
           {/* Navigation */}
-          <div className="border-t border-slate-200 px-3 py-3">
+          <div className="border-t border-slate-700/50 px-3 py-3">
             <Link
               href="/analytics"
               onClick={() => setSidebarOpen(false)}
               className={`flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
                 pathname === '/analytics'
-                  ? 'bg-teal-50 text-teal-600'
-                  : 'text-slate-600 hover:bg-slate-50'
+                  ? 'bg-teal-500/10 text-teal-400'
+                  : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
               }`}
             >
               <svg className="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -310,8 +310,8 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
               onClick={() => setSidebarOpen(false)}
               className={`flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
                 pathname === '/settings'
-                  ? 'bg-teal-50 text-teal-600'
-                  : 'text-slate-600 hover:bg-slate-50'
+                  ? 'bg-teal-500/10 text-teal-400'
+                  : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
               }`}
             >
               <svg className="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -323,7 +323,7 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
           </div>
 
           {/* Bottom Section */}
-          <div className="border-t border-slate-200 p-3">
+          <div className="border-t border-slate-700/50 p-3">
             {/* Credits Card */}
             <Link
               href="/settings"
@@ -350,14 +350,14 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
                   {(profile?.full_name || user.email || 'U')[0].toUpperCase()}
                 </div>
                 <div className="max-w-[140px]">
-                  <p className="truncate text-sm font-medium text-slate-700">
+                  <p className="truncate text-sm font-medium text-slate-300">
                     {profile?.full_name || 'User'}
                   </p>
                 </div>
               </div>
               <button
                 onClick={handleSignOut}
-                className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+                className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-800 hover:text-slate-300"
                 title="Sign out"
               >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
