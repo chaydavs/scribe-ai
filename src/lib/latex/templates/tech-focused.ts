@@ -74,7 +74,7 @@ ${exp.bullets.map(b => `  \\item ${esc(b)}`).join('\n')}
 
   return `\\documentclass[10pt, letterpaper]{article}
 
-\\usepackage[top=0.5cm, bottom=0.5cm, left=1.2cm, right=1.2cm]{geometry}
+\\usepackage[top=0.4cm, bottom=0.4cm, left=1.2cm, right=1.2cm]{geometry}
 \\usepackage{titlesec}
 \\usepackage[dvipsnames]{xcolor}
 \\usepackage{enumitem}

@@ -2,9 +2,9 @@ import { ParsedResume } from '@/types/templates'
 
 /**
  * Creative Bold Template
- * - Teal accent color for name, section headers, bullets
- * - Bold name at 22pt with teal color
- * - Section headers with colored thick rule
+ * - Black accent color for name, section headers, bullets
+ * - Bold name at 20pt
+ * - Section headers with thick black rule below
  * - Skills as bold inline tags separated by dots
  * - Eye-catching design for creative roles
  */
@@ -44,10 +44,22 @@ ${exp.bullets.map(b => `  \\item ${esc(b)}`).join('\n')}
     const school = edu.school ? `\\textbf{${esc(edu.school)}}` : ''
     const date = edu.graduationDate ? esc(edu.graduationDate) : ''
     const firstLine = school && date ? `${school} \\hfill ${date}` : school || date
-    const details = [edu.degree ? esc(edu.degree) : '', edu.gpa ? `GPA: ${esc(edu.gpa)}` : '', ...(edu.honors || []).map(esc)].filter(Boolean).join(' $|$ ')
-    return details ? `${firstLine} \\\\\n${details}` : firstLine
+    const lines = [firstLine]
+    // Degree + GPA on one line
+    const degreeParts = [edu.degree ? esc(edu.degree) : '', edu.gpa ? `GPA: ${esc(edu.gpa)}` : ''].filter(Boolean)
+    if (degreeParts.length > 0) lines.push(degreeParts.join(' $|$ '))
+    // Honors on their own line (but not coursework)
+    const honors = (edu.honors || []).filter(h => !/coursework/i.test(h))
+    if (honors.length > 0) lines.push(honors.map(esc).join(' $|$ '))
+    // Coursework on a separate line
+    const coursework = (edu.honors || []).find(h => /coursework/i.test(h))
+    if (coursework) {
+      const cwText = coursework.replace(/^Relevant Coursework:\\s*/i, '')
+      lines.push(`\\textit{Relevant Coursework:} ${esc(cwText)}`)
+    }
+    return lines.join(' \\\\\\\\\n')
   }
-  const educationSection = resume.education.map(fmtEdu).join('\n\\vspace{4pt}\n')
+  const educationSection = resume.education.map(fmtEdu).join('\n\\vspace{3pt}\n')
 
   const skillsTags = resume.skills.map(s => `\\textbf{${esc(s)}}`).join(' $\\cdot$ ')
 
@@ -59,16 +71,11 @@ ${exp.bullets.map(b => `  \\item ${esc(b)}`).join('\n')}
 
   return `\\documentclass[10pt, letterpaper]{article}
 
-\\usepackage[top=0.5cm, bottom=0.5cm, left=1.2cm, right=1.2cm]{geometry}
+\\usepackage[top=0.4cm, bottom=0.4cm, left=1.2cm, right=1.2cm]{geometry}
 \\usepackage{titlesec}
 \\usepackage[dvipsnames]{xcolor}
 \\usepackage{enumitem}
-\\usepackage[
-  pdftitle={${esc(resume.fullName)}'s Resume},
-  pdfauthor={${esc(resume.fullName)}},
-  colorlinks=true,
-  urlcolor=teal
-]{hyperref}
+\\usepackage[hidelinks]{hyperref}
 \\usepackage{iftex}
 
 \\ifPDFTeX
@@ -80,30 +87,24 @@ ${exp.bullets.map(b => `  \\item ${esc(b)}`).join('\n')}
 
 \\usepackage{charter}
 
-\\definecolor{accent}{RGB}{0, 128, 128}
-
 \\pagestyle{empty}
 \\setlength{\\parindent}{0pt}
 \\setlength{\\parskip}{0pt}
 
-% Section headers: bold, colored, with thick colored rule below
-\\titleformat{\\section}{\\color{accent}\\bfseries\\normalsize}{}{0pt}{}[\\vspace{-0.3em}{\\color{accent}\\titlerule[1.5pt]}]
-\\titlespacing{\\section}{0pt}{10pt}{6pt}
+% Section headers: bold, black, with thick black rule below (no overlap)
+\\titleformat{\\section}{\\bfseries\\normalsize\\scshape}{}{0pt}{}[\\vspace{2pt}\\titlerule[1.5pt]]
+\\titlespacing{\\section}{0pt}{8pt}{5pt}
 
-% Colored bullets
-\\renewcommand{\\labelitemi}{\\textcolor{accent}{\\scriptsize$\\bullet$}}
+\\renewcommand{\\labelitemi}{\\scriptsize$\\bullet$}
 
 \\begin{document}
 
 \\begin{center}
-  {\\fontsize{22pt}{24pt}\\selectfont\\textbf{\\textcolor{accent}{${esc(resume.fullName)}}}}
-
-  \\vspace{4pt}
-
+  {\\fontsize{20pt}{22pt}\\selectfont\\textbf{${esc(resume.fullName)}}}\\\\[0.3em]
   {\\footnotesize ${contactParts.join(' $|$ ')}}
 \\end{center}
 
-\\vspace{4pt}
+\\vspace{3pt}
 
 ${resume.summary ? `\\section{Summary}\n${esc(resume.summary)}\n\n` : ''}\\section{Experience}
 ${experienceSection}

@@ -58,7 +58,7 @@ ${exp.bullets.map(b => `  \\item ${esc(b)}`).join('\n')}
 
   return `\\documentclass[10pt, letterpaper]{article}
 
-\\usepackage[top=0.5cm, bottom=0.5cm, left=1.4cm, right=1.4cm]{geometry}
+\\usepackage[top=0.4cm, bottom=0.4cm, left=1.4cm, right=1.4cm]{geometry}
 \\usepackage{titlesec}
 \\usepackage[dvipsnames]{xcolor}
 \\usepackage{enumitem}
@@ -95,10 +95,7 @@ ${exp.bullets.map(b => `  \\item ${esc(b)}`).join('\n')}
 \\begin{document}
 
 \\begin{center}
-  {\\fontsize{18pt}{20pt}\\selectfont\\textsc{\\textcolor{navy}{${esc(resume.fullName)}}}}
-
-  \\vspace{4pt}
-
+  {\\fontsize{18pt}{20pt}\\selectfont\\textsc{\\textcolor{navy}{${esc(resume.fullName)}}}}\\\\[0.3em]
   {\\footnotesize ${contactParts.join(' \\quad $|$ \\quad ')}}
 \\end{center}
 
