@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, Suspense } from 'react'
+import { useState, useRef, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { getTool } from '@/types'
 import { CanvasResumePreview } from '@/components/tools/resumelab/canvas-resume-preview'
@@ -411,37 +411,49 @@ function ResumeLabContent() {
     }
   }
 
+  // Score the resume text via quick-score API
+  const scoreAbortRef = useRef<AbortController | null>(null)
+  const scoreResume = useCallback(async (text: string) => {
+    // Cancel any in-flight scoring request
+    if (scoreAbortRef.current) scoreAbortRef.current.abort()
+    const controller = new AbortController()
+    scoreAbortRef.current = controller
+
+    setScoringRewrite(true)
+    try {
+      const res = await fetch('/api/tools/quick-score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resumeText: text }),
+        signal: controller.signal,
+      })
+      const data = await res.json()
+      if (data.score !== undefined) {
+        setImprovedScore(data)
+      }
+    } catch {
+      // Aborted or failed — ignore
+    } finally {
+      setScoringRewrite(false)
+    }
+  }, [])
+
   // Initialize editableResume from rewrite and auto-generate preview + score
   useEffect(() => {
     if (rewrite) {
       setEditableResume(rewrite)
       generatePreview(rewrite)
-      // Auto-score the rewritten resume
-      if (!improvedScore) {
-        setScoringRewrite(true)
-        fetch('/api/tools/quick-score', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ resumeText: rewrite }),
-        })
-          .then(res => res.json())
-          .then(data => {
-            if (data.score !== undefined) {
-              setImprovedScore(data)
-            }
-          })
-          .catch(() => {})
-          .finally(() => setScoringRewrite(false))
-      }
+      scoreResume(rewrite)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rewrite])
 
-  // Debounce preview generation when user edits the resume
+  // Debounce preview + re-score when user edits the resume
   useEffect(() => {
     if (!editableResume || editableResume === rewrite) return
     const timer = setTimeout(() => {
       generatePreview(editableResume)
+      scoreResume(editableResume)
     }, 2500)
     return () => clearTimeout(timer)
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1290,83 +1302,113 @@ function ResumeLabContent() {
                   </div>
                 </div>
 
-                {/* Score Comparison */}
+                {/* Live Score Card */}
                 {(analysisScore || improvedScore || scoringRewrite) && (
-                  <div className="mb-6 rounded-xl border border-slate-200 bg-gradient-to-r from-slate-50 to-white p-5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-8">
-                        {/* Original Score */}
-                        {analysisScore && (
-                          <div className="text-center">
-                            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Original</p>
-                            <p className="text-3xl font-bold text-slate-400">{analysisScore}</p>
-                            <p className="text-xs text-slate-400">/100</p>
-                          </div>
-                        )}
-
-                        {/* Arrow */}
-                        {analysisScore && (improvedScore || scoringRewrite) && (
-                          <div className="flex flex-col items-center">
-                            <svg className="h-6 w-6 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                            </svg>
-                            {improvedScore && analysisScore && (
-                              <span className="text-xs font-semibold text-teal-600 mt-1">
-                                +{improvedScore.score - analysisScore} pts
-                              </span>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Improved Score */}
-                        {scoringRewrite ? (
-                          <div className="text-center">
-                            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Improved</p>
-                            <div className="h-9 w-9 mx-auto animate-spin rounded-full border-3 border-teal-500 border-t-transparent" />
-                            <p className="text-xs text-slate-400 mt-1">Scoring...</p>
-                          </div>
-                        ) : improvedScore ? (
-                          <div className="text-center">
-                            <p className="text-xs font-medium text-teal-600 uppercase tracking-wider mb-1">Improved</p>
-                            <p className={`text-3xl font-bold ${improvedScore.score >= 75 ? 'text-green-600' : improvedScore.score >= 55 ? 'text-amber-600' : 'text-red-500'}`}>
-                              {improvedScore.score}
-                            </p>
-                            <p className="text-xs text-slate-400">/100</p>
-                          </div>
-                        ) : null}
-                      </div>
-
-                      {/* Score Breakdown */}
-                      {improvedScore && (
-                        <div className="hidden md:grid grid-cols-4 gap-4 text-center">
-                          {Object.entries(improvedScore.scoreBreakdown).map(([key, val]) => (
-                            <div key={key}>
-                              <p className="text-xs text-slate-500 capitalize">{key === 'ats' ? 'ATS' : key}</p>
-                              <p className={`text-lg font-bold ${val.score >= 75 ? 'text-green-600' : val.score >= 55 ? 'text-amber-600' : 'text-red-500'}`}>
-                                {val.score}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Top Improvements */}
-                    {improvedScore?.topImprovements && improvedScore.topImprovements.length > 0 && (
-                      <div className="mt-4 pt-4 border-t border-slate-200">
-                        <p className="text-xs font-medium text-slate-500 mb-2">Key improvements in your rewritten resume:</p>
-                        <div className="flex flex-wrap gap-2">
-                          {improvedScore.topImprovements.map((imp, i) => (
-                            <span key={i} className="inline-flex items-center rounded-full bg-teal-50 border border-teal-100 px-3 py-1 text-xs text-teal-700">
-                              <svg className="h-3 w-3 mr-1 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <div className="mb-6 rounded-xl border border-slate-200 bg-white p-5">
+                    <div className="flex items-center gap-6">
+                      {/* Animated Score Circle */}
+                      <div className="flex-shrink-0 relative">
+                        {(() => {
+                          const currentScore = improvedScore?.score ?? analysisScore ?? 0
+                          const radius = 44
+                          const circumference = 2 * Math.PI * radius
+                          const progress = (currentScore / 100) * circumference
+                          const scoreColor = currentScore >= 75 ? '#16a34a' : currentScore >= 55 ? '#d97706' : '#ef4444'
+                          const bgColor = currentScore >= 75 ? '#dcfce7' : currentScore >= 55 ? '#fef3c7' : '#fee2e2'
+                          return (
+                            <div className="relative w-28 h-28">
+                              <svg className="w-28 h-28 -rotate-90" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r={radius} fill="none" stroke={bgColor} strokeWidth="8" />
+                                <circle
+                                  cx="50" cy="50" r={radius}
+                                  fill="none"
+                                  stroke={scoreColor}
+                                  strokeWidth="8"
+                                  strokeLinecap="round"
+                                  strokeDasharray={circumference}
+                                  strokeDashoffset={circumference - progress}
+                                  style={{ transition: 'stroke-dashoffset 1s ease-in-out, stroke 0.5s ease' }}
+                                />
                               </svg>
-                              {imp}
-                            </span>
-                          ))}
-                        </div>
+                              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                {scoringRewrite ? (
+                                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-teal-500 border-t-transparent" />
+                                ) : (
+                                  <>
+                                    <span className="text-2xl font-bold" style={{ color: scoreColor, transition: 'color 0.5s ease' }}>
+                                      {currentScore}
+                                    </span>
+                                    <span className="text-[10px] text-slate-400 -mt-0.5">/100</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          )
+                        })()}
                       </div>
-                    )}
+
+                      {/* Score Details */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-3">
+                          {analysisScore && improvedScore && (
+                            <>
+                              <span className="text-sm text-slate-500">
+                                <span className="line-through">{analysisScore}</span>
+                              </span>
+                              <svg className="h-4 w-4 text-teal-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                              </svg>
+                              <span className={`text-sm font-semibold ${improvedScore.score >= 75 ? 'text-green-600' : 'text-amber-600'}`}>
+                                {improvedScore.score}
+                              </span>
+                              {improvedScore.score > analysisScore && (
+                                <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
+                                  +{improvedScore.score - analysisScore}
+                                </span>
+                              )}
+                            </>
+                          )}
+                          {scoringRewrite && (
+                            <span className="text-xs text-slate-400 animate-pulse">Rescoring...</span>
+                          )}
+                        </div>
+
+                        {/* Breakdown Bars */}
+                        {improvedScore?.scoreBreakdown && (
+                          <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                            {Object.entries(improvedScore.scoreBreakdown).map(([key, val]) => {
+                              const barColor = val.score >= 75 ? 'bg-green-500' : val.score >= 55 ? 'bg-amber-500' : 'bg-red-500'
+                              return (
+                                <div key={key} className="flex items-center gap-2">
+                                  <span className="text-xs text-slate-500 w-14 flex-shrink-0 capitalize">{key === 'ats' ? 'ATS' : key}</span>
+                                  <div className="flex-1 h-1.5 rounded-full bg-slate-100">
+                                    <div
+                                      className={`h-full rounded-full ${barColor}`}
+                                      style={{ width: `${val.score}%`, transition: 'width 1s ease-in-out' }}
+                                    />
+                                  </div>
+                                  <span className="text-xs font-medium text-slate-700 w-6 text-right">{val.score}</span>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        )}
+
+                        {/* Top Improvements */}
+                        {improvedScore?.topImprovements && improvedScore.topImprovements.length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-1.5">
+                            {improvedScore.topImprovements.map((imp, i) => (
+                              <span key={i} className="inline-flex items-center rounded-full bg-teal-50 border border-teal-100 px-2.5 py-0.5 text-[11px] text-teal-700">
+                                <svg className="h-2.5 w-2.5 mr-1 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                                {imp}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 )}
 
