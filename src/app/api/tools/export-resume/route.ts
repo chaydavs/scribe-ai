@@ -27,26 +27,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Template not found' }, { status: 404 })
     }
 
-    const creditCost = template.creditCost
-
-    // Check credits (skip for preview mode)
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('credits')
-      .eq('id', user.id)
-      .single()
-
-    if (!previewOnly && (!profile || profile.credits < creditCost)) {
-      return NextResponse.json(
-        { error: `Insufficient credits. You need ${creditCost} credits for this export.` },
-        { status: 402 }
-      )
-    }
-
-    // Generate LaTeX
+    // Generate LaTeX first (fast, no DB needed)
     let latex = convertResumeToLatex(resumeText, template.style as TemplateStyle)
 
-    // Inject watermark for preview mode
+    // For preview mode, skip credit check entirely — just compile and return
     if (previewOnly) {
       const watermarkCode = `\\AddToShipoutPictureBG*{%
   \\AtPageCenter{%
@@ -58,10 +42,51 @@ export async function POST(request: NextRequest) {
   }%
 }`
       latex = latex.replace('\\begin{document}', `\\begin{document}\n${watermarkCode}`)
+
+      const compileResponse = await fetch('https://latex.ytotech.com/builds/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          compiler: 'pdflatex',
+          resources: [{ main: true, content: latex }],
+        }),
+      })
+
+      if (!compileResponse.ok) {
+        return NextResponse.json({
+          success: true,
+          format: 'latex',
+          content: latex,
+          message: 'PDF compilation unavailable. LaTeX source provided instead.',
+        })
+      }
+
+      const pdfBuffer = await compileResponse.arrayBuffer()
+      return NextResponse.json({
+        success: true,
+        format: 'pdf',
+        content: Buffer.from(pdfBuffer).toString('base64'),
+        preview: true,
+      })
+    }
+
+    const creditCost = template.creditCost
+
+    // Check credits (only for actual exports)
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('credits')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile || profile.credits < creditCost) {
+      return NextResponse.json(
+        { error: `Insufficient credits. You need ${creditCost} credits for this export.` },
+        { status: 402 }
+      )
     }
 
     // Compile LaTeX to PDF using external API
-    // Using latex.ytotech.com free API
     const compileResponse = await fetch('https://latex.ytotech.com/builds/sync', {
       method: 'POST',
       headers: {
@@ -96,16 +121,6 @@ export async function POST(request: NextRequest) {
     // Get the PDF binary
     const pdfBuffer = await compileResponse.arrayBuffer()
     const pdfBase64 = Buffer.from(pdfBuffer).toString('base64')
-
-    // For preview mode, return without charging credits
-    if (previewOnly) {
-      return NextResponse.json({
-        success: true,
-        format: 'pdf',
-        content: pdfBase64,
-        preview: true,
-      })
-    }
 
     // Deduct credits
     const serviceClient = await createServiceClient()
