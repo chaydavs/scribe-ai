@@ -81,6 +81,19 @@ function ResumeLabContent() {
   // Rewrite state
   const [rewrite, setRewrite] = useState<string | null>(null)
 
+  // Improved score state (after rewrite)
+  const [improvedScore, setImprovedScore] = useState<{
+    score: number
+    scoreBreakdown: {
+      impact: { score: number; label: string }
+      clarity: { score: number; label: string }
+      ats: { score: number; label: string }
+      structure: { score: number; label: string }
+    }
+    topImprovements: string[]
+  } | null>(null)
+  const [scoringRewrite, setScoringRewrite] = useState(false)
+
   // Preview state
   const [editableResume, setEditableResume] = useState<string>('')
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null)
@@ -332,6 +345,7 @@ function ResumeLabContent() {
     setAnalysis(null)
     setStructuredAnalysis(null)
     setRewrite(null)
+    setImprovedScore(null)
     setAnalysisScore(null)
     setPdfPreviewUrl(null)
     setCurrentAnalysisId(null)
@@ -397,11 +411,28 @@ function ResumeLabContent() {
     }
   }
 
-  // Initialize editableResume from rewrite and auto-generate preview
+  // Initialize editableResume from rewrite and auto-generate preview + score
   useEffect(() => {
     if (rewrite) {
       setEditableResume(rewrite)
       generatePreview(rewrite)
+      // Auto-score the rewritten resume
+      if (!improvedScore) {
+        setScoringRewrite(true)
+        fetch('/api/tools/quick-score', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ resumeText: rewrite }),
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.score !== undefined) {
+              setImprovedScore(data)
+            }
+          })
+          .catch(() => {})
+          .finally(() => setScoringRewrite(false))
+      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rewrite])
@@ -1258,6 +1289,86 @@ function ResumeLabContent() {
                     </button>
                   </div>
                 </div>
+
+                {/* Score Comparison */}
+                {(analysisScore || improvedScore || scoringRewrite) && (
+                  <div className="mb-6 rounded-xl border border-slate-200 bg-gradient-to-r from-slate-50 to-white p-5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-8">
+                        {/* Original Score */}
+                        {analysisScore && (
+                          <div className="text-center">
+                            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Original</p>
+                            <p className="text-3xl font-bold text-slate-400">{analysisScore}</p>
+                            <p className="text-xs text-slate-400">/100</p>
+                          </div>
+                        )}
+
+                        {/* Arrow */}
+                        {analysisScore && (improvedScore || scoringRewrite) && (
+                          <div className="flex flex-col items-center">
+                            <svg className="h-6 w-6 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                            </svg>
+                            {improvedScore && analysisScore && (
+                              <span className="text-xs font-semibold text-teal-600 mt-1">
+                                +{improvedScore.score - analysisScore} pts
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Improved Score */}
+                        {scoringRewrite ? (
+                          <div className="text-center">
+                            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Improved</p>
+                            <div className="h-9 w-9 mx-auto animate-spin rounded-full border-3 border-teal-500 border-t-transparent" />
+                            <p className="text-xs text-slate-400 mt-1">Scoring...</p>
+                          </div>
+                        ) : improvedScore ? (
+                          <div className="text-center">
+                            <p className="text-xs font-medium text-teal-600 uppercase tracking-wider mb-1">Improved</p>
+                            <p className={`text-3xl font-bold ${improvedScore.score >= 75 ? 'text-green-600' : improvedScore.score >= 55 ? 'text-amber-600' : 'text-red-500'}`}>
+                              {improvedScore.score}
+                            </p>
+                            <p className="text-xs text-slate-400">/100</p>
+                          </div>
+                        ) : null}
+                      </div>
+
+                      {/* Score Breakdown */}
+                      {improvedScore && (
+                        <div className="hidden md:grid grid-cols-4 gap-4 text-center">
+                          {Object.entries(improvedScore.scoreBreakdown).map(([key, val]) => (
+                            <div key={key}>
+                              <p className="text-xs text-slate-500 capitalize">{key === 'ats' ? 'ATS' : key}</p>
+                              <p className={`text-lg font-bold ${val.score >= 75 ? 'text-green-600' : val.score >= 55 ? 'text-amber-600' : 'text-red-500'}`}>
+                                {val.score}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Top Improvements */}
+                    {improvedScore?.topImprovements && improvedScore.topImprovements.length > 0 && (
+                      <div className="mt-4 pt-4 border-t border-slate-200">
+                        <p className="text-xs font-medium text-slate-500 mb-2">Key improvements in your rewritten resume:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {improvedScore.topImprovements.map((imp, i) => (
+                            <span key={i} className="inline-flex items-center rounded-full bg-teal-50 border border-teal-100 px-3 py-1 text-xs text-teal-700">
+                              <svg className="h-3 w-3 mr-1 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                              {imp}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Editable Resume + PDF Preview side by side */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
