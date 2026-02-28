@@ -1465,17 +1465,19 @@ function ResumeLabContent() {
                         {improvedScore?.scoreBreakdown && (
                           <div className="grid grid-cols-2 gap-x-6 gap-y-2">
                             {Object.entries(improvedScore.scoreBreakdown).map(([key, val]) => {
-                              const barColor = val.score >= 75 ? 'bg-green-500' : val.score >= 55 ? 'bg-amber-500' : 'bg-red-500'
+                              const maxScore = key === 'impact' ? 35 : key === 'structure' ? 15 : 25
+                              const pct = Math.round((val.score / maxScore) * 100)
+                              const barColor = pct >= 75 ? 'bg-green-500' : pct >= 55 ? 'bg-amber-500' : 'bg-red-500'
                               return (
                                 <div key={key} className="flex items-center gap-2">
                                   <span className="text-xs text-slate-500 w-14 flex-shrink-0 capitalize">{key === 'ats' ? 'ATS' : key}</span>
                                   <div className="flex-1 h-1.5 rounded-full bg-slate-100">
                                     <div
                                       className={`h-full rounded-full ${barColor}`}
-                                      style={{ width: `${val.score}%`, transition: 'width 1s ease-in-out' }}
+                                      style={{ width: `${pct}%`, transition: 'width 1s ease-in-out' }}
                                     />
                                   </div>
-                                  <span className="text-xs font-medium text-slate-700 w-6 text-right">{val.score}</span>
+                                  <span className="text-xs font-medium text-slate-700 w-8 text-right">{val.score}/{maxScore}</span>
                                 </div>
                               )
                             })}
