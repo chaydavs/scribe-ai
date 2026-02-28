@@ -30,7 +30,7 @@ export function Navbar({ userName, userEmail }: NavbarProps) {
         <div className="flex h-16 justify-between">
           <div className="flex">
             <Link href="/resumelab" className="flex items-center">
-              <span className="text-xl font-bold text-gray-900">Scribe AI</span>
+              <span className="text-xl font-bold text-gray-900">ResumeLab</span>
             </Link>
             <div className="ml-10 flex items-center space-x-1">
               {tools.map((tool) => (

@@ -5,8 +5,8 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Scribe AI - AI Writing & Analysis Tools',
-  description: 'Professional AI tools for resumes, emails, feedback, and more. Save hours with intelligent writing assistance.',
+  title: 'ResumeLab - Fix Your Resume with AI',
+  description: 'Upload your resume, see what\'s wrong with inline highlights, fix it with one click, and export as PDF. No subscription.',
 }
 
 export default function RootLayout({

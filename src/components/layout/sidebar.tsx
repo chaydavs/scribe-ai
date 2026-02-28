@@ -12,7 +12,7 @@ export function Sidebar() {
     <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 border-r border-gray-200 bg-white lg:block">
       <div className="flex h-16 items-center border-b border-gray-200 px-6">
         <Link href="/resumelab" className="text-xl font-bold text-gray-900">
-          Scribe AI
+          ResumeLab
         </Link>
       </div>
       <nav className="p-4">

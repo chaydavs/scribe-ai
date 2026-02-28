@@ -149,32 +149,75 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 px-4 py-12">
-      <div className="w-full max-w-md">
-        <Link href="/" className="flex items-center justify-center space-x-2 mb-8">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600">
-            <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-          </div>
-          <span className="text-xl font-bold text-slate-900">Scribe AI</span>
-        </Link>
-
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-slate-900">Welcome back</h1>
-          <p className="mt-2 text-slate-600">Sign in to access your AI tools</p>
-        </div>
-
-        <Suspense fallback={<div className="rounded-2xl border border-slate-200 bg-white p-8 h-80 animate-pulse" />}>
-          <LoginForm />
-        </Suspense>
-
-        <p className="mt-6 text-center text-sm text-slate-600">
-          Don't have an account?{' '}
-          <Link href="/signup" className="font-medium text-teal-600 hover:text-teal-500">
-            Sign up free
+    <div className="flex min-h-screen">
+      {/* Left Side - Form */}
+      <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:px-20 xl:px-24">
+        <div className="mx-auto w-full max-w-sm">
+          <Link href="/" className="flex items-center space-x-2 mb-8">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600">
+              <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <span className="text-lg font-bold text-slate-900">ResumeLab</span>
           </Link>
-        </p>
+
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold text-slate-900">Welcome back</h1>
+            <p className="mt-2 text-slate-600">Sign in to continue fixing your resume</p>
+          </div>
+
+          <Suspense fallback={<div className="rounded-2xl border border-slate-200 bg-white p-8 h-80 animate-pulse" />}>
+            <LoginForm />
+          </Suspense>
+
+          <p className="mt-6 text-center text-sm text-slate-600">
+            Don&apos;t have an account?{' '}
+            <Link href="/signup" className="font-medium text-teal-600 hover:text-teal-500">
+              Sign up free
+            </Link>
+          </p>
+        </div>
+      </div>
+
+      {/* Right Side - Visual */}
+      <div className="hidden lg:flex lg:flex-1 lg:flex-col lg:justify-center bg-gradient-to-br from-slate-900 to-slate-800 p-12">
+        <div className="mx-auto max-w-md">
+          {/* Score mockup */}
+          <div className="rounded-2xl bg-white/5 backdrop-blur border border-white/10 p-8 mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <p className="text-sm text-slate-400">Resume Score</p>
+                <p className="text-5xl font-bold text-white mt-1">87</p>
+              </div>
+              <div className="h-20 w-20 rounded-full border-4 border-green-400 flex items-center justify-center">
+                <svg className="h-8 w-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
+            <div className="space-y-3">
+              {[
+                { label: 'Impact', score: 92, color: 'bg-green-400' },
+                { label: 'Clarity', score: 85, color: 'bg-green-400' },
+                { label: 'ATS-Ready', score: 78, color: 'bg-amber-400' },
+                { label: 'Structure', score: 90, color: 'bg-green-400' },
+              ].map((item) => (
+                <div key={item.label} className="flex items-center gap-3">
+                  <span className="text-xs text-slate-400 w-16">{item.label}</span>
+                  <div className="flex-1 h-2 rounded-full bg-white/10">
+                    <div className={`h-full rounded-full ${item.color}`} style={{ width: `${item.score}%` }} />
+                  </div>
+                  <span className="text-xs text-white font-medium w-8 text-right">{item.score}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <p className="text-slate-400 text-sm text-center">
+            Join thousands of job seekers who improved their resumes with ResumeLab
+          </p>
+        </div>
       </div>
     </div>
   )

@@ -241,9 +241,12 @@ export default function LandingPage() {
             </h2>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-3 max-w-4xl mx-auto">
-            <div className="text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white text-xl font-bold shadow-lg shadow-teal-500/30">
+          <div className="relative grid gap-8 md:grid-cols-3 max-w-4xl mx-auto">
+            {/* Connecting line (desktop only) */}
+            <div className="hidden md:block absolute top-7 left-[calc(16.67%+28px)] right-[calc(16.67%+28px)] h-0.5 bg-gradient-to-r from-teal-300 via-teal-400 to-emerald-400" />
+
+            <div className="relative text-center rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white text-xl font-bold shadow-lg shadow-teal-500/30 relative z-10">
                 1
               </div>
               <h3 className="mt-5 text-lg font-semibold text-slate-900">Upload your resume</h3>
@@ -251,22 +254,22 @@ export default function LandingPage() {
                 Drop a PDF or paste text. We parse it instantly.
               </p>
             </div>
-            <div className="text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white text-xl font-bold shadow-lg shadow-teal-500/30">
+            <div className="relative text-center rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white text-xl font-bold shadow-lg shadow-teal-500/30 relative z-10">
                 2
               </div>
               <h3 className="mt-5 text-lg font-semibold text-slate-900">See inline annotations</h3>
               <p className="mt-2 text-sm text-slate-600">
-                Your resume appears with color-coded highlights on every issue — click any to see the fix.
+                Color-coded highlights on every issue — click any to see the fix.
               </p>
             </div>
-            <div className="text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white text-xl font-bold shadow-lg shadow-emerald-500/30">
+            <div className="relative text-center rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white text-xl font-bold shadow-lg shadow-emerald-500/30 relative z-10">
                 3
               </div>
               <h3 className="mt-5 text-lg font-semibold text-slate-900">Apply fixes & export</h3>
               <p className="mt-2 text-sm text-slate-600">
-                One-click apply for each fix, or auto-rewrite the whole thing. Export as PDF.
+                One-click apply or auto-rewrite everything. Export as PDF.
               </p>
             </div>
           </div>
@@ -613,9 +616,9 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200/60 py-8 bg-white/80">
+      <footer className="border-t border-slate-200/60 py-10 bg-white/80">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center space-x-2">
               <div className="flex h-6 w-6 items-center justify-center rounded bg-gradient-to-br from-teal-500 to-emerald-600">
                 <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -624,9 +627,11 @@ export default function LandingPage() {
               </div>
               <span className="text-sm font-semibold text-slate-900">ResumeLab</span>
             </div>
-            <p className="text-sm text-slate-500">
-              Powered by Claude AI
-            </p>
+            <div className="flex items-center gap-6 text-sm text-slate-500">
+              <Link href="/login" className="hover:text-slate-700 transition-colors">Sign in</Link>
+              <Link href="/signup" className="hover:text-slate-700 transition-colors">Get started</Link>
+              <span>Powered by Claude AI</span>
+            </div>
           </div>
         </div>
       </footer>
