@@ -33,7 +33,7 @@ CRITICAL: Score the resume AS IT IS. Be CONSISTENT — the same text must always
     "ats": { "score": <0-25>, "label": "<one line>" },
     "structure": { "score": <0-15>, "label": "<one line>" }
   },
-  "topImprovements": ["<improvement 1>", "<improvement 2>", "<improvement 3>"]
+  "topImprovements": ["<specific actionable improvement referencing a line from the resume>", "<another specific improvement>", "<third improvement>", "<fourth improvement if score < 85>", "<fifth improvement if score < 75>"]
 }
 \`\`\``
 

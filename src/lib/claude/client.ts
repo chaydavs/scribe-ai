@@ -131,7 +131,7 @@ Score the resume AS IT IS — not its potential. Be consistent: the same resume 
 - ALWAYS include "current" (exact quote) and "fixed" (your rewrite) for EVERY fix
 - The "fixed" version must use ONLY facts from the original — never invent metrics or achievements
 - Order fixes by severity: all "critical" first, then "important", then "nice-to-have"
-- Include 4-7 fixes. If resume is strong, fewer fixes is fine — don't manufacture problems.
+- Include 5-10 fixes. Cover EVERY bullet that can be improved — the user wants to reach 90+. Only skip bullets that are already strong.
 - Each fix targets ONE specific bullet or line, not a vague category
 
 === ZERO BRACKETS RULE ===

@@ -1486,14 +1486,15 @@ function ResumeLabContent() {
 
                         {/* Top Improvements */}
                         {improvedScore?.topImprovements && improvedScore.topImprovements.length > 0 && (
-                          <div className="mt-3 flex flex-wrap gap-1.5">
+                          <div className="mt-3 space-y-1.5">
+                            <span className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">Areas to improve</span>
                             {improvedScore.topImprovements.map((imp, i) => (
-                              <span key={i} className="inline-flex items-center rounded-full bg-teal-50 border border-teal-100 px-2.5 py-0.5 text-[11px] text-teal-700">
-                                <svg className="h-2.5 w-2.5 mr-1 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              <div key={i} className="flex items-start gap-2 text-xs text-slate-600">
+                                <svg className="h-3.5 w-3.5 mt-0.5 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
                                 </svg>
-                                {imp}
-                              </span>
+                                <span>{imp}</span>
+                              </div>
                             ))}
                           </div>
                         )}
@@ -1522,10 +1523,13 @@ function ResumeLabContent() {
                         </button>
                       )}
                     </div>
-                    <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                    <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
                       {structuredAnalysis.fixes.map((fix, i) => {
-                        const isApplied = editableResume.includes(fix.fixed) && !editableResume.includes(fix.current)
-                        const canApply = editableResume.includes(fix.current)
+                        // Normalize whitespace for fuzzy matching (handles line breaks from PDF parsing)
+                        const normalize = (s: string) => s.replace(/\s+/g, ' ').trim()
+                        const normalizedResume = normalize(editableResume)
+                        const isApplied = normalizedResume.includes(normalize(fix.fixed)) && !normalizedResume.includes(normalize(fix.current))
+                        const canApply = normalizedResume.includes(normalize(fix.current))
                         return (
                           <div
                             key={i}
@@ -1534,11 +1538,20 @@ function ResumeLabContent() {
                                 ? 'border-green-200 bg-green-50'
                                 : canApply
                                   ? 'border-slate-200 hover:border-teal-300 hover:bg-teal-50/30 cursor-pointer'
-                                  : 'border-slate-100 bg-slate-50 opacity-60'
+                                  : 'border-slate-100 bg-slate-50'
                             }`}
                             onClick={() => {
                               if (canApply && !isApplied) {
-                                setEditableResume(prev => prev.replace(fix.current, fix.fixed))
+                                // Try exact match first, then fuzzy whitespace match
+                                setEditableResume(prev => {
+                                  if (prev.includes(fix.current)) {
+                                    return prev.replace(fix.current, fix.fixed)
+                                  }
+                                  // Fuzzy: build regex that treats any whitespace in fix.current as \s+
+                                  const escaped = fix.current.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+                                  const fuzzyPattern = escaped.replace(/\s+/g, '\\s+')
+                                  return prev.replace(new RegExp(fuzzyPattern), fix.fixed)
+                                })
                               }
                             }}
                           >
@@ -1579,8 +1592,8 @@ function ResumeLabContent() {
                                     Apply
                                   </span>
                                 ) : (
-                                  <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-1 text-[10px] text-slate-400">
-                                    N/A
+                                  <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-[10px] text-blue-600 font-medium">
+                                    Manual
                                   </span>
                                 )}
                               </div>
