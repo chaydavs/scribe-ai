@@ -61,6 +61,7 @@ export default function AnalyticsPage() {
   }
 
   const fmt = (d: string) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+  const fmtShort = (d: string) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 
   if (loading) {
     return (
@@ -70,25 +71,16 @@ export default function AnalyticsPage() {
     )
   }
 
-  // Chart data
   const scored = [...analyses].filter(a => a.score !== null).sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
   const avgScore = scored.length > 0 ? Math.round(scored.reduce((s, a) => s + a.score!, 0) / scored.length) : 0
   const bestScore = scored.length > 0 ? Math.max(...scored.map(a => a.score!)) : 0
-
-  // SVG chart (compact)
-  const W = 400, H = 120, PL = 30, PR = 10, PT = 15, PB = 20
-  const cW = W - PL - PR, cH = H - PT - PB
-  const toX = (i: number) => PL + (scored.length === 1 ? cW / 2 : (i / (scored.length - 1)) * cW)
-  const toY = (s: number) => PT + cH - (s / 100) * cH
-
-  const linePath = scored.map((a, i) => `${i === 0 ? 'M' : 'L'}${toX(i)},${toY(a.score!)}`).join(' ')
-  const areaPath = scored.length > 1
-    ? `${linePath} L${toX(scored.length - 1)},${toY(0)} L${toX(0)},${toY(0)} Z`
-    : ''
+  const latestScore = scored.length > 0 ? scored[scored.length - 1].score! : 0
+  const prevScore = scored.length > 1 ? scored[scored.length - 2].score! : null
+  const scoreDelta = prevScore !== null ? latestScore - prevScore : null
 
   return (
     <div className="space-y-4">
-      {/* Header row */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-bold text-slate-900">Analytics</h1>
         <Link href="/resumelab" className="text-xs font-medium text-teal-600 hover:underline">
@@ -96,97 +88,118 @@ export default function AnalyticsPage() {
         </Link>
       </div>
 
-      {/* Compact stat row */}
-      <div className="grid grid-cols-4 gap-3">
-        {[
-          { label: 'Analyses', value: analysisCount, color: 'text-teal-600' },
-          { label: 'Rewrites', value: rewriteCount, color: 'text-emerald-600' },
-          { label: 'Avg Score', value: avgScore > 0 ? `${avgScore}` : '-', color: 'text-slate-900' },
-          { label: 'Credits Used', value: totalCreditsUsed, color: 'text-amber-600' },
-        ].map(s => (
-          <div key={s.label} className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-center">
-            <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
-            <p className="text-[11px] text-slate-400 mt-0.5">{s.label}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Score chart — compact */}
-      <div className="rounded-xl border border-slate-200 bg-white p-4">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-sm font-semibold text-slate-800">Score Progress</p>
-          {bestScore > 0 && (
-            <p className="text-xs text-slate-400">
-              Best: <span className={`font-bold ${bestScore >= 85 ? 'text-emerald-600' : bestScore >= 70 ? 'text-amber-600' : 'text-red-500'}`}>{bestScore}</span>
-            </p>
-          )}
-        </div>
-
-        {scored.length === 0 ? (
-          <div className="flex items-center justify-center py-8 text-center">
-            <p className="text-xs text-slate-400">Run an analysis to see your score chart</p>
-          </div>
-        ) : (
-          <svg viewBox={`0 0 ${W} ${H}`} className="w-full" preserveAspectRatio="xMidYMid meet">
-            <defs>
-              <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#14b8a6" stopOpacity="0.15" />
-                <stop offset="100%" stopColor="#14b8a6" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-
-            {/* Horizontal grid — just 3 lines */}
-            {[25, 50, 75].map(t => (
-              <g key={t}>
-                <line x1={PL} y1={toY(t)} x2={W - PR} y2={toY(t)} stroke="#f1f5f9" strokeWidth="1" />
-                <text x={PL - 6} y={toY(t) + 3} textAnchor="end" fill="#cbd5e1" fontSize="9">{t}</text>
-              </g>
-            ))}
-
-            {/* Target line at 85 */}
-            <line x1={PL} y1={toY(85)} x2={W - PR} y2={toY(85)} stroke="#10b981" strokeWidth="1" strokeDasharray="4 3" strokeOpacity="0.5" />
-
-            {/* Area */}
-            {scored.length > 1 && <path d={areaPath} fill="url(#areaFill)" />}
-
-            {/* Line */}
-            {scored.length > 1 && (
-              <path d={linePath} fill="none" stroke="#14b8a6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Top row: Stats + Sparkline chart inline */}
+      <div className="rounded-xl border border-slate-200 bg-white p-5">
+        <div className="flex items-start gap-6">
+          {/* Left: Current score circle + stats */}
+          <div className="flex items-center gap-5 flex-shrink-0">
+            {/* Score circle */}
+            {latestScore > 0 ? (
+              <div className="relative w-20 h-20">
+                <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
+                  <circle cx="40" cy="40" r="34" fill="none" stroke="#f1f5f9" strokeWidth="5" />
+                  <circle
+                    cx="40" cy="40" r="34"
+                    fill="none"
+                    stroke={latestScore >= 75 ? '#16a34a' : latestScore >= 55 ? '#d97706' : '#ef4444'}
+                    strokeWidth="5"
+                    strokeLinecap="round"
+                    strokeDasharray={2 * Math.PI * 34}
+                    strokeDashoffset={2 * Math.PI * 34 * (1 - latestScore / 100)}
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-lg font-bold text-slate-900">{latestScore}</span>
+                  <span className="text-[9px] text-slate-400 -mt-0.5">latest</span>
+                </div>
+              </div>
+            ) : (
+              <div className="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center">
+                <span className="text-xs text-slate-400">--</span>
+              </div>
             )}
 
-            {/* Points */}
-            {scored.map((a, i) => (
-              <g key={a.id}>
-                <circle cx={toX(i)} cy={toY(a.score!)} r="3.5" fill="white" stroke="#14b8a6" strokeWidth="2" />
-                <text x={toX(i)} y={toY(a.score!) - 7} textAnchor="middle" fill="#0f766e" fontSize="9" fontWeight="600">
-                  {a.score}
-                </text>
-              </g>
-            ))}
-
-            {/* X-axis dates */}
-            {scored.map((a, i) => {
-              const step = Math.max(1, Math.floor(scored.length / 5))
-              if (i % step !== 0 && i !== scored.length - 1) return null
-              return (
-                <text key={`d-${a.id}`} x={toX(i)} y={H - 4} textAnchor="middle" fill="#94a3b8" fontSize="9">
-                  {new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                </text>
-              )
-            })}
-          </svg>
-        )}
-
-        {/* Inline legend */}
-        {scored.length > 0 && (
-          <div className="flex items-center justify-center gap-4 mt-1 text-[10px] text-slate-400">
-            <span className="flex items-center gap-1"><span className="inline-block h-1.5 w-1.5 rounded-full bg-teal-500" /> Score</span>
-            <span className="flex items-center gap-1"><span className="inline-block h-px w-3 border-t border-dashed border-emerald-400" /> Target 85</span>
+            {/* Mini stats */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl font-bold text-slate-900">{avgScore > 0 ? avgScore : '--'}</span>
+                <span className="text-xs text-slate-400">avg</span>
+                {scoreDelta !== null && scoreDelta !== 0 && (
+                  <span className={`text-xs font-semibold px-1.5 py-0.5 rounded-full ${scoreDelta > 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'}`}>
+                    {scoreDelta > 0 ? '+' : ''}{scoreDelta}
+                  </span>
+                )}
+              </div>
+              <div className="flex gap-4 text-[11px] text-slate-500">
+                <span><strong className="text-teal-600">{analysisCount}</strong> analyses</span>
+                <span><strong className="text-emerald-600">{rewriteCount}</strong> rewrites</span>
+                <span><strong className="text-amber-600">{totalCreditsUsed}</strong> credits</span>
+              </div>
+            </div>
           </div>
-        )}
+
+          {/* Right: Sparkline chart */}
+          <div className="flex-1 min-w-0">
+            {scored.length >= 2 ? (
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] text-slate-400">Score trend</span>
+                  <span className="text-[10px] text-slate-400">
+                    Best: <span className="font-semibold text-emerald-600">{bestScore}</span>
+                  </span>
+                </div>
+                <svg viewBox="0 0 300 60" className="w-full" preserveAspectRatio="xMidYMid meet">
+                  <defs>
+                    <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#14b8a6" stopOpacity="0.1" />
+                      <stop offset="100%" stopColor="#14b8a6" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+
+                  {(() => {
+                    const minS = Math.max(0, Math.min(...scored.map(a => a.score!)) - 10)
+                    const maxS = Math.min(100, Math.max(...scored.map(a => a.score!)) + 10)
+                    const range = maxS - minS || 1
+                    const px = 8, py = 4, w = 300 - px * 2, h = 60 - py * 2
+                    const toX = (i: number) => px + (i / (scored.length - 1)) * w
+                    const toY = (s: number) => py + h - ((s - minS) / range) * h
+
+                    const line = scored.map((a, i) => `${i === 0 ? 'M' : 'L'}${toX(i).toFixed(1)},${toY(a.score!).toFixed(1)}`).join(' ')
+                    const area = `${line} L${toX(scored.length - 1).toFixed(1)},${(py + h).toFixed(1)} L${toX(0).toFixed(1)},${(py + h).toFixed(1)} Z`
+
+                    return (
+                      <>
+                        <path d={area} fill="url(#sparkFill)" />
+                        <path d={line} fill="none" stroke="#14b8a6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        {/* Only show first and last point */}
+                        <circle cx={toX(0)} cy={toY(scored[0].score!)} r="2" fill="#14b8a6" />
+                        <circle cx={toX(scored.length - 1)} cy={toY(scored[scored.length - 1].score!)} r="2.5" fill="white" stroke="#14b8a6" strokeWidth="1.5" />
+                        {/* First and last labels */}
+                        <text x={toX(0)} y={toY(scored[0].score!) - 5} textAnchor="start" fill="#94a3b8" fontSize="8">{scored[0].score}</text>
+                        <text x={toX(scored.length - 1)} y={toY(scored[scored.length - 1].score!) - 5} textAnchor="end" fill="#0f766e" fontSize="8" fontWeight="600">{scored[scored.length - 1].score}</text>
+                      </>
+                    )
+                  })()}
+                </svg>
+                <div className="flex justify-between text-[9px] text-slate-300 px-2 -mt-0.5">
+                  <span>{fmtShort(scored[0].created_at)}</span>
+                  <span>{fmtShort(scored[scored.length - 1].created_at)}</span>
+                </div>
+              </div>
+            ) : scored.length === 1 ? (
+              <div className="flex items-center justify-center h-16 text-xs text-slate-400">
+                Run another analysis to see your trend
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-16 text-xs text-slate-400">
+                No scores yet
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Activity + History side by side */}
+      {/* Activity + History */}
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Recent Activity */}
         <div className="rounded-xl border border-slate-200 bg-white p-4">
@@ -194,7 +207,7 @@ export default function AnalyticsPage() {
           {recentUsage.length === 0 ? (
             <p className="text-xs text-slate-400 py-4 text-center">No activity yet</p>
           ) : (
-            <div className="space-y-1.5 max-h-[240px] overflow-y-auto">
+            <div className="space-y-0.5 max-h-[240px] overflow-y-auto">
               {recentUsage.slice(0, 8).map(log => (
                 <div key={log.id} className="flex items-center justify-between py-2 px-2 rounded-lg hover:bg-slate-50">
                   <div className="flex items-center gap-2.5">
@@ -206,11 +219,11 @@ export default function AnalyticsPage() {
                       )}
                     </div>
                     <div>
-                      <p className="text-xs font-medium text-slate-700">{log.tool === 'resumelab' ? 'Analysis' : 'Rewrite'}</p>
+                      <p className="text-xs font-medium text-slate-700">{log.tool === 'resumelab' ? 'Analysis' : log.tool === 'resume-rewrite' ? 'Rewrite' : log.tool === 'resume-export' ? 'Export' : log.tool}</p>
                       <p className="text-[10px] text-slate-400">{fmt(log.created_at)}</p>
                     </div>
                   </div>
-                  <span className="text-xs font-medium text-slate-500">-{log.credits_used}</span>
+                  <span className="text-xs font-medium text-slate-400">-{log.credits_used}</span>
                 </div>
               ))}
             </div>
@@ -223,15 +236,15 @@ export default function AnalyticsPage() {
           {analyses.length === 0 ? (
             <p className="text-xs text-slate-400 py-4 text-center">No analyses yet</p>
           ) : (
-            <div className="space-y-1.5 max-h-[240px] overflow-y-auto">
+            <div className="space-y-0.5 max-h-[240px] overflow-y-auto">
               {analyses.slice(0, 8).map(a => (
                 <Link
                   key={a.id}
                   href={`/resumelab?id=${a.id}`}
-                  className="flex items-center justify-between py-2 px-2 rounded-lg hover:bg-slate-50"
+                  className="flex items-center justify-between py-2 px-2 rounded-lg hover:bg-slate-50 group"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs font-medium text-slate-700">{a.title}</p>
+                    <p className="truncate text-xs font-medium text-slate-700 group-hover:text-teal-600">{a.title}</p>
                     <p className="text-[10px] text-slate-400">{fmt(a.created_at)}</p>
                   </div>
                   {a.score && (
