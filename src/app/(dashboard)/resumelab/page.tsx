@@ -107,6 +107,9 @@ function ResumeLabContent() {
   const [loadingAnalysis, setLoadingAnalysis] = useState(false)
   const [savingTitle, setSavingTitle] = useState(false)
 
+  // Countdown timer for analysis
+  const [countdown, setCountdown] = useState(0)
+
   // UI state
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
@@ -202,6 +205,19 @@ function ResumeLabContent() {
       loadAnalysis(analysisId)
     }
   }, [analysisId, currentAnalysisId])
+
+  // Countdown timer effect
+  useEffect(() => {
+    if (!loading) {
+      setCountdown(0)
+      return
+    }
+    setCountdown(30)
+    const interval = setInterval(() => {
+      setCountdown(prev => (prev > 0 ? prev - 1 : 0))
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [loading])
 
   // Fetch user credits
   useEffect(() => {
@@ -1025,12 +1041,24 @@ function ResumeLabContent() {
                 className="w-full rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 px-6 py-4 text-base font-semibold text-white shadow-lg shadow-teal-500/30 transition-all hover:shadow-xl hover:shadow-teal-500/40 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
               >
                 {loading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    Analyzing...
+                  <span className="flex flex-col items-center gap-1">
+                    <span className="flex items-center gap-2">
+                      <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Analyzing...{countdown > 0 ? ` ~${countdown}s` : ''}
+                    </span>
+                    {/* Progress bar */}
+                    <div className="w-full h-1 rounded-full bg-white/20 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-white/60"
+                        style={{
+                          width: `${((30 - countdown) / 30) * 100}%`,
+                          transition: 'width 1s linear',
+                        }}
+                      />
+                    </div>
                   </span>
                 ) : (
                   `Analyze Resume (${tool.creditCost} credits)`
@@ -1064,9 +1092,32 @@ function ResumeLabContent() {
           <div>
             {loading ? (
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center py-20">
-                <div className="h-12 w-12 animate-spin rounded-full border-4 border-teal-500 border-t-transparent" />
-                <p className="mt-6 text-slate-600">Analyzing your resume...</p>
-                <p className="mt-2 text-sm text-slate-400">Our AI is reading every line like a recruiter would</p>
+                {/* Countdown circle */}
+                <div className="relative w-24 h-24 mb-4">
+                  <svg className="w-24 h-24 -rotate-90" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="42" fill="none" stroke="#e2e8f0" strokeWidth="6" />
+                    <circle
+                      cx="50" cy="50" r="42"
+                      fill="none"
+                      stroke="#14b8a6"
+                      strokeWidth="6"
+                      strokeLinecap="round"
+                      strokeDasharray={2 * Math.PI * 42}
+                      strokeDashoffset={2 * Math.PI * 42 * (countdown / 30)}
+                      style={{ transition: 'stroke-dashoffset 1s linear' }}
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-2xl font-bold text-teal-600">{countdown > 0 ? countdown : '...'}</span>
+                  </div>
+                </div>
+                <p className="text-slate-700 font-medium">Analyzing your resume...</p>
+                <p className="mt-1 text-sm text-slate-400">
+                  {countdown > 20 ? 'Reading every line like a recruiter would' :
+                   countdown > 10 ? 'Scoring impact, clarity, and ATS compatibility' :
+                   countdown > 0 ? 'Almost done — generating your detailed report' :
+                   'Finishing up...'}
+                </p>
               </div>
             ) : analysis && structuredAnalysis ? (
               <InteractiveAnalysis
