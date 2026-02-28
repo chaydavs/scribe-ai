@@ -454,7 +454,7 @@ function ResumeLabContent() {
     }
   }, [])
 
-  // Initialize editableResume from rewrite and auto-generate preview + score
+  // Initialize editableResume from rewrite (or resumeText if going direct to export)
   useEffect(() => {
     if (rewrite) {
       setEditableResume(rewrite)
@@ -464,9 +464,19 @@ function ResumeLabContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rewrite])
 
+  // When entering export tab without rewrite, use original resumeText
+  useEffect(() => {
+    if (activeTab === 'preview' && !rewrite && resumeText && !editableResume) {
+      setEditableResume(resumeText)
+      generatePreview(resumeText)
+      scoreResume(resumeText)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, rewrite, resumeText])
+
   // Debounce preview + re-score when user edits the resume
   useEffect(() => {
-    if (!editableResume || editableResume === rewrite) return
+    if (!editableResume || editableResume === rewrite || editableResume === resumeText) return
     const timer = setTimeout(() => {
       generatePreview(editableResume)
       scoreResume(editableResume)
@@ -531,8 +541,9 @@ function ResumeLabContent() {
   const [saveSuccess, setSaveSuccess] = useState(false)
 
   const handleSave = async () => {
-    if (!rewrite) {
-      setError('No rewrite to save')
+    const textToSave = editableResume || rewrite
+    if (!textToSave) {
+      setError('No resume text to save')
       return
     }
 
@@ -550,7 +561,7 @@ function ResumeLabContent() {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          rewriteResult: rewrite,
+          rewriteResult: textToSave,
         }),
       })
 
@@ -800,8 +811,8 @@ function ResumeLabContent() {
   const stepperSteps = [
     { id: 'upload' as const, label: 'Upload', done: !!resumeText },
     { id: 'analysis' as const, label: 'Analyze', done: !!analysis },
-    { id: 'rewrite' as const, label: 'Rewrite', done: !!rewrite },
-    { id: 'preview' as const, label: 'Export', done: false },
+    { id: 'rewrite' as const, label: 'AI Rewrite', done: !!rewrite },
+    { id: 'preview' as const, label: 'Edit & Export', done: false },
   ]
 
   return (
@@ -880,7 +891,7 @@ function ResumeLabContent() {
           <div className="flex items-center">
             {stepperSteps.map((step, i) => {
               const isActive = activeTab === step.id
-              const isClickable = step.id === 'upload' || (step.id === 'analysis' && analysis) || (step.id === 'rewrite' && analysis) || (step.id === 'preview' && rewrite)
+              const isClickable = step.id === 'upload' || (step.id === 'analysis' && analysis) || (step.id === 'rewrite' && analysis) || (step.id === 'preview' && !!analysis)
 
               return (
                 <div key={step.id} className="flex items-center flex-1 last:flex-none">
@@ -1120,15 +1131,39 @@ function ResumeLabContent() {
                 </p>
               </div>
             ) : analysis && structuredAnalysis ? (
-              <InteractiveAnalysis
-                structuredAnalysis={structuredAnalysis}
-                resumeText={resumeText}
-                onRequestRewrite={() => {
-                  setActiveTab('rewrite')
-                  if (!rewrite) handleRewrite()
-                }}
-                onFixApplied={(newText) => setResumeText(newText)}
-              />
+              <>
+                <InteractiveAnalysis
+                  structuredAnalysis={structuredAnalysis}
+                  resumeText={resumeText}
+                  onRequestRewrite={() => {
+                    setActiveTab('rewrite')
+                    if (!rewrite) handleRewrite()
+                  }}
+                  onFixApplied={(newText) => setResumeText(newText)}
+                />
+                {/* Direct to Edit & Export CTA */}
+                <div className="mt-6 p-5 rounded-xl bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold text-slate-900">Ready to apply fixes and export?</h3>
+                      <p className="text-sm text-slate-600 mt-1">
+                        Edit your resume with suggested fixes, then download as PDF
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => {
+                          setEditableResume(resumeText)
+                          setActiveTab('preview')
+                        }}
+                        className="rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:shadow-xl"
+                      >
+                        Edit &amp; Export &rarr;
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </>
             ) : analysis ? (
               /* Fallback for non-structured analysis (old format) */
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 max-w-3xl mx-auto">
@@ -1286,13 +1321,15 @@ function ResumeLabContent() {
         {/* Preview & Export Tab */}
         {!loadingAnalysis && activeTab === 'preview' && (
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 lg:p-8">
-            {rewrite ? (
+            {(rewrite || resumeText) ? (
               <div className="max-w-6xl mx-auto">
                 {/* Header with action buttons */}
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h2 className="text-lg font-semibold text-slate-900">Edit & Export</h2>
-                    <p className="text-sm text-slate-500 mt-1">Edit your resume text, then export as PDF</p>
+                    <p className="text-sm text-slate-500 mt-1">
+                      {rewrite ? 'Edit your resume text, then export as PDF' : 'Apply suggested fixes, edit your resume, then export as PDF'}
+                    </p>
                   </div>
                   <div className="flex items-center space-x-3">
                     <button
@@ -1463,6 +1500,96 @@ function ResumeLabContent() {
                   </div>
                 )}
 
+                {/* Suggested Fixes from Analysis */}
+                {structuredAnalysis && structuredAnalysis.fixes.length > 0 && (
+                  <div className="mb-6 rounded-xl border border-slate-200 bg-white p-5">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                        <svg className="h-4 w-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        Suggested Fixes
+                        <span className="text-xs text-slate-400 font-normal">Click to apply</span>
+                      </h3>
+                      {!rewrite && (
+                        <button
+                          onClick={() => { setActiveTab('rewrite'); if (!rewrite) handleRewrite() }}
+                          className="text-xs text-teal-600 hover:text-teal-700 font-medium"
+                        >
+                          Or use AI Rewrite to fix all →
+                        </button>
+                      )}
+                    </div>
+                    <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                      {structuredAnalysis.fixes.map((fix, i) => {
+                        const isApplied = editableResume.includes(fix.fixed) && !editableResume.includes(fix.current)
+                        const canApply = editableResume.includes(fix.current)
+                        return (
+                          <div
+                            key={i}
+                            className={`rounded-lg border p-3 transition-colors ${
+                              isApplied
+                                ? 'border-green-200 bg-green-50'
+                                : canApply
+                                  ? 'border-slate-200 hover:border-teal-300 hover:bg-teal-50/30 cursor-pointer'
+                                  : 'border-slate-100 bg-slate-50 opacity-60'
+                            }`}
+                            onClick={() => {
+                              if (canApply && !isApplied) {
+                                setEditableResume(prev => prev.replace(fix.current, fix.fixed))
+                              }
+                            }}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
+                                    fix.severity === 'critical' ? 'bg-red-100 text-red-700' :
+                                    fix.severity === 'important' ? 'bg-amber-100 text-amber-700' :
+                                    'bg-slate-100 text-slate-600'
+                                  }`}>
+                                    {fix.severity}
+                                  </span>
+                                  <span className="text-xs font-medium text-slate-800 truncate">{fix.title}</span>
+                                </div>
+                                <div className="text-[11px] text-slate-500 mb-1.5">{fix.problem}</div>
+                                <div className="grid grid-cols-2 gap-2 text-[11px]">
+                                  <div>
+                                    <span className="text-red-400 font-medium">Before:</span>
+                                    <p className="text-slate-600 line-through mt-0.5 break-words">{fix.current.length > 120 ? fix.current.slice(0, 120) + '...' : fix.current}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-green-500 font-medium">After:</span>
+                                    <p className="text-slate-700 mt-0.5 break-words">{fix.fixed.length > 120 ? fix.fixed.slice(0, 120) + '...' : fix.fixed}</p>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex-shrink-0">
+                                {isApplied ? (
+                                  <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-[10px] font-semibold text-green-700">
+                                    <svg className="h-3 w-3 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Applied
+                                  </span>
+                                ) : canApply ? (
+                                  <span className="inline-flex items-center rounded-full bg-teal-100 px-2 py-1 text-[10px] font-semibold text-teal-700">
+                                    Apply
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-1 text-[10px] text-slate-400">
+                                    N/A
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 {/* Editable Resume + PDF Preview side by side */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Editable textarea */}
@@ -1474,12 +1601,16 @@ function ResumeLabContent() {
                         </svg>
                         Your Resume
                       </h3>
-                      {editableResume !== rewrite && (
+                      {editableResume !== (rewrite || resumeText) && (
                         <button
-                          onClick={() => { setEditableResume(rewrite || ''); generatePreview(rewrite || '') }}
+                          onClick={() => {
+                            const base = rewrite || resumeText
+                            setEditableResume(base)
+                            generatePreview(base)
+                          }}
                           className="text-xs text-slate-500 hover:text-slate-700 underline"
                         >
-                          Reset to AI version
+                          {rewrite ? 'Reset to AI version' : 'Reset to original'}
                         </button>
                       )}
                     </div>
@@ -1543,19 +1674,18 @@ function ResumeLabContent() {
               <div className="text-center py-20">
                 <div className="rounded-full bg-slate-100 p-6 w-fit mx-auto">
                   <svg className="h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
-                <h2 className="mt-6 text-xl font-bold text-slate-900">Preview & Export</h2>
+                <h2 className="mt-6 text-xl font-bold text-slate-900">Edit & Export</h2>
                 <p className="mt-3 text-slate-600">
-                  Get your AI-rewritten resume first to preview and export.
+                  Analyze your resume first to get suggestions and export.
                 </p>
                 <button
-                  onClick={() => setActiveTab('rewrite')}
+                  onClick={() => setActiveTab('upload')}
                   className="mt-6 text-teal-600 font-medium hover:underline"
                 >
-                  ← Go to Rewrite
+                  ← Go to Upload
                 </button>
               </div>
             )}
