@@ -3,10 +3,8 @@
 import { useState, useRef, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { getTool } from '@/types'
-import { TemplatePicker } from '@/components/tools/resumelab/template-picker'
 import { CanvasResumePreview } from '@/components/tools/resumelab/canvas-resume-preview'
 import InteractiveAnalysis from '@/components/tools/resumelab/interactive-analysis'
-import { TemplatePreview } from '@/types/templates'
 
 const tool = getTool('resumelab')!
 
@@ -84,7 +82,7 @@ function ResumeLabContent() {
   const [rewrite, setRewrite] = useState<string | null>(null)
 
   // Preview state
-  const [viewMode, setViewMode] = useState<'changes' | 'preview'>('changes')
+  const [editableResume, setEditableResume] = useState<string>('')
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null)
   const [previewLoading, setPreviewLoading] = useState(false)
 
@@ -99,8 +97,6 @@ function ResumeLabContent() {
   // UI state
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string | undefined>()
-  const [selectedTemplate, setSelectedTemplate] = useState<TemplatePreview | null>(null)
   const [userCredits, setUserCredits] = useState(0)
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [editedTitle, setEditedTitle] = useState('')
@@ -341,8 +337,7 @@ function ResumeLabContent() {
     setCurrentAnalysisId(null)
     setAnalysisTitle('')
     setJobDescription('')
-    setSelectedTemplateId(undefined)
-    setSelectedTemplate(null)
+    setEditableResume('')
     setHasExported(false)
     setActiveTab('upload')
     if (fileInputRef.current) {
@@ -363,15 +358,8 @@ function ResumeLabContent() {
     }
   }
 
-  const handleTemplateSelect = (template: TemplatePreview) => {
-    setSelectedTemplateId(template.id)
-    setSelectedTemplate(template)
-    // Generate preview when template is selected
-    generatePreview(template)
-  }
-
-  const generatePreview = async (template: TemplatePreview) => {
-    if (!rewrite) return
+  const generatePreview = async (text: string) => {
+    if (!text) return
 
     setPreviewLoading(true)
     try {
@@ -379,8 +367,8 @@ function ResumeLabContent() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          resumeText: rewrite,
-          templateId: template.id,
+          resumeText: text,
+          templateId: 'classic-professional',
           previewOnly: true,
         }),
       })
@@ -409,8 +397,27 @@ function ResumeLabContent() {
     }
   }
 
+  // Initialize editableResume from rewrite and auto-generate preview
+  useEffect(() => {
+    if (rewrite) {
+      setEditableResume(rewrite)
+      generatePreview(rewrite)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rewrite])
+
+  // Debounce preview generation when user edits the resume
+  useEffect(() => {
+    if (!editableResume || editableResume === rewrite) return
+    const timer = setTimeout(() => {
+      generatePreview(editableResume)
+    }, 1500)
+    return () => clearTimeout(timer)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editableResume])
+
   const handleExport = async () => {
-    if (!rewrite || !selectedTemplate) return
+    if (!editableResume) return
 
     setError(null)
     setExportLoading(true)
@@ -420,8 +427,8 @@ function ResumeLabContent() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          resumeText: rewrite,
-          templateId: selectedTemplate.id,
+          resumeText: editableResume,
+          templateId: 'classic-professional',
         }),
       })
 
@@ -599,11 +606,6 @@ function ResumeLabContent() {
       return
     }
 
-    if (!selectedTemplate) {
-      setError('Please select a template')
-      return
-    }
-
     setError(null)
     setCreatingPdf(true)
 
@@ -616,7 +618,7 @@ function ResumeLabContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           resumeText,
-          templateId: selectedTemplate.id,
+          templateId: 'classic-professional',
         }),
       })
 
@@ -733,8 +735,6 @@ function ResumeLabContent() {
       skills: [''],
       projects: [{ name: '', description: '', technologies: [''] }],
     })
-    setSelectedTemplateId(undefined)
-    setSelectedTemplate(null)
   }
 
   // Stepper state
@@ -1194,32 +1194,12 @@ function ResumeLabContent() {
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 lg:p-8">
             {rewrite ? (
               <div className="max-w-6xl mx-auto">
-                {/* View Toggle */}
+                {/* Header with action buttons */}
                 <div className="flex items-center justify-between mb-6">
-                  <div className="flex rounded-lg bg-slate-100 p-1">
-                    <button
-                      onClick={() => setViewMode('changes')}
-                      className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
-                        viewMode === 'changes'
-                          ? 'bg-white shadow text-slate-900'
-                          : 'text-slate-600 hover:text-slate-900'
-                      }`}
-                    >
-                      View Changes
-                    </button>
-                    <button
-                      onClick={() => setViewMode('preview')}
-                      className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
-                        viewMode === 'preview'
-                          ? 'bg-white shadow text-slate-900'
-                          : 'text-slate-600 hover:text-slate-900'
-                      }`}
-                    >
-                      PDF Preview
-                    </button>
+                  <div>
+                    <h2 className="text-lg font-semibold text-slate-900">Edit & Export</h2>
+                    <p className="text-sm text-slate-500 mt-1">Edit your resume text, then export as PDF</p>
                   </div>
-
-                  {/* Action Buttons */}
                   <div className="flex items-center space-x-3">
                     <button
                       onClick={handleSave}
@@ -1256,7 +1236,7 @@ function ResumeLabContent() {
                     </button>
                     <button
                       onClick={handleExport}
-                      disabled={!selectedTemplate || exportLoading}
+                      disabled={!editableResume || exportLoading}
                       className="flex items-center space-x-2 rounded-lg bg-gradient-to-r from-teal-500 to-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-lg hover:shadow-xl disabled:opacity-50"
                     >
                       {exportLoading ? (
@@ -1279,104 +1259,69 @@ function ResumeLabContent() {
                   </div>
                 </div>
 
-                {viewMode === 'changes' ? (
-                  <>
-                    {/* Change Summary */}
-                    {changeSummary && (
-                      <div className="mb-6 p-4 rounded-xl bg-slate-50 border border-slate-200">
-                        <h3 className="font-semibold text-slate-900 mb-2">Changes Summary</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                          <div>
-                            <p className="text-slate-500">Original Lines</p>
-                            <p className="font-semibold text-slate-900">{changeSummary.originalCount}</p>
-                          </div>
-                          <div>
-                            <p className="text-slate-500">Rewritten Lines</p>
-                            <p className="font-semibold text-slate-900">{changeSummary.rewriteCount}</p>
-                          </div>
-                          <div>
-                            <p className="text-slate-500">Original Words</p>
-                            <p className="font-semibold text-slate-900">{changeSummary.originalWords}</p>
-                          </div>
-                          <div>
-                            <p className="text-slate-500">Rewritten Words</p>
-                            <p className="font-semibold text-slate-900">{changeSummary.rewriteWords}</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Side by Side Comparison */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      <div>
-                        <h3 className="font-semibold text-slate-900 mb-3 flex items-center">
-                          <span className="w-3 h-3 rounded-full bg-red-400 mr-2" />
-                          Original
-                        </h3>
-                        <div className="rounded-xl bg-red-50 border border-red-100 p-4 max-h-[500px] overflow-y-auto">
-                          <pre className="whitespace-pre-wrap text-sm text-slate-700 font-sans leading-relaxed">
-                            {resumeText}
-                          </pre>
-                        </div>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-slate-900 mb-3 flex items-center">
-                          <span className="w-3 h-3 rounded-full bg-green-400 mr-2" />
-                          AI Rewritten
-                        </h3>
-                        <div className="rounded-xl bg-green-50 border border-green-100 p-4 max-h-[500px] overflow-y-auto">
-                          <pre className="whitespace-pre-wrap text-sm text-slate-700 font-sans leading-relaxed">
-                            {rewrite}
-                          </pre>
-                        </div>
-                      </div>
+                {/* Editable Resume + PDF Preview side by side */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Editable textarea */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-semibold text-slate-900 flex items-center">
+                        <svg className="h-4 w-4 mr-2 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        Your Resume
+                      </h3>
+                      {editableResume !== rewrite && (
+                        <button
+                          onClick={() => { setEditableResume(rewrite || ''); generatePreview(rewrite || '') }}
+                          className="text-xs text-slate-500 hover:text-slate-700 underline"
+                        >
+                          Reset to AI version
+                        </button>
+                      )}
                     </div>
-                  </>
-                ) : (
-                  <>
-                    {/* Template Selection & PDF Preview */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                      {/* Template Picker */}
-                      <div className="lg:col-span-1">
-                        <h3 className="font-semibold text-slate-900 mb-3">Choose Template</h3>
-                        <TemplatePicker
-                          onSelect={handleTemplateSelect}
-                          onExport={() => {}}
-                          selectedTemplateId={selectedTemplateId}
-                          loading={false}
-                          userCredits={userCredits}
-                          compact
+                    <textarea
+                      value={editableResume}
+                      onChange={(e) => setEditableResume(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 p-4 text-sm font-mono leading-relaxed text-slate-700 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20 resize-none"
+                      style={{ minHeight: '600px' }}
+                      placeholder="Your resume text will appear here..."
+                    />
+                    <p className="text-xs text-slate-400 mt-2">
+                      Edit freely — the preview updates automatically after you stop typing
+                    </p>
+                  </div>
+
+                  {/* PDF Preview */}
+                  <div>
+                    <h3 className="font-semibold text-slate-900 mb-3 flex items-center">
+                      <svg className="h-4 w-4 mr-2 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      PDF Preview
+                    </h3>
+                    <div className="rounded-xl border border-slate-200 bg-slate-100 min-h-[600px] flex items-center justify-center">
+                      {previewLoading ? (
+                        <div className="flex flex-col items-center">
+                          <div className="h-12 w-12 animate-spin rounded-full border-4 border-teal-500 border-t-transparent" />
+                          <p className="mt-4 text-slate-600">Generating preview...</p>
+                        </div>
+                      ) : pdfPreviewUrl ? (
+                        <iframe
+                          src={pdfPreviewUrl}
+                          className="w-full h-[600px] rounded-xl"
+                          title="Resume Preview"
                         />
-                      </div>
-
-                      {/* PDF Preview */}
-                      <div className="lg:col-span-2">
-                        <h3 className="font-semibold text-slate-900 mb-3">Preview</h3>
-                        <div className="rounded-xl border border-slate-200 bg-slate-100 min-h-[600px] flex items-center justify-center">
-                          {previewLoading ? (
-                            <div className="flex flex-col items-center">
-                              <div className="h-12 w-12 animate-spin rounded-full border-4 border-teal-500 border-t-transparent" />
-                              <p className="mt-4 text-slate-600">Generating preview...</p>
-                            </div>
-                          ) : pdfPreviewUrl ? (
-                            <iframe
-                              src={pdfPreviewUrl}
-                              className="w-full h-[600px] rounded-xl"
-                              title="Resume Preview"
-                            />
-                          ) : (
-                            <div className="text-center text-slate-500">
-                              <svg className="mx-auto h-16 w-16 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                              </svg>
-                              <p className="mt-4">Select a template to see preview</p>
-                            </div>
-                          )}
+                      ) : (
+                        <div className="text-center text-slate-500">
+                          <svg className="mx-auto h-16 w-16 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          <p className="mt-4">Preview loading...</p>
                         </div>
-                      </div>
+                      )}
                     </div>
-                  </>
-                )}
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="text-center py-20">
@@ -1610,27 +1555,29 @@ function ResumeLabContent() {
                 </div>
               </div>
 
-              {/* Template Selection Sidebar */}
+              {/* Export Sidebar */}
               <div className="lg:col-span-1">
                 <div className="sticky top-6">
-                  <h2 className="text-lg font-semibold text-slate-900 mb-4">Choose Template</h2>
-                  <TemplatePicker
-                    onSelect={(template) => {
-                      setSelectedTemplateId(template.id)
-                      setSelectedTemplate(template)
-                    }}
-                    onExport={() => {}}
-                    selectedTemplateId={selectedTemplateId}
-                    loading={false}
-                    userCredits={userCredits}
-                    compact
-                  />
+                  <h2 className="text-lg font-semibold text-slate-900 mb-4">Export</h2>
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 mb-6">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-100">
+                        <svg className="h-5 w-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-900 text-sm">Classic Professional</p>
+                        <p className="text-xs text-slate-500">Clean, ATS-friendly format</p>
+                      </div>
+                    </div>
+                  </div>
 
                   {/* Create Button */}
                   <button
                     onClick={handleCreateResume}
-                    disabled={creatingPdf || !formData.fullName.trim() || !selectedTemplate}
-                    className="w-full mt-6 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 px-6 py-4 text-lg font-semibold text-white shadow-lg shadow-teal-500/30 transition-all hover:shadow-xl hover:shadow-teal-500/40 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={creatingPdf || !formData.fullName.trim()}
+                    className="w-full rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 px-6 py-4 text-lg font-semibold text-white shadow-lg shadow-teal-500/30 transition-all hover:shadow-xl hover:shadow-teal-500/40 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {creatingPdf ? (
                       <span className="flex items-center justify-center space-x-2">
@@ -1644,11 +1591,9 @@ function ResumeLabContent() {
                       `Create & Download PDF`
                     )}
                   </button>
-                  {selectedTemplate && (
-                    <p className="text-center text-sm text-slate-500 mt-2">
-                      {selectedTemplate.creditCost} credits
-                    </p>
-                  )}
+                  <p className="text-center text-sm text-slate-500 mt-2">
+                    1 credit
+                  </p>
                 </div>
               </div>
             </div>
