@@ -382,7 +382,7 @@ function ResumeLabContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           resumeText: text,
-          templateId: 'classic-professional',
+          templateId: 'classic-professional-1',
           previewOnly: true,
         }),
       })
@@ -471,7 +471,7 @@ function ResumeLabContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           resumeText: editableResume,
-          templateId: 'classic-professional',
+          templateId: 'classic-professional-1',
         }),
       })
 
@@ -661,7 +661,7 @@ function ResumeLabContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           resumeText,
-          templateId: 'classic-professional',
+          templateId: 'classic-professional-1',
         }),
       })
 

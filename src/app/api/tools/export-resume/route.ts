@@ -2,6 +2,36 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { convertResumeToLatex, parseResumeText } from '@/lib/latex/converter'
 import { TemplateStyle, AVAILABLE_TEMPLATES } from '@/types/templates'
+import crypto from 'crypto'
+
+// Simple in-memory cache for preview PDFs (avoids re-compiling identical LaTeX)
+const previewCache = new Map<string, { pdf: string; timestamp: number }>()
+const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
+const MAX_CACHE_SIZE = 20
+
+function getCacheKey(latex: string): string {
+  return crypto.createHash('md5').update(latex).digest('hex')
+}
+
+function getCachedPdf(latex: string): string | null {
+  const key = getCacheKey(latex)
+  const entry = previewCache.get(key)
+  if (entry && Date.now() - entry.timestamp < CACHE_TTL) {
+    return entry.pdf
+  }
+  if (entry) previewCache.delete(key)
+  return null
+}
+
+function setCachedPdf(latex: string, pdf: string) {
+  // Evict oldest entries if cache is full
+  if (previewCache.size >= MAX_CACHE_SIZE) {
+    const entries = Array.from(previewCache.entries())
+    const oldest = entries.sort((a, b) => a[1].timestamp - b[1].timestamp)[0]
+    if (oldest) previewCache.delete(oldest[0])
+  }
+  previewCache.set(getCacheKey(latex), { pdf, timestamp: Date.now() })
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -43,6 +73,18 @@ export async function POST(request: NextRequest) {
 }`
       latex = latex.replace('\\begin{document}', `\\begin{document}\n${watermarkCode}`)
 
+      // Check cache first
+      const cached = getCachedPdf(latex)
+      if (cached) {
+        return NextResponse.json({
+          success: true,
+          format: 'pdf',
+          content: cached,
+          preview: true,
+          cached: true,
+        })
+      }
+
       const compileResponse = await fetch('https://latex.ytotech.com/builds/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -62,10 +104,15 @@ export async function POST(request: NextRequest) {
       }
 
       const pdfBuffer = await compileResponse.arrayBuffer()
+      const pdfBase64 = Buffer.from(pdfBuffer).toString('base64')
+
+      // Cache the result
+      setCachedPdf(latex, pdfBase64)
+
       return NextResponse.json({
         success: true,
         format: 'pdf',
-        content: Buffer.from(pdfBuffer).toString('base64'),
+        content: pdfBase64,
         preview: true,
       })
     }
