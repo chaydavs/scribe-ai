@@ -1,4 +1,5 @@
 import { ParsedResume } from '@/types/templates'
+import { escapeLatex } from '../escape'
 
 /**
  * Creative Bold Template
@@ -9,16 +10,7 @@ import { ParsedResume } from '@/types/templates'
  * - Eye-catching design for creative roles
  */
 export function generateCreativeBoldLatex(resume: ParsedResume): string {
-  const esc = (str: string): string => {
-    if (!str) return ''
-    return str
-      .replace(/\\/g, '\x00BACKSLASH\x00')
-      .replace(/[&%$#_{}]/g, m => '\\' + m)
-      .replace(/~/g, '\\textasciitilde{}')
-      .replace(/\^/g, '\\textasciicircum{}')
-      .replace(/\|/g, '\\textbar{}')
-      .replace(/\x00BACKSLASH\x00/g, '\\textbackslash{}')
-  }
+  const esc = escapeLatex
 
   const contactParts = [
     resume.email || '',

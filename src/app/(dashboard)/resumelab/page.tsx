@@ -572,6 +572,8 @@ function ResumeLabContent() {
       setSaveSuccess(true)
       toast('Saved!', 'success')
       setTimeout(() => setSaveSuccess(false), 2000)
+      // Re-score so the displayed score updates to reflect edits
+      scoreResume(textToSave)
     } catch (err) {
       toast(err instanceof Error ? err.message : 'Failed to save', 'error')
     } finally {

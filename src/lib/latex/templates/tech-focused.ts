@@ -1,4 +1,5 @@
 import { ParsedResume } from '@/types/templates'
+import { escapeLatex } from '../escape'
 
 /**
  * Tech-Focused Template
@@ -8,16 +9,7 @@ import { ParsedResume } from '@/types/templates'
  * - Skills categorized: Languages, Frameworks, Tools
  */
 export function generateTechFocusedLatex(resume: ParsedResume): string {
-  const esc = (str: string): string => {
-    if (!str) return ''
-    return str
-      .replace(/\\/g, '\x00BACKSLASH\x00')
-      .replace(/[&%$#_{}]/g, m => '\\' + m)
-      .replace(/~/g, '\\textasciitilde{}')
-      .replace(/\^/g, '\\textasciicircum{}')
-      .replace(/\|/g, '\\textbar{}')
-      .replace(/\x00BACKSLASH\x00/g, '\\textbackslash{}')
-  }
+  const esc = escapeLatex
 
   // Categorize skills
   const languageKw = ['python', 'javascript', 'typescript', 'java', 'c++', 'c#', 'go', 'rust', 'ruby', 'php', 'swift', 'kotlin', 'sql', 'r', 'matlab', 'scala', 'html', 'css']

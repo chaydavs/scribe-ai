@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useRef, useCallback, useState } from 'react'
 
 interface StructuredAnalysis {
   score: number
@@ -68,6 +68,44 @@ interface PreviewTabProps {
   onSetActiveTab: (tab: 'upload' | 'analysis' | 'rewrite' | 'preview') => void
 }
 
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false)
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation()
+        navigator.clipboard.writeText(text)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 1500)
+      }}
+      className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-[10px] text-blue-600 font-medium hover:bg-blue-100 transition-colors"
+    >
+      {copied ? 'Copied!' : 'Copy'}
+    </button>
+  )
+}
+
+function NiceToHaveButton({ isClickable, applyFix, fixedText }: { isClickable: boolean; applyFix: () => void; fixedText: string }) {
+  const [copied, setCopied] = useState(false)
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation()
+        if (isClickable) {
+          applyFix()
+        } else {
+          navigator.clipboard.writeText(fixedText)
+          setCopied(true)
+          setTimeout(() => setCopied(false), 1500)
+        }
+      }}
+      className="inline-flex items-center rounded-full bg-slate-100 px-2 py-1 text-[10px] font-medium text-slate-600 hover:bg-slate-200 transition-colors"
+    >
+      {copied ? 'Copied!' : isClickable ? 'Apply' : 'Copy'}
+    </button>
+  )
+}
+
 export function PreviewTab({
   rewrite,
   resumeText,
@@ -89,6 +127,81 @@ export function PreviewTab({
   onGeneratePreview,
   onSetActiveTab,
 }: PreviewTabProps) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const [undoStack, setUndoStack] = useState<string[]>([])
+  const [redoStack, setRedoStack] = useState<string[]>([])
+
+  // Track changes for undo/redo
+  const updateWithUndo = useCallback((newText: string) => {
+    setUndoStack(prev => [...prev, editableResume])
+    setRedoStack([])
+    setEditableResume(newText)
+  }, [editableResume, setEditableResume])
+
+  const undo = useCallback(() => {
+    if (undoStack.length === 0) return
+    const prev = undoStack[undoStack.length - 1]
+    setRedoStack(r => [...r, editableResume])
+    setUndoStack(s => s.slice(0, -1))
+    setEditableResume(prev)
+  }, [undoStack, editableResume, setEditableResume])
+
+  const redo = useCallback(() => {
+    if (redoStack.length === 0) return
+    const next = redoStack[redoStack.length - 1]
+    setUndoStack(s => [...s, editableResume])
+    setRedoStack(r => r.slice(0, -1))
+    setEditableResume(next)
+  }, [redoStack, editableResume, setEditableResume])
+
+  const wrapSelection = useCallback((before: string, after: string) => {
+    const ta = textareaRef.current
+    if (!ta) return
+    const start = ta.selectionStart
+    const end = ta.selectionEnd
+    const text = editableResume
+    const selected = text.slice(start, end)
+    const newText = text.slice(0, start) + before + selected + after + text.slice(end)
+    setEditableResume(newText)
+    // Restore cursor position after the wrapped text
+    requestAnimationFrame(() => {
+      ta.focus()
+      ta.selectionStart = start + before.length
+      ta.selectionEnd = end + before.length
+    })
+  }, [editableResume, setEditableResume])
+
+  const insertAtCursor = useCallback((insert: string) => {
+    const ta = textareaRef.current
+    if (!ta) return
+    const start = ta.selectionStart
+    const text = editableResume
+    // Find the start of the current line
+    const lineStart = text.lastIndexOf('\n', start - 1) + 1
+    const newText = text.slice(0, lineStart) + insert + text.slice(lineStart)
+    setEditableResume(newText)
+    requestAnimationFrame(() => {
+      ta.focus()
+      ta.selectionStart = ta.selectionEnd = lineStart + insert.length
+    })
+  }, [editableResume, setEditableResume])
+
+  const insertNewSection = useCallback(() => {
+    const ta = textareaRef.current
+    if (!ta) return
+    const pos = ta.selectionStart
+    const text = editableResume
+    const insert = '\n\nNEW SECTION\n'
+    const newText = text.slice(0, pos) + insert + text.slice(pos)
+    setEditableResume(newText)
+    requestAnimationFrame(() => {
+      ta.focus()
+      // Select "NEW SECTION" so user can type over it
+      ta.selectionStart = pos + 2
+      ta.selectionEnd = pos + 2 + 'NEW SECTION'.length
+    })
+  }, [editableResume, setEditableResume])
+
   return (
     <div className="animate-tab-enter bg-white rounded-2xl border border-slate-200 shadow-sm p-6 lg:p-8">
       {(rewrite || resumeText) ? (
@@ -282,16 +395,64 @@ export function PreviewTab({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                   Suggested Fixes
-                  <span className="text-xs text-slate-400 font-normal">Click to apply</span>
                 </h3>
-                {!rewrite && (
+                <div className="flex items-center gap-2">
+                  {/* Undo / Redo */}
                   <button
-                    onClick={() => { onSetActiveTab('rewrite'); onHandleRewrite() }}
-                    className="text-xs text-primary-600 hover:text-primary-700 font-medium"
+                    onClick={undo}
+                    disabled={undoStack.length === 0}
+                    className="p-1.5 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    title="Undo"
                   >
-                    Or use AI Rewrite to fix all &rarr;
+                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a5 5 0 015 5v2M3 10l4-4M3 10l4 4" />
+                    </svg>
                   </button>
-                )}
+                  <button
+                    onClick={redo}
+                    disabled={redoStack.length === 0}
+                    className="p-1.5 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    title="Redo"
+                  >
+                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10H11a5 5 0 00-5 5v2m15-7l-4-4m4 4l-4 4" />
+                    </svg>
+                  </button>
+                  <div className="w-px h-4 bg-slate-200" />
+                  {/* Apply All critical+important */}
+                  <button
+                    onClick={() => {
+                      const criticalAndImportant = structuredAnalysis.fixes.filter(f => f.severity !== 'nice-to-have')
+                      let text = editableResume
+                      const normalize = (s: string) => s.replace(/\s+/g, ' ').trim()
+                      for (const fix of criticalAndImportant) {
+                        if (normalize(text).includes(normalize(fix.current))) {
+                          // Exact
+                          if (text.includes(fix.current)) {
+                            text = text.replace(fix.current, fix.fixed)
+                          } else {
+                            // Whitespace-normalized
+                            const escaped = fix.current.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+                            const pattern = escaped.replace(/\s+/g, '\\s+')
+                            text = text.replace(new RegExp(pattern), fix.fixed)
+                          }
+                        }
+                      }
+                      if (text !== editableResume) updateWithUndo(text)
+                    }}
+                    className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                  >
+                    Apply All Fixes
+                  </button>
+                  {!rewrite && (
+                    <button
+                      onClick={() => { onSetActiveTab('rewrite'); onHandleRewrite() }}
+                      className="text-xs text-primary-600 hover:text-primary-700 font-medium"
+                    >
+                      AI Rewrite &rarr;
+                    </button>
+                  )}
+                </div>
               </div>
               <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
                 {structuredAnalysis.fixes.map((fix, i) => {
@@ -309,7 +470,7 @@ export function PreviewTab({
                   })()
 
                   const applyFix = () => {
-                    setEditableResume((() => {
+                    updateWithUndo((() => {
                       const prev = editableResume
                       // 1. Exact match
                       if (prev.includes(fix.current)) {
@@ -332,6 +493,7 @@ export function PreviewTab({
                     })())
                   }
 
+                  const isNiceToHave = fix.severity === 'nice-to-have'
                   const isClickable = !isApplied && (canApply || canFuzzyApply)
 
                   return (
@@ -340,11 +502,11 @@ export function PreviewTab({
                       className={`rounded-lg border p-3 transition-colors ${
                         isApplied
                           ? 'border-green-200 bg-green-50'
-                          : isClickable
+                          : isClickable && !isNiceToHave
                             ? 'border-slate-200 hover:border-primary-300 hover:bg-primary-50/30 cursor-pointer'
                             : 'border-slate-100 bg-slate-50'
                       }`}
-                      onClick={() => { if (isClickable) applyFix() }}
+                      onClick={() => { if (isClickable && !isNiceToHave) applyFix() }}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
@@ -393,14 +555,14 @@ export function PreviewTab({
                               </svg>
                               Applied
                             </span>
+                          ) : isNiceToHave ? (
+                            <NiceToHaveButton isClickable={isClickable} applyFix={applyFix} fixedText={fix.fixed} />
                           ) : isClickable ? (
-                            <span className="inline-flex items-center rounded-full bg-primary-100 px-2 py-1 text-[10px] font-semibold text-primary-700">
+                            <span className="inline-flex items-center rounded-full bg-black px-2.5 py-1 text-[10px] font-semibold text-white">
                               Apply
                             </span>
                           ) : (
-                            <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-[10px] text-blue-600 font-medium">
-                              Copy
-                            </span>
+                            <CopyButton text={fix.fixed} />
                           )}
                         </div>
                       </div>
@@ -435,7 +597,53 @@ export function PreviewTab({
                   </button>
                 )}
               </div>
+              {/* Formatting toolbar */}
+              <div className="flex items-center gap-1 mb-2 p-1.5 rounded-lg border border-slate-200 bg-slate-50 w-fit">
+                <button
+                  type="button"
+                  onClick={() => wrapSelection('**', '**')}
+                  className="px-2.5 py-1.5 rounded text-sm font-bold text-slate-600 hover:bg-white hover:shadow-sm transition-all"
+                  title="Bold (wrap in **)"
+                >
+                  B
+                </button>
+                <button
+                  type="button"
+                  onClick={() => wrapSelection('*', '*')}
+                  className="px-2.5 py-1.5 rounded text-sm italic text-slate-600 hover:bg-white hover:shadow-sm transition-all"
+                  title="Italic (wrap in *)"
+                >
+                  I
+                </button>
+                <div className="w-px h-5 bg-slate-200 mx-1" />
+                <button
+                  type="button"
+                  onClick={() => insertAtCursor('• ')}
+                  className="px-2.5 py-1.5 rounded text-sm text-slate-600 hover:bg-white hover:shadow-sm transition-all"
+                  title="Bullet point"
+                >
+                  • List
+                </button>
+                <button
+                  type="button"
+                  onClick={() => insertAtCursor('– ')}
+                  className="px-2.5 py-1.5 rounded text-sm text-slate-600 hover:bg-white hover:shadow-sm transition-all"
+                  title="Dash bullet"
+                >
+                  – Dash
+                </button>
+                <div className="w-px h-5 bg-slate-200 mx-1" />
+                <button
+                  type="button"
+                  onClick={insertNewSection}
+                  className="px-2.5 py-1.5 rounded text-sm text-slate-600 hover:bg-white hover:shadow-sm transition-all"
+                  title="Add new section header"
+                >
+                  + Section
+                </button>
+              </div>
               <textarea
+                ref={textareaRef}
                 value={editableResume}
                 onChange={(e) => setEditableResume(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 p-4 text-sm font-mono leading-relaxed text-slate-700 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 resize-none"

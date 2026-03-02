@@ -67,7 +67,7 @@ function AnnotationDemo() {
           <div className="text-[10px] font-semibold text-red-700">Vague bullet</div>
           <div className="text-[9px] text-slate-500 mt-0.5 line-through">&quot;Responsible for...&quot;</div>
           <div className="text-[9px] text-green-700 mt-0.5">&quot;Built REST APIs serving 50K+ daily requests&quot;</div>
-          <button className="mt-1.5 text-[9px] font-medium text-white bg-primary-500 rounded px-2 py-0.5">Apply Fix</button>
+          <button className="mt-1.5 text-[9px] font-medium text-white bg-black rounded px-2 py-0.5">Apply Fix</button>
         </div>
         <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-2">
           <div className="text-[10px] font-semibold text-amber-700">Weak verb</div>
@@ -88,12 +88,12 @@ function HeroBadge() {
   const typedText = useTypingEffect({ phrases: TYPING_PHRASES })
 
   return (
-    <div className="inline-flex items-center rounded-full bg-primary-50 border border-primary-200 px-4 py-1.5 text-sm font-medium text-primary-700 mb-6 animate-card-enter">
+    <div className="inline-flex items-center rounded-full bg-slate-50 border border-slate-200 px-4 py-1.5 text-sm font-medium text-slate-700 mb-6 animate-card-enter">
       <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
       </svg>
       <span>{typedText}</span>
-      <span className="ml-0.5 inline-block w-[2px] h-4 bg-primary-500 animate-pulse" />
+      <span className="ml-0.5 inline-block w-[2px] h-4 bg-black animate-pulse" />
     </div>
   )
 }
@@ -171,7 +171,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-primary-700">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-black">
                 <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
@@ -184,7 +184,7 @@ export default function LandingPage() {
               </Link>
               <Link
                 href="/signup"
-                className="rounded-lg bg-gradient-to-r from-primary-500 to-primary-700 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-primary-500/25 transition-all hover:shadow-xl hover:shadow-primary-500/30 hover:-translate-y-0.5"
+                className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5"
               >
                 Get Started Free
               </Link>
@@ -195,14 +195,14 @@ export default function LandingPage() {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-16 pb-8 sm:pt-24 sm:pb-12">
-        <div className="absolute inset-0 bg-gradient-to-b from-white via-primary-50/40 to-slate-50" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-primary-100/30 rounded-full blur-3xl" />
+        <div className="absolute inset-0 bg-white" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-slate-100/30 rounded-full blur-3xl" />
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
             <HeroBadge />
             <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl animate-card-enter [animation-delay:100ms]">
               Fix your resume{' '}
-              <span className="bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent">
+              <span className="text-black underline decoration-2 underline-offset-4">
                 right here
               </span>
               {' '}&mdash; not in another tab
@@ -213,7 +213,7 @@ export default function LandingPage() {
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row animate-card-enter [animation-delay:300ms]">
               <Link
                 href="/signup"
-                className="group rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-8 py-4 text-base font-semibold text-white shadow-lg shadow-primary-500/30 transition-all hover:shadow-xl hover:shadow-primary-500/40 hover:-translate-y-0.5"
+                className="group rounded-xl bg-black px-8 py-4 text-base font-semibold text-white shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5"
               >
                 Fix My Resume Now
                 <svg className="inline-block ml-2 h-5 w-5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -271,15 +271,15 @@ export default function LandingPage() {
             </RevealSection>
 
             <RevealSection delay={100}>
-              <div className="rounded-2xl border-2 border-primary-500 bg-gradient-to-br from-primary-50 to-indigo-50 p-6 relative">
-                <div className="absolute -top-3 left-6 rounded-full bg-primary-500 px-3 py-0.5 text-xs font-medium text-white">
+              <div className="rounded-2xl border-2 border-slate-200 bg-white p-6 relative">
+                <div className="absolute -top-3 left-6 rounded-full bg-black px-3 py-0.5 text-xs font-medium text-white">
                   ResumeLab
                 </div>
                 <div className="flex items-center gap-2 mb-6">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100">
-                    <CheckIcon className="h-4 w-4 text-primary-600" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100">
+                    <CheckIcon className="h-4 w-4 text-slate-700" />
                   </div>
-                  <h3 className="text-lg font-semibold text-primary-700">A better way</h3>
+                  <h3 className="text-lg font-semibold text-slate-900">A better way</h3>
                 </div>
                 <ul className="space-y-4">
                   {RESUMELAB_BENEFITS.map((item, i) => (
@@ -310,7 +310,7 @@ export default function LandingPage() {
           </div>
 
           <div className="relative grid gap-8 md:grid-cols-3 max-w-4xl mx-auto">
-            <div className="hidden md:block absolute top-7 left-[calc(16.67%+28px)] right-[calc(16.67%+28px)] h-0.5 bg-gradient-to-r from-primary-300 via-primary-400 to-primary-500" />
+            <div className="hidden md:block absolute top-7 left-[calc(16.67%+28px)] right-[calc(16.67%+28px)] h-0.5 bg-slate-300" />
 
             {[
               { step: '1', title: 'Upload your resume', desc: 'Drop a PDF or paste text. We parse it instantly.' },
@@ -319,7 +319,7 @@ export default function LandingPage() {
             ].map((card, i) => (
               <RevealSection key={card.step} delay={i * 100}>
                 <div className="relative text-center rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
-                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 text-white text-xl font-bold shadow-lg shadow-primary-500/30 relative z-10">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-black text-white text-xl font-bold shadow-sm relative z-10">
                     {card.step}
                   </div>
                   <h3 className="mt-5 text-lg font-semibold text-slate-900">{card.title}</h3>
@@ -359,7 +359,7 @@ export default function LandingPage() {
             </RevealSection>
 
             <RevealSection delay={200}>
-              <div className="bg-gradient-to-br from-primary-50 to-indigo-50 rounded-2xl p-8 border border-primary-100">
+              <div className="bg-white rounded-2xl p-8 border border-slate-200">
                 <h3 className="text-lg font-semibold text-slate-900 mb-6">
                   ResumeLab gives you:
                 </h3>
@@ -402,7 +402,7 @@ export default function LandingPage() {
                   </div>
                   <p className="text-slate-600 mb-4 text-sm leading-relaxed">{t.text}</p>
                   <div className="flex items-center">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 text-primary-600 font-semibold text-sm">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-700 font-semibold text-sm">
                       {t.initial}
                     </div>
                     <div className="ml-3">
@@ -457,7 +457,7 @@ export default function LandingPage() {
 
           <div className="grid gap-6 md:grid-cols-3">
             {/* Free tier */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-6">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 transition-all duration-300 hover:-translate-y-2 hover:shadow-lg">
               <h3 className="text-lg font-semibold text-slate-900">Free</h3>
               <p className="mt-2 text-3xl font-bold text-slate-900">$0</p>
               <p className="text-sm text-slate-500">25 credits included</p>
@@ -478,15 +478,15 @@ export default function LandingPage() {
               </ul>
               <Link
                 href="/signup"
-                className="mt-6 block w-full rounded-lg bg-primary-500 py-2.5 text-center text-sm font-medium text-white hover:bg-primary-600 transition-colors"
+                className="mt-6 block w-full rounded-lg bg-black py-2.5 text-center text-sm font-medium text-white hover:bg-slate-800 transition-colors"
               >
                 Start Free
               </Link>
             </div>
 
             {/* Standard tier — Most Popular */}
-            <div className="rounded-2xl border-2 border-primary-500 ring-4 ring-primary-100 scale-[1.02] shadow-xl bg-white p-6 relative">
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary-500 px-4 py-1 text-xs font-medium text-white whitespace-nowrap">
+            <div className="rounded-2xl border-2 border-black ring-2 ring-slate-200 scale-[1.02] shadow-xl bg-white p-6 relative transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-black px-4 py-1 text-xs font-medium text-white whitespace-nowrap">
                 Most Popular
               </span>
               <h3 className="text-lg font-semibold text-slate-900">Standard</h3>
@@ -509,14 +509,14 @@ export default function LandingPage() {
               </ul>
               <Link
                 href="/signup"
-                className="mt-6 block w-full rounded-lg bg-gradient-to-r from-primary-500 to-primary-700 py-2.5 text-center text-sm font-medium text-white shadow-lg shadow-primary-500/25 hover:shadow-xl hover:shadow-primary-500/30 transition-all"
+                className="mt-6 block w-full rounded-lg bg-black py-2.5 text-center text-sm font-medium text-white shadow-sm hover:shadow-md transition-all"
               >
                 Get Started
               </Link>
             </div>
 
             {/* Pro tier */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 relative">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 relative transition-all duration-300 hover:-translate-y-2 hover:shadow-lg">
               <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-slate-700 px-4 py-1 text-xs font-medium text-white whitespace-nowrap">
                 Best for Volume
               </span>
@@ -553,7 +553,7 @@ export default function LandingPage() {
       <FaqSection />
 
       {/* Final CTA */}
-      <section className="py-20 bg-gradient-to-r from-slate-900 to-slate-800">
+      <section className="py-20 bg-black">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-white sm:text-4xl">
             Every day with a weak resume is interviews you&apos;re not getting
@@ -581,7 +581,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center space-x-2">
-              <div className="flex h-6 w-6 items-center justify-center rounded bg-gradient-to-br from-primary-500 to-primary-700">
+              <div className="flex h-6 w-6 items-center justify-center rounded bg-black">
                 <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>

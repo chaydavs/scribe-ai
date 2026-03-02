@@ -1,4 +1,5 @@
 import { ParsedResume } from '@/types/templates'
+import { escapeLatex } from '../escape'
 
 /**
  * Modern Minimal Template
@@ -8,16 +9,7 @@ import { ParsedResume } from '@/types/templates'
  * - Black text only, ATS-optimized
  */
 export function generateModernMinimalLatex(resume: ParsedResume): string {
-  const esc = (str: string): string => {
-    if (!str) return ''
-    return str
-      .replace(/\\/g, '\x00BACKSLASH\x00')
-      .replace(/[&%$#_{}]/g, m => '\\' + m)
-      .replace(/~/g, '\\textasciitilde{}')
-      .replace(/\^/g, '\\textasciicircum{}')
-      .replace(/\|/g, '\\textbar{}')
-      .replace(/\x00BACKSLASH\x00/g, '\\textbackslash{}')
-  }
+  const esc = escapeLatex
 
   const contactParts = [
     resume.email || '',
