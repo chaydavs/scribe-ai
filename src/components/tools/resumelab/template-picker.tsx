@@ -38,8 +38,8 @@ export function TemplatePicker({
               className={`
                 relative rounded-lg border-2 p-3 transition-all cursor-pointer
                 ${isSelected
-                  ? 'border-teal-500 bg-teal-50'
-                  : 'border-slate-200 hover:border-teal-300 hover:bg-slate-50'
+                  ? 'border-primary-500 bg-primary-50'
+                  : 'border-slate-200 hover:border-primary-300 hover:bg-slate-50'
                 }
                 ${!affordable ? 'opacity-60 cursor-not-allowed' : ''}
               `}
@@ -67,11 +67,11 @@ export function TemplatePicker({
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm font-semibold text-teal-600 bg-teal-50 px-2 py-0.5 rounded">
+                  <span className="text-sm font-semibold text-primary-600 bg-primary-50 px-2 py-0.5 rounded">
                     {template.creditCost} cr
                   </span>
                   {isSelected && (
-                    <div className="bg-teal-500 text-white rounded-full p-0.5">
+                    <div className="bg-primary-500 text-white rounded-full p-0.5">
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
@@ -91,7 +91,7 @@ export function TemplatePicker({
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-slate-900">Choose a Template</h3>
         <span className="text-sm text-slate-500">
-          Your credits: <span className="font-semibold text-teal-600">{userCredits}</span>
+          Your credits: <span className="font-semibold text-primary-600">{userCredits}</span>
         </span>
       </div>
 
@@ -107,8 +107,8 @@ export function TemplatePicker({
               className={`
                 relative rounded-xl border-2 transition-all cursor-pointer overflow-hidden
                 ${isSelected
-                  ? 'border-teal-500 ring-2 ring-teal-500/20'
-                  : 'border-slate-200 hover:border-teal-300'
+                  ? 'border-primary-500 ring-2 ring-primary-500/20'
+                  : 'border-slate-200 hover:border-primary-300'
                 }
                 ${!affordable ? 'opacity-60' : ''}
               `}
@@ -139,7 +139,7 @@ export function TemplatePicker({
 
                 {/* Selected Checkmark */}
                 {isSelected && (
-                  <div className="absolute top-2 left-2 bg-teal-500 text-white rounded-full p-1">
+                  <div className="absolute top-2 left-2 bg-primary-500 text-white rounded-full p-1">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
@@ -148,8 +148,8 @@ export function TemplatePicker({
 
                 {/* Hover Overlay */}
                 {isHovered && affordable && (
-                  <div className="absolute inset-0 bg-teal-500/10 flex items-center justify-center">
-                    <span className="bg-white text-teal-600 font-medium px-4 py-2 rounded-lg shadow-lg">
+                  <div className="absolute inset-0 bg-primary-500/10 flex items-center justify-center">
+                    <span className="bg-white text-primary-600 font-medium px-4 py-2 rounded-lg shadow-lg">
                       {isSelected ? 'Selected' : 'Select Template'}
                     </span>
                   </div>
@@ -172,9 +172,9 @@ export function TemplatePicker({
                     <h4 className="font-semibold text-slate-900">{template.name}</h4>
                     <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{template.description}</p>
                   </div>
-                  <div className="flex items-center space-x-1 text-sm font-semibold text-teal-600 bg-teal-50 px-2 py-1 rounded-lg">
+                  <div className="flex items-center space-x-1 text-sm font-semibold text-primary-600 bg-primary-50 px-2 py-1 rounded-lg">
                     <span>{template.creditCost}</span>
-                    <span className="text-xs text-teal-400">cr</span>
+                    <span className="text-xs text-primary-400">cr</span>
                   </div>
                 </div>
 
@@ -204,7 +204,7 @@ export function TemplatePicker({
               if (template) onExport(template)
             }}
             disabled={loading}
-            className="flex items-center space-x-2 bg-gradient-to-r from-teal-500 to-emerald-600 text-white font-semibold px-8 py-3 rounded-xl shadow-lg shadow-teal-500/30 hover:shadow-xl transition-all disabled:opacity-50"
+            className="flex items-center space-x-2 bg-gradient-to-r from-primary-500 to-primary-700 text-white font-semibold px-8 py-3 rounded-xl shadow-lg shadow-primary-500/30 hover:shadow-xl transition-all disabled:opacity-50"
           >
             {loading ? (
               <>
@@ -220,7 +220,7 @@ export function TemplatePicker({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 <span>Export as PDF</span>
-                <span className="text-teal-200">
+                <span className="text-primary-200">
                   ({AVAILABLE_TEMPLATES.find(t => t.id === selectedTemplateId)?.creditCost} credits)
                 </span>
               </>

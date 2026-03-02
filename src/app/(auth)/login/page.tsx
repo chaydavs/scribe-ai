@@ -108,7 +108,7 @@ function LoginForm() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 w-full rounded-xl border border-slate-200 p-3 text-sm transition-colors focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+            className="mt-1 w-full rounded-xl border border-slate-200 p-3 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
             placeholder="you@example.com"
           />
         </div>
@@ -118,7 +118,7 @@ function LoginForm() {
             <label htmlFor="password" className="block text-sm font-medium text-slate-700">
               Password
             </label>
-            <Link href="/forgot-password" className="text-sm text-teal-600 hover:text-teal-500">
+            <Link href="/forgot-password" className="text-sm text-primary-600 hover:text-primary-500">
               Forgot password?
             </Link>
           </div>
@@ -130,7 +130,7 @@ function LoginForm() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 w-full rounded-xl border border-slate-200 p-3 text-sm transition-colors focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+            className="mt-1 w-full rounded-xl border border-slate-200 p-3 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
             placeholder="Your password"
           />
         </div>
@@ -138,7 +138,7 @@ function LoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-teal-500/25 transition-all hover:shadow-xl hover:shadow-teal-500/30 disabled:opacity-50"
+          className="w-full rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary-500/25 transition-all hover:shadow-xl hover:shadow-primary-500/30 disabled:opacity-50"
         >
           {loading ? 'Signing in...' : 'Sign In'}
         </button>
@@ -154,7 +154,7 @@ export default function LoginPage() {
       <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-sm">
           <Link href="/" className="flex items-center space-x-2 mb-8">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-primary-700">
               <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
@@ -173,7 +173,7 @@ export default function LoginPage() {
 
           <p className="mt-6 text-center text-sm text-slate-600">
             Don&apos;t have an account?{' '}
-            <Link href="/signup" className="font-medium text-teal-600 hover:text-teal-500">
+            <Link href="/signup" className="font-medium text-primary-600 hover:text-primary-500">
               Sign up free
             </Link>
           </p>

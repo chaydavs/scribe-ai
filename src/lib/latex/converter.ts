@@ -11,7 +11,8 @@ import { generateExecutiveLatex } from './templates/executive'
 const MONTHS = 'Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?'
 // Year must be 19xx or 20xx to avoid matching course numbers like "CS 2104"
 // Standalone year requires word boundary to avoid matching mid-word
-const DATE_TOKEN = `(?:(?:Expected\\s+)?(?:${MONTHS})\\s+\\d{4}|\\b(?:19|20)\\d{2}\\b|Present|Current)`
+const SEASONS = 'Spring|Summer|Fall|Winter|Autumn'
+const DATE_TOKEN = `(?:(?:(?:Expected|Anticipated)\\s+)?(?:${MONTHS})\\s+\\d{4}|\\d{1,2}[/\\-](?:19|20)\\d{2}|(?:${SEASONS})\\s+\\d{4}|Q[1-4]\\s+\\d{4}|\\b(?:19|20)\\d{2}\\b|Present|Current)`
 const DATE_RANGE_RE = new RegExp(`(${DATE_TOKEN})\\s*[-–—]\\s*(${DATE_TOKEN})`, 'i')
 const SINGLE_DATE_RE = new RegExp(`(${DATE_TOKEN})`, 'i')
 
@@ -97,11 +98,17 @@ function splitTitleCompany(text: string): { title: string; company: string; loca
 
   // Handle comma separator "Title, Company"
   // Be careful: don't split on commas inside parentheses
+  // Only split if right-side looks like a company name or is short
   const commaIdx = text.search(/,\s*(?![^(]*\))/)
   if (commaIdx > 0) {
-    title = text.slice(0, commaIdx).trim()
-    company = text.slice(commaIdx + 1).trim()
-    return { title, company, location }
+    const rightSide = text.slice(commaIdx + 1).trim()
+    const companyKeywords = /\b(inc|llc|corp|university|college|institute|hospital|foundation|consulting|technologies|solutions|group)\b/i
+    const isLikelyCompany = companyKeywords.test(rightSide) || rightSide.split(/\s+/).length <= 3
+    if (isLikelyCompany) {
+      title = text.slice(0, commaIdx).trim()
+      company = rightSide
+      return { title, company, location }
+    }
   }
 
   return { title: text.trim(), company: '', location: '' }
@@ -134,12 +141,12 @@ function splitSkills(text: string): string[] {
 // Section header patterns
 const SECTION_HEADERS: Record<string, string[]> = {
   summary: ['SUMMARY', 'PROFESSIONAL SUMMARY', 'OBJECTIVE', 'PROFILE'],
-  experience: ['EXPERIENCE', 'PROFESSIONAL EXPERIENCE', 'WORK EXPERIENCE', 'RELEVANT WORK EXPERIENCE', 'RELEVANT EXPERIENCE', 'EMPLOYMENT', 'RESEARCH & WORK EXPERIENCE', 'RESEARCH EXPERIENCE', 'WORK HISTORY'],
+  experience: ['EXPERIENCE', 'PROFESSIONAL EXPERIENCE', 'WORK EXPERIENCE', 'RELEVANT WORK EXPERIENCE', 'RELEVANT EXPERIENCE', 'EMPLOYMENT', 'RESEARCH & WORK EXPERIENCE', 'RESEARCH EXPERIENCE', 'WORK HISTORY', 'INTERNSHIP EXPERIENCE', 'INTERNSHIPS'],
   education: ['EDUCATION', 'ACADEMIC BACKGROUND', 'ACADEMICS'],
-  skills: ['SKILLS', 'TECHNICAL SKILLS', 'CORE COMPETENCIES', 'TECHNOLOGIES', 'TECH STACK'],
-  projects: ['PROJECTS', 'SELECTED PROJECTS', 'PERSONAL PROJECTS', 'KEY PROJECTS'],
+  skills: ['SKILLS', 'TECHNICAL SKILLS', 'CORE COMPETENCIES', 'TECHNOLOGIES', 'TECH STACK', 'TOOLS & TECHNOLOGIES', 'PROGRAMMING LANGUAGES', 'PROFICIENCIES', 'TOOLS AND TECHNOLOGIES'],
+  projects: ['PROJECTS', 'SELECTED PROJECTS', 'PERSONAL PROJECTS', 'KEY PROJECTS', 'ACADEMIC PROJECTS', 'CLASS PROJECTS', 'CAPSTONE', 'CAPSTONE PROJECT'],
   certifications: ['CERTIFICATIONS', 'CERTIFICATES', 'LICENSES', 'CREDENTIALS'],
-  leadership: ['LEADERSHIP', 'LEADERSHIP & ACTIVITIES', 'ACTIVITIES', 'EXTRACURRICULAR'],
+  leadership: ['LEADERSHIP', 'LEADERSHIP & ACTIVITIES', 'ACTIVITIES', 'EXTRACURRICULAR', 'CAMPUS INVOLVEMENT', 'ORGANIZATIONS', 'INVOLVEMENT'],
   coursework: ['COURSEWORK', 'RELEVANT COURSEWORK']
 }
 
@@ -154,7 +161,7 @@ function detectSection(line: string): string {
 
   const upper = line.toUpperCase().replace(/[^A-Z\s&]/g, '').trim()
   for (const [section, headers] of Object.entries(SECTION_HEADERS)) {
-    if (headers.some(h => upper === h || upper.startsWith(h))) {
+    if (headers.some(h => upper === h || upper.startsWith(h) || (h.length > 4 && upper.includes(h)))) {
       return section
     }
   }
@@ -341,13 +348,13 @@ export function parseResumeText(resumeText: string): ParsedResume {
       // Detail line: no pipe, no date, we have a current entry
       if (currentEducation && !hasPipe && !dateInfo) {
         // Degree line: "Bachelor of Science in ...", "Master of ...", "Associate ..."
-        if (/^(bachelor|master|associate|doctor|b\.?s\.?|b\.?a\.?|m\.?s\.?|m\.?a\.?|ph\.?d|m\.?b\.?a)/i.test(line) && !currentEducation.degree) {
+        if (/(bachelor|master|associate|doctor|b\.?s\.?|b\.?a\.?|m\.?s\.?|m\.?a\.?|ph\.?d|m\.?b\.?a|b\.?f\.?a|b\.?b\.?a|j\.?d|m\.?d|d\.?o|m\.?eng)/i.test(line) && !currentEducation.degree) {
           currentEducation.degree = line
           continue
         }
         // GPA line (could have pipe or standalone)
         if (/gpa/i.test(line) && !currentEducation.gpa) {
-          const gpaMatch = line.match(/gpa[:\s]*([0-9.]+)/i)
+          const gpaMatch = line.match(/gpa[:\s]*([0-9.]+)(?:\s*\/\s*[0-9.]+)?/i)
           if (gpaMatch) currentEducation.gpa = gpaMatch[1]
           // Don't continue — also check for honors/in-major info below
         }
@@ -380,7 +387,7 @@ export function parseResumeText(resumeText: string): ParsedResume {
         const allGpa = pipeParts.every(p => /gpa/i.test(p))
         if (allGpa) {
           for (const part of pipeParts) {
-            const gpaMatch = part.match(/gpa[:\s]*([0-9.]+)/i)
+            const gpaMatch = part.match(/gpa[:\s]*([0-9.]+)(?:\s*\/\s*[0-9.]+)?/i)
             if (gpaMatch && !currentEducation.gpa) {
               currentEducation.gpa = gpaMatch[1]
             }
@@ -407,7 +414,7 @@ export function parseResumeText(resumeText: string): ParsedResume {
         const parts = textWithoutDate.split(/\s*\|\s*/).filter(Boolean)
         const nonGpaParts: string[] = []
         for (const part of parts) {
-          const gpaMatch = part.match(/gpa[:\s]*([0-9.]+)/i)
+          const gpaMatch = part.match(/gpa[:\s]*([0-9.]+)(?:\s*\/\s*[0-9.]+)?/i)
           if (gpaMatch && !currentEducation.gpa) {
             currentEducation.gpa = gpaMatch[1]
           } else if (/minor/i.test(part)) {
@@ -440,7 +447,7 @@ export function parseResumeText(resumeText: string): ParsedResume {
         const nonGpaParts: string[] = []
         let gpa = ''
         for (let pi = 0; pi < parts.length; pi++) {
-          const gpaMatch = parts[pi].match(/gpa[:\s]*([0-9.]+)/i)
+          const gpaMatch = parts[pi].match(/gpa[:\s]*([0-9.]+)(?:\s*\/\s*[0-9.]+)?/i)
           if (gpaMatch) {
             gpa = gpaMatch[1]
           } else if (pi === schoolIdx) {
@@ -499,8 +506,10 @@ export function parseResumeText(resumeText: string): ParsedResume {
       // Project separator: use em dash (—) or colon (:) only, NOT regular hyphen
       // This prevents "Refr.store - AI Credit Card Platform" from splitting on the hyphen
       const emDashMatch = line.match(/^(.+?)\s*[—]\s*(.+)$/)
-      const colonMatch = !emDashMatch ? line.match(/^([^:]+?):\s*(.+)$/) : null
-      const match = emDashMatch || colonMatch
+      // For short lines, also try space-hyphen-space as separator
+      const hyphenMatch = !emDashMatch ? line.match(/^(.{3,40}?)\s+-\s+(.+)$/) : null
+      const colonMatch = !emDashMatch && !hyphenMatch ? line.match(/^([^:]+?):\s*(.+)$/) : null
+      const match = emDashMatch || hyphenMatch || colonMatch
 
       if (match) {
         if (currentProject) {

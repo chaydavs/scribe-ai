@@ -303,7 +303,7 @@ export default function InteractiveAnalysis({
           {!sidebarOpen && (
             <button
               onClick={() => setSidebarOpen(true)}
-              className="fixed bottom-6 right-6 z-30 flex items-center gap-2 px-4 py-3 bg-teal-600 text-white rounded-full shadow-xl shadow-teal-500/30 hover:bg-teal-700"
+              className="fixed bottom-6 right-6 z-30 flex items-center gap-2 px-4 py-3 bg-primary-600 text-white rounded-full shadow-xl shadow-primary-500/30 hover:bg-primary-700"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
@@ -350,7 +350,7 @@ export default function InteractiveAnalysis({
       </div>
 
       {/* Bottom CTA */}
-      <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-teal-50 to-emerald-50 border-t border-teal-100 rounded-b-xl">
+      <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-primary-50 to-indigo-50 border-t border-primary-100 rounded-b-xl">
         <div>
           <p className="text-sm font-bold text-slate-900">
             {appliedCount === 0 ? 'Want all fixes applied automatically?' : `${appliedCount} fixes applied manually. Want the rest?`}
@@ -359,7 +359,7 @@ export default function InteractiveAnalysis({
         </div>
         <button
           onClick={onRequestRewrite}
-          className="flex-shrink-0 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-xl"
+          className="flex-shrink-0 rounded-lg bg-gradient-to-r from-primary-500 to-primary-700 px-5 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-xl"
         >
           AI Rewrite
         </button>
@@ -419,7 +419,7 @@ function SidebarContent({
                 }
               })
             }}
-            className="flex-1 px-3 py-2 bg-teal-600 text-white text-xs font-semibold rounded-lg hover:bg-teal-700 transition-colors"
+            className="flex-1 px-3 py-2 bg-primary-600 text-white text-xs font-semibold rounded-lg hover:bg-primary-700 transition-colors"
           >
             Apply All AI Fixes ({totalFixes - appliedCount})
           </button>
@@ -446,8 +446,8 @@ function SidebarContent({
             onClick={() => onSeverityFilter(pill.key)}
             className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
               severityFilter === pill.key
-                ? 'bg-teal-600 text-white'
-                : 'bg-white text-slate-600 border border-slate-200 hover:border-teal-300'
+                ? 'bg-primary-600 text-white'
+                : 'bg-white text-slate-600 border border-slate-200 hover:border-primary-300'
             }`}
           >
             {pill.label}
@@ -482,7 +482,7 @@ function SidebarContent({
                 isApplied
                   ? 'border-green-200 bg-green-50/50'
                   : isActive
-                    ? 'border-teal-400 bg-white shadow-md ring-1 ring-teal-200'
+                    ? 'border-primary-400 bg-white shadow-md ring-1 ring-primary-200'
                     : 'border-slate-200 bg-white hover:border-slate-300'
               }`}
             >
@@ -519,14 +519,14 @@ function SidebarContent({
 
                   {/* After — textarea if editing, otherwise suggestion */}
                   {editingFixId === fix.id ? (
-                    <div className="rounded-md bg-teal-50 border border-teal-200 p-2">
-                      <p className="text-[10px] font-bold text-teal-600 uppercase mb-1">Your Version</p>
+                    <div className="rounded-md bg-primary-50 border border-primary-200 p-2">
+                      <p className="text-[10px] font-bold text-primary-600 uppercase mb-1">Your Version</p>
                       <textarea
                         value={editText}
                         onChange={(e) => setEditText(e.target.value)}
                         onClick={(e) => e.stopPropagation()}
                         rows={3}
-                        className="w-full text-xs text-slate-800 bg-white border border-teal-200 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-teal-400 resize-y"
+                        className="w-full text-xs text-slate-800 bg-white border border-primary-200 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary-400 resize-y"
                         autoFocus
                       />
                     </div>
@@ -544,7 +544,7 @@ function SidebarContent({
                         <button
                           onClick={(e) => { e.stopPropagation(); onApplyFix(fix.id, fix.index, editText); setEditingFixId(null) }}
                           disabled={!editText.trim()}
-                          className="flex-1 px-3 py-1.5 bg-teal-600 text-white text-xs font-semibold rounded-md hover:bg-teal-700 transition-colors disabled:opacity-50"
+                          className="flex-1 px-3 py-1.5 bg-primary-600 text-white text-xs font-semibold rounded-md hover:bg-primary-700 transition-colors disabled:opacity-50"
                         >
                           Apply Your Edit
                         </button>
@@ -559,13 +559,13 @@ function SidebarContent({
                       <>
                         <button
                           onClick={(e) => { e.stopPropagation(); onApplyFix(fix.id, fix.index) }}
-                          className="flex-1 px-3 py-1.5 bg-teal-600 text-white text-xs font-semibold rounded-md hover:bg-teal-700 transition-colors"
+                          className="flex-1 px-3 py-1.5 bg-primary-600 text-white text-xs font-semibold rounded-md hover:bg-primary-700 transition-colors"
                         >
                           Apply Fix
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); setEditingFixId(fix.id); setEditText(fix.fixed) }}
-                          className="px-3 py-1.5 text-xs font-medium text-teal-600 border border-teal-200 rounded-md hover:bg-teal-50 transition-colors"
+                          className="px-3 py-1.5 text-xs font-medium text-primary-600 border border-primary-200 rounded-md hover:bg-primary-50 transition-colors"
                         >
                           Edit
                         </button>
@@ -651,7 +651,7 @@ function SidebarContent({
           <div className="space-y-1.5">
             {structuredAnalysis.quickWins.map((win, i) => (
               <div key={i} className="flex items-start gap-2">
-                <span className="w-5 h-5 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center text-[10px] font-bold flex-shrink-0">{i + 1}</span>
+                <span className="w-5 h-5 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-[10px] font-bold flex-shrink-0">{i + 1}</span>
                 <p className="text-xs text-slate-600">{win}</p>
               </div>
             ))}
@@ -662,7 +662,7 @@ function SidebarContent({
       {/* Rewrite CTA */}
       <button
         onClick={onRequestRewrite}
-        className="w-full rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 px-4 py-3 text-sm font-semibold text-white shadow-lg hover:shadow-xl transition-shadow"
+        className="w-full rounded-lg bg-gradient-to-r from-primary-500 to-primary-700 px-4 py-3 text-sm font-semibold text-white shadow-lg hover:shadow-xl transition-shadow"
       >
         Fix All with AI Rewrite
       </button>

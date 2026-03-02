@@ -28,6 +28,12 @@ export async function extractTextFromPDF(buffer: Buffer): Promise<string> {
 // Smart resume text cleanup that preserves structure
 function cleanResumeText(raw: string): string {
   let text = raw
+    // Encoding mojibake cleanup (must come first)
+    .replace(/â€™/g, "'")
+    .replace(/â€œ/g, '"')
+    .replace(/â€\u009d/g, '"')
+    .replace(/â€"/g, '—')
+    .replace(/â€"/g, '–')
     // Normalize line endings
     .replace(/\r\n/g, '\n')
     .replace(/\r/g, '\n')
@@ -51,8 +57,11 @@ function cleanResumeText(raw: string): string {
 
   // Normalize bullets — various PDF bullet chars to standard dash
   text = text
-    .replace(/^[\s]*[•◦▪▸►●○■□‣⁃–—]\s*/gm, '- ')
-    .replace(/^[\s]*\uf0b7\s*/gm, '- ') // Common PDF bullet codepoint
+    .replace(/^[\s]*[•◦▪▸►●○■□‣⁃–—✓✔✦✧◇◆▶▷➤➢★☆⬥∙⦿]\s*/gm, '- ')
+    .replace(/^[\s]*[\uf0b7\uf0a7\uf0d8]\s*/gm, '- ') // Common PDF bullet codepoints
+    // Smart quote normalization
+    .replace(/[\u2018\u2019\u201A\u201B]/g, "'")
+    .replace(/[\u201C\u201D\u201E\u201F]/g, '"')
 
   // Collapse multiple spaces within a line (but preserve line breaks)
   text = text.replace(/[ \t]{2,}/g, ' ')
@@ -73,6 +82,8 @@ function cleanResumeText(raw: string): string {
   // Fix dates that got split across lines
   text = text.replace(/(\w{3,9})\s*\n\s*(20\d{2})/g, '$1 $2')
   text = text.replace(/(20\d{2})\s*\n\s*[-–—]\s*\n?\s*(20\d{2}|Present|Current)/gi, '$1 - $2')
+  // Fix MM/YYYY dates split across lines
+  text = text.replace(/(\d{1,2}\/)\s*\n\s*(20\d{2})/g, '$1$2')
 
   return text
 }

@@ -18,7 +18,7 @@ function AnnotationDemo() {
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4" /></svg>
             3/7 fixes applied
           </span>
-          <span className="text-teal-400 font-medium">Score: 72</span>
+          <span className="text-primary-400 font-medium">Score: 72</span>
         </div>
       </div>
 
@@ -62,7 +62,7 @@ function AnnotationDemo() {
           <div className="text-[10px] font-semibold text-red-700">Vague bullet</div>
           <div className="text-[9px] text-slate-500 mt-0.5 line-through">&quot;Responsible for...&quot;</div>
           <div className="text-[9px] text-green-700 mt-0.5">&quot;Built REST APIs serving 50K+ daily requests&quot;</div>
-          <button className="mt-1.5 text-[9px] font-medium text-white bg-teal-500 rounded px-2 py-0.5">Apply Fix</button>
+          <button className="mt-1.5 text-[9px] font-medium text-white bg-primary-500 rounded px-2 py-0.5">Apply Fix</button>
         </div>
         <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-2">
           <div className="text-[10px] font-semibold text-amber-700">Weak verb</div>
@@ -82,7 +82,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-primary-700">
                 <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
@@ -95,7 +95,7 @@ export default function LandingPage() {
               </Link>
               <Link
                 href="/signup"
-                className="rounded-lg bg-gradient-to-r from-teal-500 to-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-teal-500/25 transition-all hover:shadow-xl hover:shadow-teal-500/30 hover:-translate-y-0.5"
+                className="rounded-lg bg-gradient-to-r from-primary-500 to-primary-700 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-primary-500/25 transition-all hover:shadow-xl hover:shadow-primary-500/30 hover:-translate-y-0.5"
               >
                 Get Started Free
               </Link>
@@ -106,11 +106,11 @@ export default function LandingPage() {
 
       {/* Hero Section — Loss Aversion + Product Demo */}
       <section className="relative overflow-hidden pt-16 pb-8 sm:pt-24 sm:pb-12">
-        <div className="absolute inset-0 bg-gradient-to-b from-white via-teal-50/40 to-slate-50" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-teal-100/30 rounded-full blur-3xl" />
+        <div className="absolute inset-0 bg-gradient-to-b from-white via-primary-50/40 to-slate-50" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-primary-100/30 rounded-full blur-3xl" />
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
-            <div className="inline-flex items-center rounded-full bg-teal-50 border border-teal-200 px-4 py-1.5 text-sm font-medium text-teal-700 mb-6">
+            <div className="inline-flex items-center rounded-full bg-primary-50 border border-primary-200 px-4 py-1.5 text-sm font-medium text-primary-700 mb-6">
               <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
@@ -118,7 +118,7 @@ export default function LandingPage() {
             </div>
             <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
               Fix your resume{' '}
-              <span className="bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent">
                 right here
               </span>
               {' '}&mdash; not in another tab
@@ -129,7 +129,7 @@ export default function LandingPage() {
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link
                 href="/signup"
-                className="group rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 px-8 py-4 text-base font-semibold text-white shadow-lg shadow-teal-500/30 transition-all hover:shadow-xl hover:shadow-teal-500/40 hover:-translate-y-0.5"
+                className="group rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-8 py-4 text-base font-semibold text-white shadow-lg shadow-primary-500/30 transition-all hover:shadow-xl hover:shadow-primary-500/40 hover:-translate-y-0.5"
               >
                 Fix My Resume Now
                 <svg className="inline-block ml-2 h-5 w-5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -195,17 +195,17 @@ export default function LandingPage() {
             </div>
 
             {/* ResumeLab column */}
-            <div className="rounded-2xl border-2 border-teal-500 bg-gradient-to-br from-teal-50 to-emerald-50 p-6 relative">
-              <div className="absolute -top-3 left-6 rounded-full bg-teal-500 px-3 py-0.5 text-xs font-medium text-white">
+            <div className="rounded-2xl border-2 border-primary-500 bg-gradient-to-br from-primary-50 to-indigo-50 p-6 relative">
+              <div className="absolute -top-3 left-6 rounded-full bg-primary-500 px-3 py-0.5 text-xs font-medium text-white">
                 ResumeLab
               </div>
               <div className="flex items-center gap-2 mb-6">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-100">
-                  <svg className="h-4 w-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100">
+                  <svg className="h-4 w-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-teal-700">A better way</h3>
+                <h3 className="text-lg font-semibold text-primary-700">A better way</h3>
               </div>
               <ul className="space-y-4">
                 {[
@@ -243,10 +243,10 @@ export default function LandingPage() {
 
           <div className="relative grid gap-8 md:grid-cols-3 max-w-4xl mx-auto">
             {/* Connecting line (desktop only) */}
-            <div className="hidden md:block absolute top-7 left-[calc(16.67%+28px)] right-[calc(16.67%+28px)] h-0.5 bg-gradient-to-r from-teal-300 via-teal-400 to-emerald-400" />
+            <div className="hidden md:block absolute top-7 left-[calc(16.67%+28px)] right-[calc(16.67%+28px)] h-0.5 bg-gradient-to-r from-primary-300 via-primary-400 to-primary-500" />
 
             <div className="relative text-center rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white text-xl font-bold shadow-lg shadow-teal-500/30 relative z-10">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 text-white text-xl font-bold shadow-lg shadow-primary-500/30 relative z-10">
                 1
               </div>
               <h3 className="mt-5 text-lg font-semibold text-slate-900">Upload your resume</h3>
@@ -255,7 +255,7 @@ export default function LandingPage() {
               </p>
             </div>
             <div className="relative text-center rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white text-xl font-bold shadow-lg shadow-teal-500/30 relative z-10">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 text-white text-xl font-bold shadow-lg shadow-primary-500/30 relative z-10">
                 2
               </div>
               <h3 className="mt-5 text-lg font-semibold text-slate-900">See inline annotations</h3>
@@ -264,7 +264,7 @@ export default function LandingPage() {
               </p>
             </div>
             <div className="relative text-center rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white text-xl font-bold shadow-lg shadow-emerald-500/30 relative z-10">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 text-white text-xl font-bold shadow-lg shadow-primary-500/30 relative z-10">
                 3
               </div>
               <h3 className="mt-5 text-lg font-semibold text-slate-900">Apply fixes & export</h3>
@@ -321,7 +321,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-teal-50 to-emerald-50 rounded-2xl p-8 border border-teal-100">
+            <div className="bg-gradient-to-br from-primary-50 to-indigo-50 rounded-2xl p-8 border border-primary-100">
               <h3 className="text-lg font-semibold text-slate-900 mb-6">
                 ResumeLab gives you:
               </h3>
@@ -387,7 +387,7 @@ export default function LandingPage() {
                 &ldquo;The rewrite feature blew my mind. It took my bullet &lsquo;Responsible for managing database operations&rsquo; and turned it into &lsquo;Managed PostgreSQL cluster serving 2M+ queries/day.&rsquo; Same facts, completely different impact. Got 3 callbacks in a week.&rdquo;
               </p>
               <div className="flex items-center">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-100 text-teal-600 font-semibold text-sm">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 text-primary-600 font-semibold text-sm">
                   S
                 </div>
                 <div className="ml-3">
@@ -409,7 +409,7 @@ export default function LandingPage() {
                 &ldquo;I went from a 58 to an 87 score. The inline annotations made it so obvious what was wrong — I could see the red highlights on my weak bullets and fix them one by one. Way better than a wall of text telling me what to do.&rdquo;
               </p>
               <div className="flex items-center">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 font-semibold text-sm">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 text-primary-600 font-semibold text-sm">
                   J
                 </div>
                 <div className="ml-3">
@@ -431,7 +431,7 @@ export default function LandingPage() {
                 &ldquo;Used the free credits, was skeptical. But it caught things I never would have noticed — my skills section was missing 4 keywords from the job posting. Fixed them, applied, got the interview. Bought more credits the same day.&rdquo;
               </p>
               <div className="flex items-center">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 font-semibold text-sm">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 text-primary-600 font-semibold text-sm">
                   A
                 </div>
                 <div className="ml-3">
@@ -479,12 +479,12 @@ export default function LandingPage() {
             <span className="text-sm text-slate-400 line-through">Jobscan: $50/mo</span>
             <span className="text-sm text-slate-400 line-through">Teal: $36/mo</span>
             <span className="text-sm text-slate-400 line-through">Rezi: $29/mo</span>
-            <span className="text-sm font-semibold text-teal-600">ResumeLab: $10 total</span>
+            <span className="text-sm font-semibold text-primary-600">ResumeLab: $10 total</span>
           </div>
 
           <div className="grid gap-6 md:grid-cols-3">
-            <div className="rounded-2xl border-2 border-teal-500 bg-white p-6 relative">
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-teal-500 px-4 py-1 text-xs font-medium text-white">
+            <div className="rounded-2xl border-2 border-primary-500 bg-white p-6 relative">
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary-500 px-4 py-1 text-xs font-medium text-white">
                 Start Here
               </span>
               <h3 className="text-lg font-semibold text-slate-900">Free</h3>
@@ -513,14 +513,14 @@ export default function LandingPage() {
               </ul>
               <Link
                 href="/signup"
-                className="mt-6 block w-full rounded-lg bg-teal-500 py-2.5 text-center text-sm font-medium text-white hover:bg-teal-600 transition-colors"
+                className="mt-6 block w-full rounded-lg bg-primary-500 py-2.5 text-center text-sm font-medium text-white hover:bg-primary-600 transition-colors"
               >
                 Start Free
               </Link>
             </div>
 
-            <div className="rounded-2xl border-2 border-emerald-500 bg-white p-6 relative shadow-lg shadow-emerald-500/10">
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-emerald-500 px-4 py-1 text-xs font-medium text-white">
+            <div className="rounded-2xl border-2 border-primary-500 bg-white p-6 relative shadow-lg shadow-primary-500/10">
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary-500 px-4 py-1 text-xs font-medium text-white">
                 Best Value
               </span>
               <h3 className="text-lg font-semibold text-slate-900">Standard</h3>
@@ -549,7 +549,7 @@ export default function LandingPage() {
               </ul>
               <Link
                 href="/signup"
-                className="mt-6 block w-full rounded-lg bg-emerald-500 py-2.5 text-center text-sm font-medium text-white hover:bg-emerald-600 transition-colors"
+                className="mt-6 block w-full rounded-lg bg-primary-500 py-2.5 text-center text-sm font-medium text-white hover:bg-primary-600 transition-colors"
               >
                 Get Started
               </Link>
@@ -620,7 +620,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center space-x-2">
-              <div className="flex h-6 w-6 items-center justify-center rounded bg-gradient-to-br from-teal-500 to-emerald-600">
+              <div className="flex h-6 w-6 items-center justify-center rounded bg-gradient-to-br from-primary-500 to-primary-700">
                 <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>

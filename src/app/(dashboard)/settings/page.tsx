@@ -257,7 +257,7 @@ function SettingsContent() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-teal-500 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-500 border-t-transparent" />
       </div>
     )
   }
@@ -304,7 +304,7 @@ function SettingsContent() {
 
       {/* Free Credits Offer */}
       {showFreeCreditsOffer && (
-        <div className="rounded-2xl bg-gradient-to-r from-teal-500 to-emerald-600 p-6 text-white shadow-lg">
+        <div className="rounded-2xl bg-gradient-to-r from-primary-500 to-primary-700 p-6 text-white shadow-lg">
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center space-x-2 mb-2">
@@ -313,12 +313,12 @@ function SettingsContent() {
                 </svg>
                 <h2 className="text-xl font-bold">Welcome Gift</h2>
               </div>
-              <p className="text-teal-100">Claim your 25 free credits to try every feature.</p>
+              <p className="text-primary-100">Claim your 25 free credits to try every feature.</p>
             </div>
             <button
               onClick={handleClaimFreeCredits}
               disabled={claimingFree}
-              className="rounded-xl bg-white px-6 py-3 text-sm font-semibold text-teal-600 shadow-lg transition-all hover:bg-teal-50 disabled:opacity-50"
+              className="rounded-xl bg-white px-6 py-3 text-sm font-semibold text-primary-600 shadow-lg transition-all hover:bg-primary-50 disabled:opacity-50"
             >
               {claimingFree ? 'Claiming...' : 'Claim 25 Free Credits'}
             </button>
@@ -335,7 +335,7 @@ function SettingsContent() {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center space-x-2 rounded-t-lg px-4 py-3 text-sm font-medium transition-all ${
                 activeTab === tab.id
-                  ? 'border-b-2 border-teal-500 text-teal-600 bg-teal-50/50'
+                  ? 'border-b-2 border-primary-500 text-primary-600 bg-primary-50/50'
                   : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
               }`}
             >
@@ -355,7 +355,7 @@ function SettingsContent() {
             <div className="space-y-6">
               {/* Avatar & Info */}
               <div className="flex items-center space-x-4 pb-6 border-b border-slate-100">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-teal-400 to-emerald-500 text-2xl font-semibold text-white">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary-400 to-primary-600 text-2xl font-semibold text-white">
                   {(profile?.full_name || profile?.email || 'U')[0].toUpperCase()}
                 </div>
                 <div>
@@ -371,7 +371,7 @@ function SettingsContent() {
                   {editingName ? (
                     <input
                       type="text" value={newName} onChange={(e) => setNewName(e.target.value)}
-                      className="mt-1 w-full max-w-md rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                      className="mt-1 w-full max-w-md rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                       placeholder="Enter your name"
                     />
                   ) : (
@@ -381,7 +381,7 @@ function SettingsContent() {
                 <div className="ml-4">
                   {editingName ? (
                     <div className="flex space-x-2">
-                      <button onClick={handleSaveName} disabled={savingName} className="rounded-lg bg-teal-500 px-4 py-2 text-sm font-medium text-white hover:bg-teal-600 disabled:opacity-50">
+                      <button onClick={handleSaveName} disabled={savingName} className="rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white hover:bg-primary-600 disabled:opacity-50">
                         {savingName ? 'Saving...' : 'Save'}
                       </button>
                       <button onClick={() => { setEditingName(false); setNewName(profile?.full_name || '') }} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Cancel</button>
@@ -400,7 +400,7 @@ function SettingsContent() {
                     <div>
                       <input
                         type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)}
-                        className="mt-1 w-full max-w-md rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                        className="mt-1 w-full max-w-md rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                         placeholder="Enter new email"
                       />
                       <p className="mt-2 text-xs text-slate-500">A verification email will be sent to both your old and new email addresses.</p>
@@ -412,7 +412,7 @@ function SettingsContent() {
                 <div className="ml-4">
                   {editingEmail ? (
                     <div className="flex space-x-2">
-                      <button onClick={handleSaveEmail} disabled={savingEmail} className="rounded-lg bg-teal-500 px-4 py-2 text-sm font-medium text-white hover:bg-teal-600 disabled:opacity-50">
+                      <button onClick={handleSaveEmail} disabled={savingEmail} className="rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white hover:bg-primary-600 disabled:opacity-50">
                         {savingEmail ? 'Sending...' : 'Send Verification'}
                       </button>
                       <button onClick={() => { setEditingEmail(false); setNewEmail(profile?.email || '') }} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Cancel</button>
@@ -430,10 +430,10 @@ function SettingsContent() {
                   {changingPassword ? (
                     <div className="mt-2 space-y-3 max-w-md">
                       <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                        className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                         placeholder="New password (min 6 characters)" />
                       <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                        className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                         placeholder="Confirm new password" />
                     </div>
                   ) : (
@@ -443,7 +443,7 @@ function SettingsContent() {
                 <div className="ml-4">
                   {changingPassword ? (
                     <div className="flex space-x-2">
-                      <button onClick={handleSavePassword} disabled={savingPassword} className="rounded-lg bg-teal-500 px-4 py-2 text-sm font-medium text-white hover:bg-teal-600 disabled:opacity-50">
+                      <button onClick={handleSavePassword} disabled={savingPassword} className="rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white hover:bg-primary-600 disabled:opacity-50">
                         {savingPassword ? 'Updating...' : 'Update'}
                       </button>
                       <button onClick={() => { setChangingPassword(false); setNewPassword(''); setConfirmPassword('') }} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Cancel</button>
@@ -461,10 +461,10 @@ function SettingsContent() {
         {activeTab === 'credits' && (
           <div className="space-y-6">
             {/* Balance Card */}
-            <div className="rounded-2xl bg-gradient-to-r from-teal-500 to-emerald-600 p-6 text-white shadow-lg">
+            <div className="rounded-2xl bg-gradient-to-r from-primary-500 to-primary-700 p-6 text-white shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-teal-200">Available Balance</p>
+                  <p className="text-sm font-medium text-primary-200">Available Balance</p>
                   <p className="mt-1 text-4xl font-bold">
                     {pollingCredits ? (
                       <span className="inline-flex items-center gap-2">
@@ -473,9 +473,9 @@ function SettingsContent() {
                       </span>
                     ) : (profile?.credits || 0)}
                   </p>
-                  <p className="mt-1 text-sm text-teal-200">{pollingCredits ? 'Updating...' : 'credits'}</p>
+                  <p className="mt-1 text-sm text-primary-200">{pollingCredits ? 'Updating...' : 'credits'}</p>
                 </div>
-                <div className="text-right text-sm text-teal-200 space-y-1">
+                <div className="text-right text-sm text-primary-200 space-y-1">
                   <p>5 credits per analysis</p>
                   <p>5 credits per rewrite</p>
                   <p>10-20 credits per export</p>
@@ -491,11 +491,11 @@ function SettingsContent() {
                   <div
                     key={pack.id}
                     className={`relative rounded-xl border-2 p-4 transition-all hover:shadow-md ${
-                      pack.popular ? 'border-teal-500 bg-teal-50' : 'border-slate-200 bg-white hover:border-slate-300'
+                      pack.popular ? 'border-primary-500 bg-primary-50' : 'border-slate-200 bg-white hover:border-slate-300'
                     }`}
                   >
                     {pack.popular && (
-                      <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-teal-500 px-3 py-0.5 text-xs font-medium text-white">
+                      <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary-500 px-3 py-0.5 text-xs font-medium text-white">
                         Best Value
                       </span>
                     )}
@@ -511,7 +511,7 @@ function SettingsContent() {
                       disabled={purchasing !== null}
                       className={`mt-4 w-full rounded-lg py-2.5 text-sm font-medium transition-all ${
                         pack.popular
-                          ? 'bg-gradient-to-r from-teal-500 to-emerald-600 text-white shadow-lg shadow-teal-500/25 hover:shadow-xl'
+                          ? 'bg-gradient-to-r from-primary-500 to-primary-700 text-white shadow-lg shadow-primary-500/25 hover:shadow-xl'
                           : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                       } disabled:opacity-50`}
                     >
@@ -539,7 +539,7 @@ function SettingsContent() {
 
             {loadingTransactions ? (
               <div className="flex items-center justify-center py-16">
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-teal-500 border-t-transparent" />
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary-500 border-t-transparent" />
               </div>
             ) : transactions.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -679,7 +679,7 @@ export default function SettingsPage() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center py-12">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-teal-500 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-500 border-t-transparent" />
       </div>
     }>
       <SettingsContent />

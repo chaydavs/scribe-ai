@@ -66,7 +66,7 @@ export default function AnalyticsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-teal-500 border-t-transparent" />
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary-500 border-t-transparent" />
       </div>
     )
   }
@@ -83,7 +83,7 @@ export default function AnalyticsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-bold text-slate-900">Analytics</h1>
-        <Link href="/resumelab" className="text-xs font-medium text-teal-600 hover:underline">
+        <Link href="/resumelab" className="text-xs font-medium text-primary-600 hover:underline">
           New Analysis &rarr;
         </Link>
       </div>
@@ -131,8 +131,8 @@ export default function AnalyticsPage() {
                 )}
               </div>
               <div className="flex gap-4 text-[11px] text-slate-500">
-                <span><strong className="text-teal-600">{analysisCount}</strong> analyses</span>
-                <span><strong className="text-emerald-600">{rewriteCount}</strong> rewrites</span>
+                <span><strong className="text-primary-600">{analysisCount}</strong> analyses</span>
+                <span><strong className="text-primary-500">{rewriteCount}</strong> rewrites</span>
                 <span><strong className="text-amber-600">{totalCreditsUsed}</strong> credits</span>
               </div>
             </div>
@@ -145,14 +145,14 @@ export default function AnalyticsPage() {
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-[10px] text-slate-400">Score trend</span>
                   <span className="text-[10px] text-slate-400">
-                    Best: <span className="font-semibold text-emerald-600">{bestScore}</span>
+                    Best: <span className="font-semibold text-primary-500">{bestScore}</span>
                   </span>
                 </div>
                 <svg viewBox="0 0 300 60" className="w-full" preserveAspectRatio="xMidYMid meet">
                   <defs>
                     <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#14b8a6" stopOpacity="0.1" />
-                      <stop offset="100%" stopColor="#14b8a6" stopOpacity="0" />
+                      <stop offset="0%" stopColor="#6366f1" stopOpacity="0.1" />
+                      <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
                     </linearGradient>
                   </defs>
 
@@ -170,13 +170,13 @@ export default function AnalyticsPage() {
                     return (
                       <>
                         <path d={area} fill="url(#sparkFill)" />
-                        <path d={line} fill="none" stroke="#14b8a6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d={line} fill="none" stroke="#6366f1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                         {/* Only show first and last point */}
-                        <circle cx={toX(0)} cy={toY(scored[0].score!)} r="2" fill="#14b8a6" />
-                        <circle cx={toX(scored.length - 1)} cy={toY(scored[scored.length - 1].score!)} r="2.5" fill="white" stroke="#14b8a6" strokeWidth="1.5" />
+                        <circle cx={toX(0)} cy={toY(scored[0].score!)} r="2" fill="#6366f1" />
+                        <circle cx={toX(scored.length - 1)} cy={toY(scored[scored.length - 1].score!)} r="2.5" fill="white" stroke="#6366f1" strokeWidth="1.5" />
                         {/* First and last labels */}
                         <text x={toX(0)} y={toY(scored[0].score!) - 5} textAnchor="start" fill="#94a3b8" fontSize="8">{scored[0].score}</text>
-                        <text x={toX(scored.length - 1)} y={toY(scored[scored.length - 1].score!) - 5} textAnchor="end" fill="#0f766e" fontSize="8" fontWeight="600">{scored[scored.length - 1].score}</text>
+                        <text x={toX(scored.length - 1)} y={toY(scored[scored.length - 1].score!) - 5} textAnchor="end" fill="#4338ca" fontSize="8" fontWeight="600">{scored[scored.length - 1].score}</text>
                       </>
                     )
                   })()}
@@ -211,7 +211,7 @@ export default function AnalyticsPage() {
               {recentUsage.slice(0, 8).map(log => (
                 <div key={log.id} className="flex items-center justify-between py-2 px-2 rounded-lg hover:bg-slate-50">
                   <div className="flex items-center gap-2.5">
-                    <div className={`rounded-md p-1.5 ${log.tool === 'resumelab' ? 'bg-teal-50 text-teal-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                    <div className={`rounded-md p-1.5 ${log.tool === 'resumelab' ? 'bg-primary-50 text-primary-600' : 'bg-violet-50 text-primary-500'}`}>
                       {log.tool === 'resumelab' ? (
                         <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                       ) : (
@@ -244,12 +244,12 @@ export default function AnalyticsPage() {
                   className="flex items-center justify-between py-2 px-2 rounded-lg hover:bg-slate-50 group"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs font-medium text-slate-700 group-hover:text-teal-600">{a.title}</p>
+                    <p className="truncate text-xs font-medium text-slate-700 group-hover:text-primary-600">{a.title}</p>
                     <p className="text-[10px] text-slate-400">{fmt(a.created_at)}</p>
                   </div>
                   {a.score && (
                     <span className={`ml-2 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                      a.score >= 80 ? 'bg-emerald-50 text-emerald-700' :
+                      a.score >= 80 ? 'bg-violet-50 text-primary-700' :
                       a.score >= 60 ? 'bg-amber-50 text-amber-700' :
                       'bg-red-50 text-red-600'
                     }`}>

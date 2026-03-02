@@ -237,7 +237,7 @@ export default function ResumeAnnotator({
                   : 'bg-blue-100/60 border-b-2 border-blue-300'
 
             const activeClass = isActive
-              ? 'ring-2 ring-offset-1 ring-teal-500 rounded-sm'
+              ? 'ring-2 ring-offset-1 ring-primary-500 rounded-sm'
               : 'hover:ring-1 hover:ring-offset-1 hover:ring-slate-300 hover:rounded-sm'
 
             return (

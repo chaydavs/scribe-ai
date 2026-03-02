@@ -118,7 +118,7 @@ function SignupForm() {
             required
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            className="mt-1 w-full rounded-xl border border-slate-200 p-3 text-sm transition-colors focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+            className="mt-1 w-full rounded-xl border border-slate-200 p-3 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
             placeholder="John Doe"
           />
         </div>
@@ -135,7 +135,7 @@ function SignupForm() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 w-full rounded-xl border border-slate-200 p-3 text-sm transition-colors focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+            className="mt-1 w-full rounded-xl border border-slate-200 p-3 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
             placeholder="you@example.com"
           />
         </div>
@@ -153,7 +153,7 @@ function SignupForm() {
             minLength={6}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 w-full rounded-xl border border-slate-200 p-3 text-sm transition-colors focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+            className="mt-1 w-full rounded-xl border border-slate-200 p-3 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
             placeholder="Min 6 characters"
           />
         </div>
@@ -161,7 +161,7 @@ function SignupForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-teal-500/25 transition-all hover:shadow-xl hover:shadow-teal-500/30 disabled:opacity-50"
+          className="w-full rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary-500/25 transition-all hover:shadow-xl hover:shadow-primary-500/30 disabled:opacity-50"
         >
           {loading ? 'Creating account...' : 'Create Free Account'}
         </button>
@@ -181,7 +181,7 @@ export default function SignupPage() {
       <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-sm">
           <Link href="/" className="flex items-center space-x-2 mb-8">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-primary-700">
               <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
@@ -204,7 +204,7 @@ export default function SignupPage() {
 
           <p className="mt-6 text-center text-sm text-slate-600">
             Already have an account?{' '}
-            <Link href="/login" className="font-medium text-teal-600 hover:text-teal-500">
+            <Link href="/login" className="font-medium text-primary-600 hover:text-primary-500">
               Sign in
             </Link>
           </p>
@@ -212,7 +212,7 @@ export default function SignupPage() {
       </div>
 
       {/* Right Side - Feature Highlight */}
-      <div className="hidden lg:flex lg:flex-1 lg:flex-col lg:justify-center bg-gradient-to-br from-teal-500 to-emerald-600 p-12">
+      <div className="hidden lg:flex lg:flex-1 lg:flex-col lg:justify-center bg-gradient-to-br from-primary-500 to-primary-700 p-12">
         <div className="mx-auto max-w-md text-white">
           <div className="rounded-2xl bg-white/10 backdrop-blur p-6 mb-6">
             <div className="flex items-center space-x-2 mb-4">

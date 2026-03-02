@@ -50,7 +50,7 @@ export default function ResumeLabPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
-        <div className="h-16 w-16 animate-spin rounded-full border-4 border-teal-500 border-t-transparent" />
+        <div className="h-16 w-16 animate-spin rounded-full border-4 border-primary-500 border-t-transparent" />
       </div>
     }>
       <ResumeLabContent />
@@ -827,11 +827,11 @@ function ResumeLabContent() {
                 value={editedTitle}
                 onChange={(e) => setEditedTitle(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') handleRenameAnalysis(); if (e.key === 'Escape') setIsEditingTitle(false) }}
-                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                 placeholder="Enter title..."
                 autoFocus
               />
-              <button onClick={handleRenameAnalysis} disabled={savingTitle} className="text-sm font-medium text-teal-600 hover:text-teal-800">
+              <button onClick={handleRenameAnalysis} disabled={savingTitle} className="text-sm font-medium text-primary-600 hover:text-primary-800">
                 {savingTitle ? 'Saving...' : 'Save'}
               </button>
               <button onClick={() => { setIsEditingTitle(false); setEditedTitle(analysisTitle) }} className="text-sm text-slate-400 hover:text-slate-600">
@@ -875,7 +875,7 @@ function ResumeLabContent() {
             </button>
           )}
           {analysisScore && (
-            <div className="rounded-lg bg-teal-50 border border-teal-100 px-3 py-1.5 text-sm font-semibold text-teal-700">
+            <div className="rounded-lg bg-primary-50 border border-primary-100 px-3 py-1.5 text-sm font-semibold text-primary-700">
               Score: {analysisScore}/100
             </div>
           )}
@@ -900,7 +900,7 @@ function ResumeLabContent() {
                     disabled={!isClickable}
                     className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
                       isActive
-                        ? 'bg-teal-600 text-white shadow-md shadow-teal-500/25'
+                        ? 'bg-primary-600 text-white shadow-md shadow-primary-500/25'
                         : step.done
                           ? 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100'
                           : isClickable
@@ -944,7 +944,7 @@ function ResumeLabContent() {
           {/* Loading State for Past Analysis */}
           {loadingAnalysis && (
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center py-20">
-            <div className="h-12 w-12 animate-spin rounded-full border-4 border-teal-500 border-t-transparent" />
+            <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary-500 border-t-transparent" />
             <p className="mt-6 text-slate-600">Loading analysis...</p>
           </div>
         )}
@@ -984,7 +984,7 @@ function ResumeLabContent() {
                 <div
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={handleDrop}
-                  className="relative rounded-xl border-2 border-dashed border-slate-200 p-8 text-center transition-all hover:border-teal-400 hover:bg-teal-50/30 mb-6 group"
+                  className="relative rounded-xl border-2 border-dashed border-slate-200 p-8 text-center transition-all hover:border-primary-400 hover:bg-primary-50/30 mb-6 group"
                 >
                   <input
                     ref={fileInputRef}
@@ -996,18 +996,18 @@ function ResumeLabContent() {
                   />
                   {uploading ? (
                     <div className="flex flex-col items-center py-4">
-                      <div className="h-10 w-10 animate-spin rounded-full border-4 border-teal-500 border-t-transparent" />
+                      <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary-500 border-t-transparent" />
                       <p className="mt-3 text-sm text-slate-600">Processing file...</p>
                     </div>
                   ) : (
                     <>
-                      <div className="mx-auto w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center group-hover:bg-teal-100 transition-colors">
-                        <svg className="h-6 w-6 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="mx-auto w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center group-hover:bg-primary-100 transition-colors">
+                        <svg className="h-6 w-6 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                         </svg>
                       </div>
                       <p className="mt-3 text-sm font-medium text-slate-700">
-                        Drop your resume here or <span className="text-teal-600">browse</span>
+                        Drop your resume here or <span className="text-primary-600">browse</span>
                       </p>
                       <p className="mt-1 text-xs text-slate-400">PDF or TXT, max 5MB</p>
                     </>
@@ -1027,7 +1027,7 @@ function ResumeLabContent() {
                 value={resumeText}
                 onChange={(e) => { setResumeText(e.target.value); setFileName(null) }}
                 placeholder="Paste your resume text here..."
-                className="w-full rounded-xl border border-slate-200 p-4 text-sm transition-colors focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20 min-h-[180px] resize-y"
+                className="w-full rounded-xl border border-slate-200 p-4 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 min-h-[180px] resize-y"
                 disabled={loading || uploading}
               />
             </div>
@@ -1041,7 +1041,7 @@ function ResumeLabContent() {
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}
                   placeholder="Paste the job description here..."
-                  className="w-full rounded-lg border border-slate-200 p-3 text-sm transition-colors focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20 min-h-[140px] resize-y"
+                  className="w-full rounded-lg border border-slate-200 p-3 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 min-h-[140px] resize-y"
                   disabled={loading}
                 />
               </div>
@@ -1049,7 +1049,7 @@ function ResumeLabContent() {
               <button
                 onClick={handleAnalyze}
                 disabled={loading || uploading || !resumeText.trim()}
-                className="w-full rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 px-6 py-4 text-base font-semibold text-white shadow-lg shadow-teal-500/30 transition-all hover:shadow-xl hover:shadow-teal-500/40 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                className="w-full rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-6 py-4 text-base font-semibold text-white shadow-lg shadow-primary-500/30 transition-all hover:shadow-xl hover:shadow-primary-500/40 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
               >
                 {loading ? (
                   <span className="flex flex-col items-center gap-1">
@@ -1119,7 +1119,7 @@ function ResumeLabContent() {
                     />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-2xl font-bold text-teal-600">{countdown > 0 ? countdown : '...'}</span>
+                    <span className="text-2xl font-bold text-primary-600">{countdown > 0 ? countdown : '...'}</span>
                   </div>
                 </div>
                 <p className="text-slate-700 font-medium">Analyzing your resume...</p>
@@ -1142,7 +1142,7 @@ function ResumeLabContent() {
                   onFixApplied={(newText) => setResumeText(newText)}
                 />
                 {/* Direct to Edit & Export CTA */}
-                <div className="mt-6 p-5 rounded-xl bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-100">
+                <div className="mt-6 p-5 rounded-xl bg-gradient-to-r from-primary-50 to-indigo-50 border border-primary-100">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-semibold text-slate-900">Ready to apply fixes and export?</h3>
@@ -1156,7 +1156,7 @@ function ResumeLabContent() {
                           setEditableResume(resumeText)
                           setActiveTab('preview')
                         }}
-                        className="rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:shadow-xl"
+                        className="rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:shadow-xl"
                       >
                         Edit &amp; Export &rarr;
                       </button>
@@ -1168,15 +1168,15 @@ function ResumeLabContent() {
               /* Fallback for non-structured analysis (old format) */
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 max-w-3xl mx-auto">
                 {analysisScore && (
-                  <div className="mb-8 p-6 rounded-xl bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-100">
+                  <div className="mb-8 p-6 rounded-xl bg-gradient-to-r from-primary-50 to-indigo-50 border border-primary-100">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-teal-600">Resume Score</p>
+                        <p className="text-sm font-medium text-primary-600">Resume Score</p>
                         <p className="text-4xl font-bold text-slate-900">{analysisScore}/100</p>
                       </div>
                       <button
                         onClick={() => { setActiveTab('rewrite'); if (!rewrite) handleRewrite() }}
-                        className="text-teal-600 font-medium hover:underline"
+                        className="text-primary-600 font-medium hover:underline"
                       >
                         Get AI Rewrite
                       </button>
@@ -1197,7 +1197,7 @@ function ResumeLabContent() {
                   </button>
                   <button
                     onClick={() => { setActiveTab('rewrite'); if (!rewrite) handleRewrite() }}
-                    className="flex-1 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:shadow-xl"
+                    className="flex-1 rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:shadow-xl"
                   >
                     Get AI Rewrite ({tool.creditCost} credits)
                   </button>
@@ -1212,7 +1212,7 @@ function ResumeLabContent() {
                 </div>
                 <p className="mt-5 text-base font-medium text-slate-700">No analysis yet</p>
                 <p className="mt-1 text-sm text-slate-500">Upload your resume first to get detailed feedback</p>
-                <button onClick={() => setActiveTab('upload')} className="mt-5 text-sm text-teal-600 font-medium hover:underline">
+                <button onClick={() => setActiveTab('upload')} className="mt-5 text-sm text-primary-600 font-medium hover:underline">
                   Go to Upload
                 </button>
               </div>
@@ -1225,7 +1225,7 @@ function ResumeLabContent() {
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 lg:p-8">
             {rewriteLoading ? (
               <div className="flex flex-col items-center justify-center py-20">
-                <div className="h-16 w-16 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
+                <div className="h-16 w-16 animate-spin rounded-full border-4 border-primary-500 border-t-transparent" />
                 <p className="mt-6 text-lg text-slate-600">Rewriting your resume...</p>
                 <p className="mt-2 text-sm text-slate-400">Creating an optimized version</p>
               </div>
@@ -1237,7 +1237,7 @@ function ResumeLabContent() {
                   {hasExported ? (
                     <button
                       onClick={copyToClipboard}
-                      className="flex items-center space-x-2 rounded-lg bg-emerald-100 px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-200"
+                      className="flex items-center space-x-2 rounded-lg bg-primary-100 px-4 py-2 text-sm font-medium text-primary-700 hover:bg-primary-200"
                     >
                       {copied ? (
                         <>
@@ -1277,7 +1277,7 @@ function ResumeLabContent() {
                 )}
 
                 {/* Preview CTA */}
-                <div className="mt-8 p-6 rounded-xl bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-100">
+                <div className="mt-8 p-6 rounded-xl bg-gradient-to-r from-primary-50 to-indigo-50 border border-primary-100">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-semibold text-slate-900">Ready to preview and export?</h3>
@@ -1287,7 +1287,7 @@ function ResumeLabContent() {
                     </div>
                     <button
                       onClick={() => setActiveTab('preview')}
-                      className="rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:shadow-xl"
+                      className="rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:shadow-xl"
                     >
                       Preview & Export →
                     </button>
@@ -1296,8 +1296,8 @@ function ResumeLabContent() {
               </div>
             ) : (
               <div className="max-w-2xl mx-auto text-center py-12">
-                <div className="rounded-full bg-emerald-100 p-6 w-fit mx-auto">
-                  <svg className="h-12 w-12 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="rounded-full bg-primary-100 p-6 w-fit mx-auto">
+                  <svg className="h-12 w-12 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                 </div>
@@ -1309,7 +1309,7 @@ function ResumeLabContent() {
                 <button
                   onClick={handleRewrite}
                   disabled={rewriteLoading || !analysis}
-                  className="mt-8 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-8 py-4 text-lg font-semibold text-white shadow-lg hover:shadow-xl disabled:opacity-50"
+                  className="mt-8 rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-8 py-4 text-lg font-semibold text-white shadow-lg hover:shadow-xl disabled:opacity-50"
                 >
                   Rewrite My Resume ({tool.creditCost} credits)
                 </button>
@@ -1368,7 +1368,7 @@ function ResumeLabContent() {
                     <button
                       onClick={handleExport}
                       disabled={!editableResume || exportLoading}
-                      className="flex items-center space-x-2 rounded-lg bg-gradient-to-r from-teal-500 to-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-lg hover:shadow-xl disabled:opacity-50"
+                      className="flex items-center space-x-2 rounded-lg bg-gradient-to-r from-primary-500 to-primary-700 px-4 py-2 text-sm font-semibold text-white shadow-lg hover:shadow-xl disabled:opacity-50"
                     >
                       {exportLoading ? (
                         <>
@@ -1420,7 +1420,7 @@ function ResumeLabContent() {
                               </svg>
                               <div className="absolute inset-0 flex flex-col items-center justify-center">
                                 {scoringRewrite ? (
-                                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-teal-500 border-t-transparent" />
+                                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary-500 border-t-transparent" />
                                 ) : (
                                   <>
                                     <span className="text-2xl font-bold" style={{ color: scoreColor, transition: 'color 0.5s ease' }}>
@@ -1443,7 +1443,7 @@ function ResumeLabContent() {
                               <span className="text-sm text-slate-500">
                                 <span className="line-through">{analysisScore}</span>
                               </span>
-                              <svg className="h-4 w-4 text-teal-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <svg className="h-4 w-4 text-primary-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                               </svg>
                               <span className={`text-sm font-semibold ${improvedScore.score >= 75 ? 'text-green-600' : 'text-amber-600'}`}>
@@ -1517,7 +1517,7 @@ function ResumeLabContent() {
                       {!rewrite && (
                         <button
                           onClick={() => { setActiveTab('rewrite'); if (!rewrite) handleRewrite() }}
-                          className="text-xs text-teal-600 hover:text-teal-700 font-medium"
+                          className="text-xs text-primary-600 hover:text-primary-700 font-medium"
                         >
                           Or use AI Rewrite to fix all →
                         </button>
@@ -1537,7 +1537,7 @@ function ResumeLabContent() {
                               isApplied
                                 ? 'border-green-200 bg-green-50'
                                 : canApply
-                                  ? 'border-slate-200 hover:border-teal-300 hover:bg-teal-50/30 cursor-pointer'
+                                  ? 'border-slate-200 hover:border-primary-300 hover:bg-primary-50/30 cursor-pointer'
                                   : 'border-slate-100 bg-slate-50'
                             }`}
                             onClick={() => {
@@ -1588,7 +1588,7 @@ function ResumeLabContent() {
                                     Applied
                                   </span>
                                 ) : canApply ? (
-                                  <span className="inline-flex items-center rounded-full bg-teal-100 px-2 py-1 text-[10px] font-semibold text-teal-700">
+                                  <span className="inline-flex items-center rounded-full bg-primary-100 px-2 py-1 text-[10px] font-semibold text-primary-700">
                                     Apply
                                   </span>
                                 ) : (
@@ -1611,7 +1611,7 @@ function ResumeLabContent() {
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="font-semibold text-slate-900 flex items-center">
-                        <svg className="h-4 w-4 mr-2 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="h-4 w-4 mr-2 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
                         Your Resume
@@ -1632,7 +1632,7 @@ function ResumeLabContent() {
                     <textarea
                       value={editableResume}
                       onChange={(e) => setEditableResume(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 p-4 text-sm font-mono leading-relaxed text-slate-700 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20 resize-none"
+                      className="w-full rounded-xl border border-slate-200 p-4 text-sm font-mono leading-relaxed text-slate-700 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 resize-none"
                       style={{ minHeight: '600px' }}
                       placeholder="Your resume text will appear here..."
                     />
@@ -1645,7 +1645,7 @@ function ResumeLabContent() {
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="font-semibold text-slate-900 flex items-center">
-                        <svg className="h-4 w-4 mr-2 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="h-4 w-4 mr-2 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                         PDF Preview
@@ -1653,7 +1653,7 @@ function ResumeLabContent() {
                       <button
                         onClick={() => generatePreview(editableResume)}
                         disabled={previewLoading || !editableResume}
-                        className="flex items-center space-x-1 text-xs text-teal-600 hover:text-teal-700 disabled:opacity-50"
+                        className="flex items-center space-x-1 text-xs text-primary-600 hover:text-primary-700 disabled:opacity-50"
                       >
                         <svg className={`h-3.5 w-3.5 ${previewLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -1664,7 +1664,7 @@ function ResumeLabContent() {
                     <div className="rounded-xl border border-slate-200 bg-slate-100 min-h-[600px] flex items-center justify-center">
                       {previewLoading ? (
                         <div className="flex flex-col items-center">
-                          <div className="h-12 w-12 animate-spin rounded-full border-4 border-teal-500 border-t-transparent" />
+                          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary-500 border-t-transparent" />
                           <p className="mt-4 text-slate-600">Generating preview...</p>
                         </div>
                       ) : pdfPreviewUrl ? (
@@ -1698,7 +1698,7 @@ function ResumeLabContent() {
                 </p>
                 <button
                   onClick={() => setActiveTab('upload')}
-                  className="mt-6 text-teal-600 font-medium hover:underline"
+                  className="mt-6 text-primary-600 font-medium hover:underline"
                 >
                   ← Go to Upload
                 </button>
@@ -1725,35 +1725,35 @@ function ResumeLabContent() {
                       placeholder="Full Name *"
                       value={formData.fullName}
                       onChange={(e) => updateFormField('fullName', e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 p-3 text-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                      className="w-full rounded-lg border border-slate-200 p-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                     />
                     <input
                       type="email"
                       placeholder="Email"
                       value={formData.email}
                       onChange={(e) => updateFormField('email', e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 p-3 text-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                      className="w-full rounded-lg border border-slate-200 p-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                     />
                     <input
                       type="tel"
                       placeholder="Phone"
                       value={formData.phone}
                       onChange={(e) => updateFormField('phone', e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 p-3 text-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                      className="w-full rounded-lg border border-slate-200 p-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                     />
                     <input
                       type="text"
                       placeholder="Location (City, State)"
                       value={formData.location}
                       onChange={(e) => updateFormField('location', e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 p-3 text-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                      className="w-full rounded-lg border border-slate-200 p-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                     />
                     <input
                       type="url"
                       placeholder="LinkedIn URL"
                       value={formData.linkedin}
                       onChange={(e) => updateFormField('linkedin', e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 p-3 text-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20 md:col-span-2"
+                      className="w-full rounded-lg border border-slate-200 p-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 md:col-span-2"
                     />
                   </div>
                 </div>
@@ -1765,7 +1765,7 @@ function ResumeLabContent() {
                     placeholder="Brief professional summary..."
                     value={formData.summary}
                     onChange={(e) => updateFormField('summary', e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 p-3 text-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20 min-h-[100px] resize-y"
+                    className="w-full rounded-lg border border-slate-200 p-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 min-h-[100px] resize-y"
                   />
                 </div>
 
@@ -1775,7 +1775,7 @@ function ResumeLabContent() {
                     <h2 className="text-lg font-semibold text-slate-900">Experience</h2>
                     <button
                       onClick={addExperience}
-                      className="text-sm text-teal-600 hover:text-teal-800 font-medium"
+                      className="text-sm text-primary-600 hover:text-primary-800 font-medium"
                     >
                       + Add Experience
                     </button>
@@ -1799,21 +1799,21 @@ function ResumeLabContent() {
                           placeholder="Job Title"
                           value={exp.title}
                           onChange={(e) => updateExperience(index, 'title', e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-teal-500 focus:outline-none"
+                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-primary-500 focus:outline-none"
                         />
                         <input
                           type="text"
                           placeholder="Company"
                           value={exp.company}
                           onChange={(e) => updateExperience(index, 'company', e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-teal-500 focus:outline-none"
+                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-primary-500 focus:outline-none"
                         />
                         <input
                           type="text"
                           placeholder="Location"
                           value={exp.location}
                           onChange={(e) => updateExperience(index, 'location', e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-teal-500 focus:outline-none"
+                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-primary-500 focus:outline-none"
                         />
                         <div className="flex gap-2">
                           <input
@@ -1821,14 +1821,14 @@ function ResumeLabContent() {
                             placeholder="Start Date"
                             value={exp.startDate}
                             onChange={(e) => updateExperience(index, 'startDate', e.target.value)}
-                            className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-teal-500 focus:outline-none"
+                            className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-primary-500 focus:outline-none"
                           />
                           <input
                             type="text"
                             placeholder="End Date"
                             value={exp.endDate}
                             onChange={(e) => updateExperience(index, 'endDate', e.target.value)}
-                            className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-teal-500 focus:outline-none"
+                            className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-primary-500 focus:outline-none"
                           />
                         </div>
                       </div>
@@ -1838,7 +1838,7 @@ function ResumeLabContent() {
                           placeholder="• Led team of 5 engineers...&#10;• Increased revenue by 20%..."
                           value={exp.bullets.join('\n')}
                           onChange={(e) => updateExperience(index, 'bullets', e.target.value.split('\n'))}
-                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-teal-500 focus:outline-none min-h-[80px] resize-y"
+                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-primary-500 focus:outline-none min-h-[80px] resize-y"
                         />
                       </div>
                     </div>
@@ -1851,7 +1851,7 @@ function ResumeLabContent() {
                     <h2 className="text-lg font-semibold text-slate-900">Education</h2>
                     <button
                       onClick={addEducation}
-                      className="text-sm text-teal-600 hover:text-teal-800 font-medium"
+                      className="text-sm text-primary-600 hover:text-primary-800 font-medium"
                     >
                       + Add Education
                     </button>
@@ -1875,28 +1875,28 @@ function ResumeLabContent() {
                           placeholder="School/University"
                           value={edu.school}
                           onChange={(e) => updateEducation(index, 'school', e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-teal-500 focus:outline-none"
+                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-primary-500 focus:outline-none"
                         />
                         <input
                           type="text"
                           placeholder="Degree"
                           value={edu.degree}
                           onChange={(e) => updateEducation(index, 'degree', e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-teal-500 focus:outline-none"
+                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-primary-500 focus:outline-none"
                         />
                         <input
                           type="text"
                           placeholder="Graduation Date"
                           value={edu.graduationDate}
                           onChange={(e) => updateEducation(index, 'graduationDate', e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-teal-500 focus:outline-none"
+                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-primary-500 focus:outline-none"
                         />
                         <input
                           type="text"
                           placeholder="GPA (optional)"
                           value={edu.gpa}
                           onChange={(e) => updateEducation(index, 'gpa', e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-teal-500 focus:outline-none"
+                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-primary-500 focus:outline-none"
                         />
                       </div>
                     </div>
@@ -1910,7 +1910,7 @@ function ResumeLabContent() {
                     placeholder="JavaScript, React, Node.js, Python, SQL..."
                     value={formData.skills.join(', ')}
                     onChange={(e) => updateFormField('skills', e.target.value.split(',').map(s => s.trim()))}
-                    className="w-full rounded-lg border border-slate-200 p-3 text-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20 min-h-[60px] resize-y"
+                    className="w-full rounded-lg border border-slate-200 p-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 min-h-[60px] resize-y"
                   />
                   <p className="text-xs text-slate-400 mt-1">Separate skills with commas</p>
                 </div>
@@ -1922,8 +1922,8 @@ function ResumeLabContent() {
                   <h2 className="text-lg font-semibold text-slate-900 mb-4">Export</h2>
                   <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 mb-6">
                     <div className="flex items-center space-x-3 mb-2">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-100">
-                        <svg className="h-5 w-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-100">
+                        <svg className="h-5 w-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                       </div>
@@ -1938,7 +1938,7 @@ function ResumeLabContent() {
                   <button
                     onClick={handleCreateResume}
                     disabled={creatingPdf || !formData.fullName.trim()}
-                    className="w-full rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 px-6 py-4 text-lg font-semibold text-white shadow-lg shadow-teal-500/30 transition-all hover:shadow-xl hover:shadow-teal-500/40 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-6 py-4 text-lg font-semibold text-white shadow-lg shadow-primary-500/30 transition-all hover:shadow-xl hover:shadow-primary-500/40 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {creatingPdf ? (
                       <span className="flex items-center justify-center space-x-2">

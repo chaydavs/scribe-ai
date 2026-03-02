@@ -60,13 +60,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Clean up the text
-    text = text
-      .replace(/\r\n/g, '\n')
-      .replace(/\r/g, '\n')
-      .replace(/[ \t]+/g, ' ')
-      .replace(/\n{3,}/g, '\n\n')
-      .trim()
+    // Clean up the text (PDF path already cleaned by pdf-parser.ts)
+    text = text.trim()
 
     if (!text) {
       return NextResponse.json(

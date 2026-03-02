@@ -120,7 +120,7 @@ export function KeywordMatcher() {
             value={resumeText}
             onChange={(e) => setResumeText(e.target.value)}
             placeholder="Paste your resume content here..."
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 placeholder-slate-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20 resize-none"
+            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 placeholder-slate-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 resize-none"
             rows={6}
           />
         </div>
@@ -132,7 +132,7 @@ export function KeywordMatcher() {
             value={jobText}
             onChange={(e) => setJobText(e.target.value)}
             placeholder="Paste the job posting here..."
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 placeholder-slate-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20 resize-none"
+            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 placeholder-slate-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 resize-none"
             rows={6}
           />
         </div>
@@ -142,7 +142,7 @@ export function KeywordMatcher() {
         <button
           onClick={analyze}
           disabled={!resumeText.trim() || !jobText.trim()}
-          className="rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-teal-500/25 transition-all hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-primary-500/25 transition-all hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Check Match
         </button>
@@ -160,7 +160,7 @@ export function KeywordMatcher() {
             </div>
             <Link
               href="/signup"
-              className="rounded-lg bg-teal-500 px-4 py-2 text-sm font-medium text-white hover:bg-teal-600 transition-colors"
+              className="rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white hover:bg-primary-600 transition-colors"
             >
               Get full analysis with inline fixes
             </Link>

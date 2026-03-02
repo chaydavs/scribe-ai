@@ -48,15 +48,15 @@ function drawCard(
   ctx.roundRect(0, 0, W, H, 16)
   ctx.clip()
 
-  // Gradient background
+  // Gradient background — deep indigo
   const bgGrad = ctx.createLinearGradient(0, 0, 0, H)
-  bgGrad.addColorStop(0, '#0f172a')
-  bgGrad.addColorStop(1, '#1e293b')
+  bgGrad.addColorStop(0, '#1e1b4b')
+  bgGrad.addColorStop(1, '#312e81')
   ctx.fillStyle = bgGrad
   ctx.fillRect(0, 0, W, H)
 
-  // Teal accent line at top
-  ctx.fillStyle = '#14b8a6'
+  // Indigo accent line at top
+  ctx.fillStyle = '#6366f1'
   ctx.fillRect(0, 0, W, 4)
 
   // Circular progress ring
