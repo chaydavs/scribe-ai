@@ -752,16 +752,16 @@ function ResumeLabContent() {
 
   // Stepper state
   const stepperSteps = [
-    { id: 'upload' as const, label: 'Upload', done: !!resumeText },
-    { id: 'analysis' as const, label: 'Analyze', done: !!analysis },
-    { id: 'rewrite' as const, label: 'AI Rewrite', done: !!rewrite },
-    { id: 'preview' as const, label: 'Edit & Export', done: false },
+    { id: 'upload' as const, label: 'Upload', shortLabel: 'Upload', done: !!resumeText },
+    { id: 'analysis' as const, label: 'Analyze', shortLabel: 'Analyze', done: !!analysis },
+    { id: 'rewrite' as const, label: 'AI Rewrite', shortLabel: 'Rewrite', done: !!rewrite },
+    { id: 'preview' as const, label: 'Edit & Export', shortLabel: 'Export', done: false },
   ]
 
   return (
     <div className="min-h-screen">
       {/* Compact Header Bar */}
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
         <div className="flex items-center gap-3 min-w-0">
           {currentAnalysisId && isEditingTitle ? (
             <div className="flex items-center gap-2">
@@ -798,7 +798,7 @@ function ResumeLabContent() {
             </h1>
           )}
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
           {createdFromScratch && activeTab === 'preview' && (
             <button
               onClick={() => { setMode('create'); setCreatedFromScratch(false); setActiveTab('upload') }}
@@ -840,17 +840,17 @@ function ResumeLabContent() {
       {/* Progress Stepper - only in analyze mode */}
       {mode === 'analyze' && (
         <div className="mb-6">
-          <div className="flex items-center">
+          <div className="flex items-center overflow-x-auto scrollbar-none -mx-1 px-1">
             {stepperSteps.map((step, i) => {
               const isActive = activeTab === step.id
               const isClickable = step.id === 'upload' || (step.id === 'analysis' && !!analysis) || (step.id === 'rewrite' && !!analysis) || (step.id === 'preview' && !!analysis)
 
               return (
-                <div key={step.id} className="flex items-center flex-1 last:flex-none">
+                <div key={step.id} className="flex items-center flex-1 last:flex-none min-w-0">
                   <button
                     onClick={() => isClickable && setActiveTab(step.id)}
                     disabled={!isClickable}
-                    className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                    className={`flex items-center gap-1.5 sm:gap-2 rounded-full px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
                       isActive
                         ? 'bg-black text-white shadow-sm'
                         : step.done
@@ -871,10 +871,11 @@ function ResumeLabContent() {
                         {i + 1}
                       </span>
                     )}
-                    {step.label}
+                    <span className="hidden sm:inline">{step.label}</span>
+                    <span className="sm:hidden">{step.shortLabel || step.label}</span>
                   </button>
                   {i < stepperSteps.length - 1 && (
-                    <div className={`flex-1 h-px mx-2 ${step.done ? 'bg-green-300' : 'bg-slate-200'}`} />
+                    <div className={`flex-1 h-px mx-1 sm:mx-2 ${step.done ? 'bg-green-300' : 'bg-slate-200'}`} />
                   )}
                 </div>
               )

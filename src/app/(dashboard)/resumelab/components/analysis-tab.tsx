@@ -127,24 +127,22 @@ export function AnalysisTab({
           />
           {/* Direct to Edit & Export CTA */}
           <div className="mt-6 p-5 rounded-xl bg-white border border-slate-200">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h3 className="font-semibold text-slate-900">Ready to apply fixes and export?</h3>
                 <p className="text-sm text-slate-600 mt-1">
                   Edit your resume with suggested fixes, then download as PDF
                 </p>
               </div>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => {
-                    onSetEditableResume(resumeText)
-                    onSetActiveTab('preview')
-                  }}
-                  className="rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white shadow-none hover:shadow-sm"
-                >
-                  Edit &amp; Export &rarr;
-                </button>
-              </div>
+              <button
+                onClick={() => {
+                  onSetEditableResume(resumeText)
+                  onSetActiveTab('preview')
+                }}
+                className="rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white shadow-none hover:shadow-sm w-full sm:w-auto text-center"
+              >
+                Edit &amp; Export &rarr;
+              </button>
             </div>
           </div>
         </div>

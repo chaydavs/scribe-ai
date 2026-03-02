@@ -96,7 +96,7 @@ function NiceToHaveButton({ isClickable, applyFix, fixedText }: { isClickable: b
             setLabel('Applied!')
             setTimeout(() => setLabel('Apply'), 1500)
           }}
-          className="inline-flex items-center rounded-full bg-black px-2.5 py-1 text-[10px] font-semibold text-white hover:bg-slate-800 transition-colors"
+          className="inline-flex items-center rounded-full bg-black px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 transition-colors"
         >
           {label === 'Applied!' ? 'Applied!' : 'Apply'}
         </button>
@@ -107,7 +107,7 @@ function NiceToHaveButton({ isClickable, applyFix, fixedText }: { isClickable: b
           setLabel('Copied!')
           setTimeout(() => setLabel(isClickable ? 'Apply' : 'Copy'), 1500)
         }}
-        className="inline-flex items-center rounded-full bg-slate-100 px-2 py-1 text-[10px] font-medium text-slate-600 hover:bg-slate-200 transition-colors"
+        className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-200 transition-colors"
       >
         {label === 'Copied!' ? 'Copied!' : 'Copy'}
       </button>
@@ -216,14 +216,14 @@ export function PreviewTab({
       {(rewrite || resumeText) ? (
         <div className="max-w-6xl mx-auto">
           {/* Header with action buttons */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
               <h2 className="text-lg font-semibold text-slate-900">Edit & Export</h2>
               <p className="text-sm text-slate-500 mt-1">
                 {rewrite ? 'Edit your resume text, then export as PDF' : 'Apply suggested fixes, edit your resume, then export as PDF'}
               </p>
             </div>
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <button
                 onClick={onHandleSave}
                 disabled={!currentAnalysisId || saving}

@@ -37,7 +37,7 @@ export function RewriteTab({
       ) : rewrite ? (
         <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
             <h2 className="text-xl font-bold text-slate-900">AI-Optimized Resume</h2>
             {hasExported ? (
               <button
@@ -83,7 +83,7 @@ export function RewriteTab({
 
           {/* Preview CTA */}
           <div className="mt-8 p-6 rounded-xl bg-white border border-slate-200">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h3 className="font-semibold text-slate-900">Ready to preview and export?</h3>
                 <p className="text-sm text-slate-600 mt-1">
@@ -92,7 +92,7 @@ export function RewriteTab({
               </div>
               <button
                 onClick={() => onSetActiveTab('preview')}
-                className="rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white shadow-none hover:shadow-sm"
+                className="rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white shadow-none hover:shadow-sm w-full sm:w-auto text-center"
               >
                 Preview & Export →
               </button>

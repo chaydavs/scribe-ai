@@ -251,17 +251,17 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
                         </Link>
                         {/* Hover actions */}
                         {confirmDeleteId === analysis.id ? (
-                          <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center space-x-1 bg-white rounded-lg shadow-sm border border-slate-200 px-2 py-1">
+                          <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center space-x-1 bg-white rounded-lg shadow-sm border border-slate-200 px-2 py-1.5">
                             <span className="text-xs text-slate-500 mr-1">Delete?</span>
                             <button
                               onClick={(e) => { e.preventDefault(); handleDelete(analysis.id) }}
-                              className="rounded px-2 py-0.5 text-xs font-medium text-white bg-red-500 hover:bg-red-600"
+                              className="rounded px-2.5 py-1 text-xs font-medium text-white bg-red-500 hover:bg-red-600"
                             >
                               Yes
                             </button>
                             <button
                               onClick={(e) => { e.preventDefault(); setConfirmDeleteId(null) }}
-                              className="rounded px-2 py-0.5 text-xs font-medium text-slate-500 hover:bg-slate-100"
+                              className="rounded px-2.5 py-1 text-xs font-medium text-slate-500 hover:bg-slate-100"
                             >
                               No
                             </button>
