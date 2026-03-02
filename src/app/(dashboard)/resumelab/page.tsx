@@ -3,8 +3,13 @@
 import { useState, useRef, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { getTool } from '@/types'
-import { CanvasResumePreview } from '@/components/tools/resumelab/canvas-resume-preview'
-import InteractiveAnalysis from '@/components/tools/resumelab/interactive-analysis'
+import { useToast } from '@/components/ui/toast'
+import { AnalysisLoadingSkeleton } from '@/components/ui/skeleton'
+import { UploadTab } from './components/upload-tab'
+import { AnalysisTab } from './components/analysis-tab'
+import { RewriteTab } from './components/rewrite-tab'
+import { PreviewTab } from './components/preview-tab'
+import { CreateTab } from './components/create-tab'
 
 const tool = getTool('resumelab')!
 
@@ -50,7 +55,7 @@ export default function ResumeLabPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
-        <div className="h-16 w-16 animate-spin rounded-full border-4 border-primary-500 border-t-transparent" />
+        <AnalysisLoadingSkeleton />
       </div>
     }>
       <ResumeLabContent />
@@ -62,6 +67,7 @@ function ResumeLabContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const analysisId = searchParams.get('id')
+  const { toast } = useToast()
 
   // Tab state
   const [activeTab, setActiveTab] = useState<TabId>('upload')
@@ -111,7 +117,6 @@ function ResumeLabContent() {
   const [countdown, setCountdown] = useState(0)
 
   // UI state
-  const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [userCredits, setUserCredits] = useState(0)
   const [isEditingTitle, setIsEditingTitle] = useState(false)
@@ -144,7 +149,6 @@ function ResumeLabContent() {
   useEffect(() => {
     const loadAnalysis = async (id: string) => {
       setLoadingAnalysis(true)
-      setError(null)
 
       try {
         const res = await fetch(`/api/analyses/${id}`)
@@ -195,7 +199,7 @@ function ResumeLabContent() {
           setActiveTab('analysis')
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load analysis')
+        toast(err instanceof Error ? err.message : 'Failed to load analysis', 'error')
       } finally {
         setLoadingAnalysis(false)
       }
@@ -204,7 +208,7 @@ function ResumeLabContent() {
     if (analysisId && analysisId !== currentAnalysisId) {
       loadAnalysis(analysisId)
     }
-  }, [analysisId, currentAnalysisId])
+  }, [analysisId, currentAnalysisId, toast])
 
   // Countdown timer effect
   useEffect(() => {
@@ -240,7 +244,6 @@ function ResumeLabContent() {
     const file = e.target.files?.[0]
     if (!file) return
 
-    setError(null)
     setUploading(true)
     setFileName(file.name)
 
@@ -261,7 +264,7 @@ function ResumeLabContent() {
 
       setResumeText(data.text)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to upload file')
+      toast(err instanceof Error ? err.message : 'Failed to upload file', 'error')
       setFileName(null)
     } finally {
       setUploading(false)
@@ -283,11 +286,10 @@ function ResumeLabContent() {
 
   const handleAnalyze = async () => {
     if (!resumeText.trim()) {
-      setError('Please upload a resume or paste your resume text')
+      toast('Please upload a resume or paste your resume text', 'error')
       return
     }
 
-    setError(null)
     setLoading(true)
     setAnalysis(null)
 
@@ -315,7 +317,7 @@ function ResumeLabContent() {
       }
       setActiveTab('analysis')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      toast(err instanceof Error ? err.message : 'An error occurred', 'error')
     } finally {
       setLoading(false)
     }
@@ -323,11 +325,10 @@ function ResumeLabContent() {
 
   const handleRewrite = async () => {
     if (!resumeText.trim()) {
-      setError('No resume text available for rewrite')
+      toast('No resume text available for rewrite', 'error')
       return
     }
 
-    setError(null)
     setRewriteLoading(true)
     setRewrite(null)
 
@@ -349,7 +350,7 @@ function ResumeLabContent() {
 
       setRewrite(data.rewrite)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      toast(err instanceof Error ? err.message : 'An error occurred', 'error')
     } finally {
       setRewriteLoading(false)
     }
@@ -373,7 +374,6 @@ function ResumeLabContent() {
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
-    // Clear URL params
     router.push('/resumelab')
   }
 
@@ -382,9 +382,10 @@ function ResumeLabContent() {
     try {
       await navigator.clipboard.writeText(rewrite)
       setCopied(true)
+      toast('Copied!', 'success')
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      setError('Failed to copy to clipboard')
+      toast('Failed to copy to clipboard', 'error')
     }
   }
 
@@ -430,7 +431,6 @@ function ResumeLabContent() {
   // Score the resume text via quick-score API
   const scoreAbortRef = useRef<AbortController | null>(null)
   const scoreResume = useCallback(async (text: string) => {
-    // Cancel any in-flight scoring request
     if (scoreAbortRef.current) scoreAbortRef.current.abort()
     const controller = new AbortController()
     scoreAbortRef.current = controller
@@ -454,7 +454,7 @@ function ResumeLabContent() {
     }
   }, [])
 
-  // Initialize editableResume from rewrite (or resumeText if going direct to export)
+  // Initialize editableResume from rewrite
   useEffect(() => {
     if (rewrite) {
       setEditableResume(rewrite)
@@ -464,7 +464,7 @@ function ResumeLabContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rewrite])
 
-  // When entering export tab without rewrite, use original resumeText
+  // When entering export tab without rewrite
   useEffect(() => {
     if (activeTab === 'preview' && !rewrite && resumeText && !editableResume) {
       setEditableResume(resumeText)
@@ -474,7 +474,7 @@ function ResumeLabContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, rewrite, resumeText])
 
-  // Debounce preview + re-score when user edits the resume
+  // Debounce preview + re-score when user edits
   useEffect(() => {
     if (!editableResume || editableResume === rewrite || editableResume === resumeText) return
     const timer = setTimeout(() => {
@@ -488,7 +488,6 @@ function ResumeLabContent() {
   const handleExport = async () => {
     if (!editableResume) return
 
-    setError(null)
     setExportLoading(true)
 
     try {
@@ -529,9 +528,10 @@ function ResumeLabContent() {
         }
 
         setHasExported(true)
+        toast('PDF exported successfully!', 'success')
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to export resume')
+      toast(err instanceof Error ? err.message : 'Failed to export resume', 'error')
     } finally {
       setExportLoading(false)
     }
@@ -543,16 +543,15 @@ function ResumeLabContent() {
   const handleSave = async () => {
     const textToSave = editableResume || rewrite
     if (!textToSave) {
-      setError('No resume text to save')
+      toast('No resume text to save', 'error')
       return
     }
 
     if (!currentAnalysisId) {
-      setError('No analysis ID found. Try analyzing again.')
+      toast('No analysis ID found. Try analyzing again.', 'error')
       return
     }
 
-    setError(null)
     setSaving(true)
     setSaveSuccess(false)
 
@@ -570,11 +569,11 @@ function ResumeLabContent() {
         throw new Error(data.error || 'Failed to save')
       }
 
-      // Show success feedback
       setSaveSuccess(true)
+      toast('Saved!', 'success')
       setTimeout(() => setSaveSuccess(false), 2000)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save')
+      toast(err instanceof Error ? err.message : 'Failed to save', 'error')
     } finally {
       setSaving(false)
     }
@@ -600,28 +599,11 @@ function ResumeLabContent() {
       setAnalysisTitle(editedTitle.trim())
       setIsEditingTitle(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to rename')
+      toast(err instanceof Error ? err.message : 'Failed to rename', 'error')
     } finally {
       setSavingTitle(false)
     }
   }
-
-  // Helper to get word-level diff highlights
-  const getChangeSummary = () => {
-    if (!resumeText || !rewrite) return null
-
-    const originalLines = resumeText.split('\n').filter(l => l.trim())
-    const rewriteLines = rewrite.split('\n').filter(l => l.trim())
-
-    return {
-      originalCount: originalLines.length,
-      rewriteCount: rewriteLines.length,
-      originalWords: resumeText.split(/\s+/).length,
-      rewriteWords: rewrite.split(/\s+/).length,
-    }
-  }
-
-  const changeSummary = getChangeSummary()
 
   // Form helpers for Create from Scratch
   const updateFormField = (field: string, value: string | string[]) => {
@@ -672,15 +654,13 @@ function ResumeLabContent() {
 
   const handleCreateResume = async () => {
     if (!formData.fullName.trim()) {
-      setError('Please enter your full name')
+      toast('Please enter your full name', 'error')
       return
     }
 
-    setError(null)
     setCreatingPdf(true)
 
     try {
-      // Format the resume data as text for the export API
       const resumeText = formatResumeForExport(formData)
 
       const response = await fetch('/api/tools/export-resume', {
@@ -718,9 +698,11 @@ function ResumeLabContent() {
         if (data.remainingCredits !== undefined) {
           setUserCredits(data.remainingCredits)
         }
+
+        toast('Resume created and downloaded!', 'success')
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create resume')
+      toast(err instanceof Error ? err.message : 'Failed to create resume', 'error')
     } finally {
       setCreatingPdf(false)
     }
@@ -891,7 +873,7 @@ function ResumeLabContent() {
           <div className="flex items-center">
             {stepperSteps.map((step, i) => {
               const isActive = activeTab === step.id
-              const isClickable = step.id === 'upload' || (step.id === 'analysis' && analysis) || (step.id === 'rewrite' && analysis) || (step.id === 'preview' && !!analysis)
+              const isClickable = step.id === 'upload' || (step.id === 'analysis' && !!analysis) || (step.id === 'rewrite' && !!analysis) || (step.id === 'preview' && !!analysis)
 
               return (
                 <div key={step.id} className="flex items-center flex-1 last:flex-none">
@@ -909,7 +891,7 @@ function ResumeLabContent() {
                     }`}
                   >
                     {step.done && !isActive ? (
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 animate-score-count" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     ) : (
@@ -931,1070 +913,122 @@ function ResumeLabContent() {
         </div>
       )}
 
-      {/* Error Display */}
-      {error && (
-        <div className="mb-6 rounded-xl bg-red-50 border border-red-100 p-4 text-sm text-red-600">
-          {error}
-        </div>
-      )}
-
       {/* Tab Content - Analyze Mode */}
       {mode === 'analyze' && (
         <div>
           {/* Loading State for Past Analysis */}
           {loadingAnalysis && (
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center py-20">
-            <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary-500 border-t-transparent" />
-            <p className="mt-6 text-slate-600">Loading analysis...</p>
-          </div>
-        )}
-
-        {/* Upload Tab */}
-        {!loadingAnalysis && activeTab === 'upload' && (
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-            {/* Main upload area */}
-            <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 lg:p-8">
-              <h2 className="text-lg font-semibold text-slate-900 mb-1">Upload Your Resume</h2>
-              <p className="text-sm text-slate-500 mb-6">Drop a PDF or paste your resume text to get started</p>
-
-              {fileName ? (
-                <div className="rounded-xl border-2 border-green-200 bg-green-50 p-5 mb-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="rounded-lg bg-green-100 p-2.5">
-                        <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="font-medium text-slate-900 text-sm">{fileName}</p>
-                        <p className="text-xs text-slate-500">
-                          {resumeText.length > 0 ? `${resumeText.split(' ').length} words extracted` : 'Processing...'}
-                        </p>
-                      </div>
-                    </div>
-                    <button onClick={clearFile} className="rounded-lg p-1.5 text-slate-400 hover:bg-white hover:text-slate-600">
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={handleDrop}
-                  className="relative rounded-xl border-2 border-dashed border-slate-200 p-8 text-center transition-all hover:border-primary-400 hover:bg-primary-50/30 mb-6 group"
-                >
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".pdf,.txt"
-                    onChange={handleFileUpload}
-                    className="absolute inset-0 cursor-pointer opacity-0"
-                    disabled={uploading}
-                  />
-                  {uploading ? (
-                    <div className="flex flex-col items-center py-4">
-                      <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary-500 border-t-transparent" />
-                      <p className="mt-3 text-sm text-slate-600">Processing file...</p>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="mx-auto w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center group-hover:bg-primary-100 transition-colors">
-                        <svg className="h-6 w-6 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                        </svg>
-                      </div>
-                      <p className="mt-3 text-sm font-medium text-slate-700">
-                        Drop your resume here or <span className="text-primary-600">browse</span>
-                      </p>
-                      <p className="mt-1 text-xs text-slate-400">PDF or TXT, max 5MB</p>
-                    </>
-                  )}
-                </div>
-              )}
-
-              {/* Or paste text */}
-              <div className="relative my-5">
-                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200" /></div>
-                <div className="relative flex justify-center text-xs">
-                  <span className="bg-white px-3 text-slate-400 uppercase tracking-wider">or paste text</span>
-                </div>
-              </div>
-
-              <textarea
-                value={resumeText}
-                onChange={(e) => { setResumeText(e.target.value); setFileName(null) }}
-                placeholder="Paste your resume text here..."
-                className="w-full rounded-xl border border-slate-200 p-4 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 min-h-[180px] resize-y"
-                disabled={loading || uploading}
-              />
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+              <AnalysisLoadingSkeleton />
             </div>
+          )}
 
-            {/* Sidebar: Job description + analyze */}
-            <div className="lg:col-span-2 space-y-6">
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-                <h3 className="text-sm font-semibold text-slate-900 mb-1">Target Job Description</h3>
-                <p className="text-xs text-slate-400 mb-3">Optional — get keyword-matched analysis</p>
-                <textarea
-                  value={jobDescription}
-                  onChange={(e) => setJobDescription(e.target.value)}
-                  placeholder="Paste the job description here..."
-                  className="w-full rounded-lg border border-slate-200 p-3 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 min-h-[140px] resize-y"
-                  disabled={loading}
-                />
-              </div>
+          {/* Upload Tab */}
+          {!loadingAnalysis && activeTab === 'upload' && (
+            <UploadTab
+              key="upload"
+              resumeText={resumeText}
+              setResumeText={setResumeText}
+              fileName={fileName}
+              setFileName={setFileName}
+              jobDescription={jobDescription}
+              setJobDescription={setJobDescription}
+              loading={loading}
+              uploading={uploading}
+              countdown={countdown}
+              userCredits={userCredits}
+              creditCost={tool.creditCost}
+              fileInputRef={fileInputRef}
+              onFileUpload={handleFileUpload}
+              onDrop={handleDrop}
+              onAnalyze={handleAnalyze}
+              onClearFile={clearFile}
+            />
+          )}
 
-              <button
-                onClick={handleAnalyze}
-                disabled={loading || uploading || !resumeText.trim()}
-                className="w-full rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-6 py-4 text-base font-semibold text-white shadow-lg shadow-primary-500/30 transition-all hover:shadow-xl hover:shadow-primary-500/40 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
-              >
-                {loading ? (
-                  <span className="flex flex-col items-center gap-1">
-                    <span className="flex items-center gap-2">
-                      <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      Analyzing...{countdown > 0 ? ` ~${countdown}s` : ''}
-                    </span>
-                    {/* Progress bar */}
-                    <div className="w-full h-1 rounded-full bg-white/20 overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-white/60"
-                        style={{
-                          width: `${((30 - countdown) / 30) * 100}%`,
-                          transition: 'width 1s linear',
-                        }}
-                      />
-                    </div>
-                  </span>
-                ) : (
-                  `Analyze Resume (${tool.creditCost} credits)`
-                )}
-              </button>
+          {/* Analysis Tab */}
+          {!loadingAnalysis && activeTab === 'analysis' && (
+            <AnalysisTab
+              key="analysis"
+              loading={loading}
+              countdown={countdown}
+              analysis={analysis}
+              structuredAnalysis={structuredAnalysis}
+              analysisScore={analysisScore}
+              resumeText={resumeText}
+              rewrite={rewrite}
+              creditCost={tool.creditCost}
+              onRequestRewrite={() => {
+                setActiveTab('rewrite')
+                if (!rewrite) handleRewrite()
+              }}
+              onFixApplied={(newText) => setResumeText(newText)}
+              onSetActiveTab={setActiveTab}
+              onSetEditableResume={setEditableResume}
+              onHandleRewrite={handleRewrite}
+            />
+          )}
 
-              {/* Quick tips */}
-              <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
-                <h4 className="text-xs font-semibold text-amber-800 uppercase tracking-wider mb-2">Tips for best results</h4>
-                <ul className="space-y-1.5 text-xs text-amber-700">
-                  <li className="flex items-start gap-1.5">
-                    <span className="mt-0.5">•</span>
-                    <span>Upload a PDF for best formatting preservation</span>
-                  </li>
-                  <li className="flex items-start gap-1.5">
-                    <span className="mt-0.5">•</span>
-                    <span>Add a job description for keyword-specific scoring</span>
-                  </li>
-                  <li className="flex items-start gap-1.5">
-                    <span className="mt-0.5">•</span>
-                    <span>Each analysis costs {tool.creditCost} credits — you have {userCredits}</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        )}
+          {/* Rewrite Tab */}
+          {!loadingAnalysis && activeTab === 'rewrite' && (
+            <RewriteTab
+              key="rewrite"
+              rewrite={rewrite}
+              rewriteLoading={rewriteLoading}
+              analysis={analysis}
+              hasExported={hasExported}
+              copied={copied}
+              creditCost={tool.creditCost}
+              onHandleRewrite={handleRewrite}
+              onCopyToClipboard={copyToClipboard}
+              onSetActiveTab={setActiveTab}
+            />
+          )}
 
-        {/* Analysis Tab */}
-        {!loadingAnalysis && activeTab === 'analysis' && (
-          <div>
-            {loading ? (
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center py-20">
-                {/* Countdown circle */}
-                <div className="relative w-24 h-24 mb-4">
-                  <svg className="w-24 h-24 -rotate-90" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="42" fill="none" stroke="#e2e8f0" strokeWidth="6" />
-                    <circle
-                      cx="50" cy="50" r="42"
-                      fill="none"
-                      stroke="#14b8a6"
-                      strokeWidth="6"
-                      strokeLinecap="round"
-                      strokeDasharray={2 * Math.PI * 42}
-                      strokeDashoffset={2 * Math.PI * 42 * (countdown / 30)}
-                      style={{ transition: 'stroke-dashoffset 1s linear' }}
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-2xl font-bold text-primary-600">{countdown > 0 ? countdown : '...'}</span>
-                  </div>
-                </div>
-                <p className="text-slate-700 font-medium">Analyzing your resume...</p>
-                <p className="mt-1 text-sm text-slate-400">
-                  {countdown > 20 ? 'Reading every line like a recruiter would' :
-                   countdown > 10 ? 'Scoring impact, clarity, and ATS compatibility' :
-                   countdown > 0 ? 'Almost done — generating your detailed report' :
-                   'Finishing up...'}
-                </p>
-              </div>
-            ) : analysis && structuredAnalysis ? (
-              <>
-                <InteractiveAnalysis
-                  structuredAnalysis={structuredAnalysis}
-                  resumeText={resumeText}
-                  onRequestRewrite={() => {
-                    setActiveTab('rewrite')
-                    if (!rewrite) handleRewrite()
-                  }}
-                  onFixApplied={(newText) => setResumeText(newText)}
-                />
-                {/* Direct to Edit & Export CTA */}
-                <div className="mt-6 p-5 rounded-xl bg-gradient-to-r from-primary-50 to-indigo-50 border border-primary-100">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-semibold text-slate-900">Ready to apply fixes and export?</h3>
-                      <p className="text-sm text-slate-600 mt-1">
-                        Edit your resume with suggested fixes, then download as PDF
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => {
-                          setEditableResume(resumeText)
-                          setActiveTab('preview')
-                        }}
-                        className="rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:shadow-xl"
-                      >
-                        Edit &amp; Export &rarr;
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </>
-            ) : analysis ? (
-              /* Fallback for non-structured analysis (old format) */
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 max-w-3xl mx-auto">
-                {analysisScore && (
-                  <div className="mb-8 p-6 rounded-xl bg-gradient-to-r from-primary-50 to-indigo-50 border border-primary-100">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-primary-600">Resume Score</p>
-                        <p className="text-4xl font-bold text-slate-900">{analysisScore}/100</p>
-                      </div>
-                      <button
-                        onClick={() => { setActiveTab('rewrite'); if (!rewrite) handleRewrite() }}
-                        className="text-primary-600 font-medium hover:underline"
-                      >
-                        Get AI Rewrite
-                      </button>
-                    </div>
-                  </div>
-                )}
-                <div className="prose prose-slate max-w-none">
-                  <div className="whitespace-pre-wrap text-sm text-slate-700 leading-relaxed">
-                    {analysis.replace(/```json[\s\S]*?```/g, '').trim()}
-                  </div>
-                </div>
-                <div className="mt-8 pt-8 border-t border-slate-200 flex flex-col sm:flex-row gap-4">
-                  <button
-                    onClick={() => setActiveTab('upload')}
-                    className="flex-1 rounded-xl border border-slate-200 px-6 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50"
-                  >
-                    Back to Upload
-                  </button>
-                  <button
-                    onClick={() => { setActiveTab('rewrite'); if (!rewrite) handleRewrite() }}
-                    className="flex-1 rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:shadow-xl"
-                  >
-                    Get AI Rewrite ({tool.creditCost} credits)
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center py-20 text-center">
-                <div className="rounded-full bg-slate-100 p-5">
-                  <svg className="h-10 w-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <p className="mt-5 text-base font-medium text-slate-700">No analysis yet</p>
-                <p className="mt-1 text-sm text-slate-500">Upload your resume first to get detailed feedback</p>
-                <button onClick={() => setActiveTab('upload')} className="mt-5 text-sm text-primary-600 font-medium hover:underline">
-                  Go to Upload
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Rewrite Tab */}
-        {!loadingAnalysis && activeTab === 'rewrite' && (
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 lg:p-8">
-            {rewriteLoading ? (
-              <div className="flex flex-col items-center justify-center py-20">
-                <div className="h-16 w-16 animate-spin rounded-full border-4 border-primary-500 border-t-transparent" />
-                <p className="mt-6 text-lg text-slate-600">Rewriting your resume...</p>
-                <p className="mt-2 text-sm text-slate-400">Creating an optimized version</p>
-              </div>
-            ) : rewrite ? (
-              <div className="max-w-4xl mx-auto">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-slate-900">AI-Optimized Resume</h2>
-                  {hasExported ? (
-                    <button
-                      onClick={copyToClipboard}
-                      className="flex items-center space-x-2 rounded-lg bg-primary-100 px-4 py-2 text-sm font-medium text-primary-700 hover:bg-primary-200"
-                    >
-                      {copied ? (
-                        <>
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                          <span>Copied!</span>
-                        </>
-                      ) : (
-                        <>
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                          </svg>
-                          <span>Copy Text</span>
-                        </>
-                      )}
-                    </button>
-                  ) : (
-                    <div className="flex items-center space-x-2 rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-400">
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                      <span>Export PDF to unlock copy</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Rewritten Resume */}
-                {hasExported ? (
-                  <div className="rounded-xl bg-slate-50 border border-slate-200 p-6 max-h-[600px] overflow-y-auto">
-                    <pre className="whitespace-pre-wrap text-sm text-slate-700 font-sans leading-relaxed">
-                      {rewrite}
-                    </pre>
-                  </div>
-                ) : (
-                  <CanvasResumePreview text={rewrite} />
-                )}
-
-                {/* Preview CTA */}
-                <div className="mt-8 p-6 rounded-xl bg-gradient-to-r from-primary-50 to-indigo-50 border border-primary-100">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-semibold text-slate-900">Ready to preview and export?</h3>
-                      <p className="text-sm text-slate-600 mt-1">
-                        See the changes, choose a template, and download as PDF
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => setActiveTab('preview')}
-                      className="rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:shadow-xl"
-                    >
-                      Preview & Export →
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="max-w-2xl mx-auto text-center py-12">
-                <div className="rounded-full bg-primary-100 p-6 w-fit mx-auto">
-                  <svg className="h-12 w-12 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                </div>
-                <h2 className="mt-6 text-xl font-bold text-slate-900">AI Resume Rewrite</h2>
-                <p className="mt-3 text-slate-600 max-w-md mx-auto">
-                  Transform your resume with AI-powered optimization. We&apos;ll improve structure,
-                  strengthen bullet points, and optimize for ATS systems.
-                </p>
-                <button
-                  onClick={handleRewrite}
-                  disabled={rewriteLoading || !analysis}
-                  className="mt-8 rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-8 py-4 text-lg font-semibold text-white shadow-lg hover:shadow-xl disabled:opacity-50"
-                >
-                  Rewrite My Resume ({tool.creditCost} credits)
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Preview & Export Tab */}
-        {!loadingAnalysis && activeTab === 'preview' && (
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 lg:p-8">
-            {(rewrite || resumeText) ? (
-              <div className="max-w-6xl mx-auto">
-                {/* Header with action buttons */}
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h2 className="text-lg font-semibold text-slate-900">Edit & Export</h2>
-                    <p className="text-sm text-slate-500 mt-1">
-                      {rewrite ? 'Edit your resume text, then export as PDF' : 'Apply suggested fixes, edit your resume, then export as PDF'}
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <button
-                      onClick={handleSave}
-                      disabled={!currentAnalysisId || saving}
-                      className={`flex items-center space-x-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 ${
-                        saveSuccess
-                          ? 'border-green-300 bg-green-50 text-green-700'
-                          : 'border-slate-200 text-slate-600 hover:bg-slate-50'
-                      }`}
-                    >
-                      {saving ? (
-                        <>
-                          <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                          </svg>
-                          <span>Saving...</span>
-                        </>
-                      ) : saveSuccess ? (
-                        <>
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                          <span>Saved!</span>
-                        </>
-                      ) : (
-                        <>
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                          </svg>
-                          <span>Save</span>
-                        </>
-                      )}
-                    </button>
-                    <button
-                      onClick={handleExport}
-                      disabled={!editableResume || exportLoading}
-                      className="flex items-center space-x-2 rounded-lg bg-gradient-to-r from-primary-500 to-primary-700 px-4 py-2 text-sm font-semibold text-white shadow-lg hover:shadow-xl disabled:opacity-50"
-                    >
-                      {exportLoading ? (
-                        <>
-                          <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                          </svg>
-                          <span>Exporting...</span>
-                        </>
-                      ) : (
-                        <>
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                          <span>Export PDF</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Live Score Card */}
-                {(analysisScore || improvedScore || scoringRewrite) && (
-                  <div className="mb-6 rounded-xl border border-slate-200 bg-white p-5">
-                    <div className="flex items-center gap-6">
-                      {/* Animated Score Circle */}
-                      <div className="flex-shrink-0 relative">
-                        {(() => {
-                          const currentScore = improvedScore?.score ?? analysisScore ?? 0
-                          const radius = 44
-                          const circumference = 2 * Math.PI * radius
-                          const progress = (currentScore / 100) * circumference
-                          const scoreColor = currentScore >= 75 ? '#16a34a' : currentScore >= 55 ? '#d97706' : '#ef4444'
-                          const bgColor = currentScore >= 75 ? '#dcfce7' : currentScore >= 55 ? '#fef3c7' : '#fee2e2'
-                          return (
-                            <div className="relative w-28 h-28">
-                              <svg className="w-28 h-28 -rotate-90" viewBox="0 0 100 100">
-                                <circle cx="50" cy="50" r={radius} fill="none" stroke={bgColor} strokeWidth="8" />
-                                <circle
-                                  cx="50" cy="50" r={radius}
-                                  fill="none"
-                                  stroke={scoreColor}
-                                  strokeWidth="8"
-                                  strokeLinecap="round"
-                                  strokeDasharray={circumference}
-                                  strokeDashoffset={circumference - progress}
-                                  style={{ transition: 'stroke-dashoffset 1s ease-in-out, stroke 0.5s ease' }}
-                                />
-                              </svg>
-                              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                {scoringRewrite ? (
-                                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary-500 border-t-transparent" />
-                                ) : (
-                                  <>
-                                    <span className="text-2xl font-bold" style={{ color: scoreColor, transition: 'color 0.5s ease' }}>
-                                      {currentScore}
-                                    </span>
-                                    <span className="text-[10px] text-slate-400 -mt-0.5">/100</span>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                          )
-                        })()}
-                      </div>
-
-                      {/* Score Details */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-3">
-                          {analysisScore && improvedScore && (
-                            <>
-                              <span className="text-sm text-slate-500">
-                                <span className="line-through">{analysisScore}</span>
-                              </span>
-                              <svg className="h-4 w-4 text-primary-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                              </svg>
-                              <span className={`text-sm font-semibold ${improvedScore.score >= 75 ? 'text-green-600' : 'text-amber-600'}`}>
-                                {improvedScore.score}
-                              </span>
-                              {improvedScore.score > analysisScore && (
-                                <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
-                                  +{improvedScore.score - analysisScore}
-                                </span>
-                              )}
-                            </>
-                          )}
-                          {scoringRewrite && (
-                            <span className="text-xs text-slate-400 animate-pulse">Rescoring...</span>
-                          )}
-                        </div>
-
-                        {/* Breakdown Bars */}
-                        {improvedScore?.scoreBreakdown && (
-                          <div className="grid grid-cols-2 gap-x-6 gap-y-2">
-                            {Object.entries(improvedScore.scoreBreakdown).map(([key, val]) => {
-                              const maxScore = key === 'impact' ? 35 : key === 'structure' ? 15 : 25
-                              const pct = Math.round((val.score / maxScore) * 100)
-                              const barColor = pct >= 75 ? 'bg-green-500' : pct >= 55 ? 'bg-amber-500' : 'bg-red-500'
-                              return (
-                                <div key={key} className="flex items-center gap-2">
-                                  <span className="text-xs text-slate-500 w-14 flex-shrink-0 capitalize">{key === 'ats' ? 'ATS' : key}</span>
-                                  <div className="flex-1 h-1.5 rounded-full bg-slate-100">
-                                    <div
-                                      className={`h-full rounded-full ${barColor}`}
-                                      style={{ width: `${pct}%`, transition: 'width 1s ease-in-out' }}
-                                    />
-                                  </div>
-                                  <span className="text-xs font-medium text-slate-700 w-8 text-right">{val.score}/{maxScore}</span>
-                                </div>
-                              )
-                            })}
-                          </div>
-                        )}
-
-                        {/* Top Improvements */}
-                        {improvedScore?.topImprovements && improvedScore.topImprovements.length > 0 && (
-                          <div className="mt-3 space-y-1.5">
-                            <span className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">Areas to improve</span>
-                            {improvedScore.topImprovements.map((imp, i) => (
-                              <div key={i} className="flex items-start gap-2 text-xs text-slate-600">
-                                <svg className="h-3.5 w-3.5 mt-0.5 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                                </svg>
-                                <span>{imp}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Suggested Fixes from Analysis */}
-                {structuredAnalysis && structuredAnalysis.fixes.length > 0 && (
-                  <div className="mb-6 rounded-xl border border-slate-200 bg-white p-5">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-                        <svg className="h-4 w-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                        Suggested Fixes
-                        <span className="text-xs text-slate-400 font-normal">Click to apply</span>
-                      </h3>
-                      {!rewrite && (
-                        <button
-                          onClick={() => { setActiveTab('rewrite'); if (!rewrite) handleRewrite() }}
-                          className="text-xs text-primary-600 hover:text-primary-700 font-medium"
-                        >
-                          Or use AI Rewrite to fix all →
-                        </button>
-                      )}
-                    </div>
-                    <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
-                      {structuredAnalysis.fixes.map((fix, i) => {
-                        // Normalize whitespace for fuzzy matching (handles line breaks from PDF parsing)
-                        const normalize = (s: string) => s.replace(/\s+/g, ' ').trim()
-                        const normalizedResume = normalize(editableResume)
-                        const isApplied = normalizedResume.includes(normalize(fix.fixed)) && !normalizedResume.includes(normalize(fix.current))
-                        const canApply = normalizedResume.includes(normalize(fix.current))
-
-                        // Aggressive fuzzy: match first 5+ significant words from fix.current
-                        const keyWords = fix.current.replace(/[^\w\s]/g, '').split(/\s+/).filter(w => w.length > 2).slice(0, 5)
-                        const canFuzzyApply = !canApply && !isApplied && keyWords.length >= 3 && (() => {
-                          const fuzzyRe = new RegExp(keyWords.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('[\\s\\S]{0,30}'), 'i')
-                          return fuzzyRe.test(editableResume)
-                        })()
-
-                        const applyFix = () => {
-                          setEditableResume(prev => {
-                            // 1. Exact match
-                            if (prev.includes(fix.current)) {
-                              return prev.replace(fix.current, fix.fixed)
-                            }
-                            // 2. Whitespace-normalized regex
-                            const escaped = fix.current.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-                            const fuzzyPattern = escaped.replace(/\s+/g, '\\s+')
-                            const wsResult = prev.replace(new RegExp(fuzzyPattern), fix.fixed)
-                            if (wsResult !== prev) return wsResult
-                            // 3. Key-word fuzzy match (find the span containing those words and replace it)
-                            if (keyWords.length >= 3) {
-                              const fuzzyRe = new RegExp(keyWords.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('[\\s\\S]{0,30}'), 'i')
-                              const match = prev.match(fuzzyRe)
-                              if (match && match[0]) {
-                                return prev.replace(match[0], fix.fixed)
-                              }
-                            }
-                            return prev
-                          })
-                        }
-
-                        const isClickable = !isApplied && (canApply || canFuzzyApply)
-
-                        return (
-                          <div
-                            key={i}
-                            className={`rounded-lg border p-3 transition-colors ${
-                              isApplied
-                                ? 'border-green-200 bg-green-50'
-                                : isClickable
-                                  ? 'border-slate-200 hover:border-primary-300 hover:bg-primary-50/30 cursor-pointer'
-                                  : 'border-slate-100 bg-slate-50'
-                            }`}
-                            onClick={() => { if (isClickable) applyFix() }}
-                          >
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
-                                    fix.severity === 'critical' ? 'bg-red-100 text-red-700' :
-                                    fix.severity === 'important' ? 'bg-amber-100 text-amber-700' :
-                                    'bg-slate-100 text-slate-600'
-                                  }`}>
-                                    {fix.severity}
-                                  </span>
-                                  <span className="text-xs font-medium text-slate-800 truncate">{fix.title}</span>
-                                </div>
-                                <div className="text-[11px] text-slate-500 mb-1.5">{fix.problem}</div>
-                                <div className="grid grid-cols-2 gap-2 text-[11px]">
-                                  <div>
-                                    <span className="text-red-400 font-medium">Before:</span>
-                                    <p className="text-slate-600 line-through mt-0.5 break-words">{fix.current.length > 120 ? fix.current.slice(0, 120) + '...' : fix.current}</p>
-                                  </div>
-                                  <div>
-                                    <span className="text-green-500 font-medium">After:</span>
-                                    <p className="text-slate-700 mt-0.5 break-words">{fix.fixed.length > 120 ? fix.fixed.slice(0, 120) + '...' : fix.fixed}</p>
-                                  </div>
-                                </div>
-                                {/* Copy button for truly unmatched fixes */}
-                                {!isApplied && !canApply && !canFuzzyApply && (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      navigator.clipboard.writeText(fix.fixed)
-                                      const btn = e.currentTarget
-                                      btn.textContent = 'Copied!'
-                                      setTimeout(() => { btn.textContent = 'Copy suggestion to clipboard' }, 1500)
-                                    }}
-                                    className="mt-2 text-[10px] text-primary-600 hover:text-primary-700 font-medium underline"
-                                  >
-                                    Copy suggestion to clipboard
-                                  </button>
-                                )}
-                              </div>
-                              <div className="flex-shrink-0">
-                                {isApplied ? (
-                                  <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-[10px] font-semibold text-green-700">
-                                    <svg className="h-3 w-3 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    Applied
-                                  </span>
-                                ) : isClickable ? (
-                                  <span className="inline-flex items-center rounded-full bg-primary-100 px-2 py-1 text-[10px] font-semibold text-primary-700">
-                                    Apply
-                                  </span>
-                                ) : (
-                                  <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-[10px] text-blue-600 font-medium">
-                                    Copy
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Editable Resume + PDF Preview side by side */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Editable textarea */}
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-semibold text-slate-900 flex items-center">
-                        <svg className="h-4 w-4 mr-2 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                        Your Resume
-                      </h3>
-                      {editableResume !== (rewrite || resumeText) && (
-                        <button
-                          onClick={() => {
-                            const base = rewrite || resumeText
-                            setEditableResume(base)
-                            generatePreview(base)
-                          }}
-                          className="text-xs text-slate-500 hover:text-slate-700 underline"
-                        >
-                          {rewrite ? 'Reset to AI version' : 'Reset to original'}
-                        </button>
-                      )}
-                    </div>
-                    <textarea
-                      value={editableResume}
-                      onChange={(e) => setEditableResume(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 p-4 text-sm font-mono leading-relaxed text-slate-700 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 resize-none"
-                      style={{ minHeight: '600px' }}
-                      placeholder="Your resume text will appear here..."
-                    />
-                    <p className="text-xs text-slate-400 mt-2">
-                      Edit freely — the preview updates automatically after you stop typing
-                    </p>
-                  </div>
-
-                  {/* PDF Preview */}
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-semibold text-slate-900 flex items-center">
-                        <svg className="h-4 w-4 mr-2 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        PDF Preview
-                      </h3>
-                      <button
-                        onClick={() => generatePreview(editableResume)}
-                        disabled={previewLoading || !editableResume}
-                        className="flex items-center space-x-1 text-xs text-primary-600 hover:text-primary-700 disabled:opacity-50"
-                      >
-                        <svg className={`h-3.5 w-3.5 ${previewLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        <span>Refresh</span>
-                      </button>
-                    </div>
-                    <div className="rounded-xl border border-slate-200 bg-slate-100 min-h-[600px] flex items-center justify-center">
-                      {previewLoading ? (
-                        <div className="flex flex-col items-center">
-                          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary-500 border-t-transparent" />
-                          <p className="mt-4 text-slate-600">Generating preview...</p>
-                        </div>
-                      ) : pdfPreviewUrl ? (
-                        <iframe
-                          src={pdfPreviewUrl}
-                          className="w-full h-[600px] rounded-xl"
-                          title="Resume Preview"
-                        />
-                      ) : (
-                        <div className="text-center text-slate-500">
-                          <svg className="mx-auto h-16 w-16 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                          <p className="mt-4">Preview loading...</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-20">
-                <div className="rounded-full bg-slate-100 p-6 w-fit mx-auto">
-                  <svg className="h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <h2 className="mt-6 text-xl font-bold text-slate-900">Edit & Export</h2>
-                <p className="mt-3 text-slate-600">
-                  Analyze your resume first to get suggestions and export.
-                </p>
-                <button
-                  onClick={() => setActiveTab('upload')}
-                  className="mt-6 text-primary-600 font-medium hover:underline"
-                >
-                  ← Go to Upload
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+          {/* Preview & Export Tab */}
+          {!loadingAnalysis && activeTab === 'preview' && (
+            <PreviewTab
+              key="preview"
+              rewrite={rewrite}
+              resumeText={resumeText}
+              editableResume={editableResume}
+              setEditableResume={setEditableResume}
+              pdfPreviewUrl={pdfPreviewUrl}
+              previewLoading={previewLoading}
+              exportLoading={exportLoading}
+              saving={saving}
+              saveSuccess={saveSuccess}
+              currentAnalysisId={currentAnalysisId}
+              analysisScore={analysisScore}
+              improvedScore={improvedScore}
+              scoringRewrite={scoringRewrite}
+              structuredAnalysis={structuredAnalysis}
+              hasExported={hasExported}
+              onHandleExport={handleExport}
+              onHandleSave={handleSave}
+              onHandleRewrite={handleRewrite}
+              onGeneratePreview={generatePreview}
+              onSetActiveTab={setActiveTab}
+            />
+          )}
         </div>
       )}
 
       {/* Create Mode */}
       {mode === 'create' && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Form Section */}
-              <div className="lg:col-span-2 space-y-8">
-                {/* Personal Info */}
-                <div>
-                  <h2 className="text-lg font-semibold text-slate-900 mb-4">Personal Information</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input
-                      type="text"
-                      placeholder="Full Name *"
-                      value={formData.fullName}
-                      onChange={(e) => updateFormField('fullName', e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 p-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
-                    />
-                    <input
-                      type="email"
-                      placeholder="Email"
-                      value={formData.email}
-                      onChange={(e) => updateFormField('email', e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 p-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
-                    />
-                    <input
-                      type="tel"
-                      placeholder="Phone"
-                      value={formData.phone}
-                      onChange={(e) => updateFormField('phone', e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 p-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Location (City, State)"
-                      value={formData.location}
-                      onChange={(e) => updateFormField('location', e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 p-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
-                    />
-                    <input
-                      type="url"
-                      placeholder="LinkedIn URL"
-                      value={formData.linkedin}
-                      onChange={(e) => updateFormField('linkedin', e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 p-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 md:col-span-2"
-                    />
-                  </div>
-                </div>
-
-                {/* Summary */}
-                <div>
-                  <h2 className="text-lg font-semibold text-slate-900 mb-4">Professional Summary</h2>
-                  <textarea
-                    placeholder="Brief professional summary..."
-                    value={formData.summary}
-                    onChange={(e) => updateFormField('summary', e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 p-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 min-h-[100px] resize-y"
-                  />
-                </div>
-
-                {/* Experience */}
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-semibold text-slate-900">Experience</h2>
-                    <button
-                      onClick={addExperience}
-                      className="text-sm text-primary-600 hover:text-primary-800 font-medium"
-                    >
-                      + Add Experience
-                    </button>
-                  </div>
-                  {formData.experience.map((exp, index) => (
-                    <div key={index} className="mb-6 p-4 bg-slate-50 rounded-lg">
-                      <div className="flex justify-between items-start mb-3">
-                        <span className="text-sm font-medium text-slate-500">Position {index + 1}</span>
-                        {formData.experience.length > 1 && (
-                          <button
-                            onClick={() => removeExperience(index)}
-                            className="text-red-500 hover:text-red-700 text-sm"
-                          >
-                            Remove
-                          </button>
-                        )}
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <input
-                          type="text"
-                          placeholder="Job Title"
-                          value={exp.title}
-                          onChange={(e) => updateExperience(index, 'title', e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-primary-500 focus:outline-none"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Company"
-                          value={exp.company}
-                          onChange={(e) => updateExperience(index, 'company', e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-primary-500 focus:outline-none"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Location"
-                          value={exp.location}
-                          onChange={(e) => updateExperience(index, 'location', e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-primary-500 focus:outline-none"
-                        />
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            placeholder="Start Date"
-                            value={exp.startDate}
-                            onChange={(e) => updateExperience(index, 'startDate', e.target.value)}
-                            className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-primary-500 focus:outline-none"
-                          />
-                          <input
-                            type="text"
-                            placeholder="End Date"
-                            value={exp.endDate}
-                            onChange={(e) => updateExperience(index, 'endDate', e.target.value)}
-                            className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-primary-500 focus:outline-none"
-                          />
-                        </div>
-                      </div>
-                      <div className="mt-3">
-                        <label className="text-sm text-slate-500 mb-2 block">Key achievements (one per line)</label>
-                        <textarea
-                          placeholder="• Led team of 5 engineers...&#10;• Increased revenue by 20%..."
-                          value={exp.bullets.join('\n')}
-                          onChange={(e) => updateExperience(index, 'bullets', e.target.value.split('\n'))}
-                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-primary-500 focus:outline-none min-h-[80px] resize-y"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Education */}
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-semibold text-slate-900">Education</h2>
-                    <button
-                      onClick={addEducation}
-                      className="text-sm text-primary-600 hover:text-primary-800 font-medium"
-                    >
-                      + Add Education
-                    </button>
-                  </div>
-                  {formData.education.map((edu, index) => (
-                    <div key={index} className="mb-4 p-4 bg-slate-50 rounded-lg">
-                      <div className="flex justify-between items-start mb-3">
-                        <span className="text-sm font-medium text-slate-500">Education {index + 1}</span>
-                        {formData.education.length > 1 && (
-                          <button
-                            onClick={() => removeEducation(index)}
-                            className="text-red-500 hover:text-red-700 text-sm"
-                          >
-                            Remove
-                          </button>
-                        )}
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <input
-                          type="text"
-                          placeholder="School/University"
-                          value={edu.school}
-                          onChange={(e) => updateEducation(index, 'school', e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-primary-500 focus:outline-none"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Degree"
-                          value={edu.degree}
-                          onChange={(e) => updateEducation(index, 'degree', e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-primary-500 focus:outline-none"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Graduation Date"
-                          value={edu.graduationDate}
-                          onChange={(e) => updateEducation(index, 'graduationDate', e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-primary-500 focus:outline-none"
-                        />
-                        <input
-                          type="text"
-                          placeholder="GPA (optional)"
-                          value={edu.gpa}
-                          onChange={(e) => updateEducation(index, 'gpa', e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-primary-500 focus:outline-none"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Skills */}
-                <div>
-                  <h2 className="text-lg font-semibold text-slate-900 mb-4">Skills</h2>
-                  <textarea
-                    placeholder="JavaScript, React, Node.js, Python, SQL..."
-                    value={formData.skills.join(', ')}
-                    onChange={(e) => updateFormField('skills', e.target.value.split(',').map(s => s.trim()))}
-                    className="w-full rounded-lg border border-slate-200 p-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 min-h-[60px] resize-y"
-                  />
-                  <p className="text-xs text-slate-400 mt-1">Separate skills with commas</p>
-                </div>
-              </div>
-
-              {/* Export Sidebar */}
-              <div className="lg:col-span-1">
-                <div className="sticky top-6">
-                  <h2 className="text-lg font-semibold text-slate-900 mb-4">Export</h2>
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 mb-6">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-100">
-                        <svg className="h-5 w-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="font-medium text-slate-900 text-sm">Classic Professional</p>
-                        <p className="text-xs text-slate-500">Clean, ATS-friendly format</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Create Button */}
-                  <button
-                    onClick={handleCreateResume}
-                    disabled={creatingPdf || !formData.fullName.trim()}
-                    className="w-full rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-6 py-4 text-lg font-semibold text-white shadow-lg shadow-primary-500/30 transition-all hover:shadow-xl hover:shadow-primary-500/40 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {creatingPdf ? (
-                      <span className="flex items-center justify-center space-x-2">
-                        <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                        </svg>
-                        <span>Creating...</span>
-                      </span>
-                    ) : (
-                      `Create & Download PDF`
-                    )}
-                  </button>
-                  <p className="text-center text-sm text-slate-500 mt-2">
-                    1 credit
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <CreateTab
+          formData={formData}
+          creatingPdf={creatingPdf}
+          userCredits={userCredits}
+          onUpdateFormField={updateFormField}
+          onAddExperience={addExperience}
+          onUpdateExperience={updateExperience}
+          onRemoveExperience={removeExperience}
+          onAddEducation={addEducation}
+          onUpdateEducation={updateEducation}
+          onRemoveEducation={removeEducation}
+          onCreateResume={handleCreateResume}
+        />
       )}
     </div>
   )

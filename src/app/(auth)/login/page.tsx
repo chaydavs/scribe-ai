@@ -4,21 +4,21 @@ import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { useToast } from '@/components/ui/toast'
 
 function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { toast } = useToast()
   const redirect = searchParams.get('redirect') || '/resumelab'
 
   const supabase = createClient()
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError(null)
     setLoading(true)
 
     try {
@@ -28,21 +28,20 @@ function LoginForm() {
       })
 
       if (error) {
-        setError(error.message)
+        toast(error.message, 'error')
         return
       }
 
       router.push(redirect)
       router.refresh()
     } catch {
-      setError('An unexpected error occurred')
+      toast('An unexpected error occurred', 'error')
     } finally {
       setLoading(false)
     }
   }
 
   const handleGoogleLogin = async () => {
-    setError(null)
     setLoading(true)
 
     try {
@@ -54,23 +53,17 @@ function LoginForm() {
       })
 
       if (error) {
-        setError(error.message)
+        toast(error.message, 'error')
         setLoading(false)
       }
     } catch {
-      setError('An unexpected error occurred')
+      toast('An unexpected error occurred', 'error')
       setLoading(false)
     }
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-xl">
-      {error && (
-        <div className="mb-4 rounded-xl bg-red-50 border border-red-100 p-4 text-sm text-red-600">
-          {error}
-        </div>
-      )}
-
+    <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-xl animate-card-enter">
       <button
         type="button"
         onClick={handleGoogleLogin}
@@ -108,7 +101,7 @@ function LoginForm() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 w-full rounded-xl border border-slate-200 p-3 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+            className="mt-1 w-full rounded-xl border border-slate-200 p-3 text-sm transition-all focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:scale-[1.005]"
             placeholder="you@example.com"
           />
         </div>
@@ -130,7 +123,7 @@ function LoginForm() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 w-full rounded-xl border border-slate-200 p-3 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+            className="mt-1 w-full rounded-xl border border-slate-200 p-3 text-sm transition-all focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:scale-[1.005]"
             placeholder="Your password"
           />
         </div>
@@ -153,7 +146,7 @@ export default function LoginPage() {
       {/* Left Side - Form */}
       <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-sm">
-          <Link href="/" className="flex items-center space-x-2 mb-8">
+          <Link href="/" className="flex items-center space-x-2 mb-8 animate-card-enter">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-primary-700">
               <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -162,14 +155,16 @@ export default function LoginPage() {
             <span className="text-lg font-bold text-slate-900">ResumeLab</span>
           </Link>
 
-          <div className="mb-8">
+          <div className="mb-8 animate-card-enter animation-delay-100">
             <h1 className="text-2xl font-bold text-slate-900">Welcome back</h1>
             <p className="mt-2 text-slate-600">Sign in to continue fixing your resume</p>
           </div>
 
-          <Suspense fallback={<div className="rounded-2xl border border-slate-200 bg-white p-8 h-80 animate-pulse" />}>
-            <LoginForm />
-          </Suspense>
+          <div className="animate-card-enter animation-delay-200">
+            <Suspense fallback={<div className="rounded-2xl border border-slate-200 bg-white p-8 h-80 animate-pulse" />}>
+              <LoginForm />
+            </Suspense>
+          </div>
 
           <p className="mt-6 text-center text-sm text-slate-600">
             Don&apos;t have an account?{' '}
@@ -202,11 +197,14 @@ export default function LoginPage() {
                 { label: 'Clarity', score: 85, color: 'bg-green-400' },
                 { label: 'ATS-Ready', score: 78, color: 'bg-amber-400' },
                 { label: 'Structure', score: 90, color: 'bg-green-400' },
-              ].map((item) => (
+              ].map((item, index) => (
                 <div key={item.label} className="flex items-center gap-3">
                   <span className="text-xs text-slate-400 w-16">{item.label}</span>
                   <div className="flex-1 h-2 rounded-full bg-white/10">
-                    <div className={`h-full rounded-full ${item.color}`} style={{ width: `${item.score}%` }} />
+                    <div
+                      className={`h-full rounded-full ${item.color} animate-progress-fill`}
+                      style={{ '--target-width': `${item.score}%`, animationDelay: `${index * 100}ms` } as React.CSSProperties}
+                    />
                   </div>
                   <span className="text-xs text-white font-medium w-8 text-right">{item.score}</span>
                 </div>

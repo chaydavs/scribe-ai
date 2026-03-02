@@ -3,20 +3,20 @@
 import { Suspense, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { useToast } from '@/components/ui/toast'
 
 function SignupForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
-  const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  const { toast } = useToast()
 
   const supabase = createClient()
 
   const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError(null)
     setMessage(null)
     setLoading(true)
 
@@ -33,20 +33,19 @@ function SignupForm() {
       })
 
       if (error) {
-        setError(error.message)
+        toast(error.message, 'error')
         return
       }
 
       setMessage('Check your email for a confirmation link!')
     } catch {
-      setError('An unexpected error occurred')
+      toast('An unexpected error occurred', 'error')
     } finally {
       setLoading(false)
     }
   }
 
   const handleGoogleSignup = async () => {
-    setError(null)
     setLoading(true)
 
     try {
@@ -58,23 +57,17 @@ function SignupForm() {
       })
 
       if (error) {
-        setError(error.message)
+        toast(error.message, 'error')
         setLoading(false)
       }
     } catch {
-      setError('An unexpected error occurred')
+      toast('An unexpected error occurred', 'error')
       setLoading(false)
     }
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-xl">
-      {error && (
-        <div className="mb-4 rounded-xl bg-red-50 border border-red-100 p-4 text-sm text-red-600">
-          {error}
-        </div>
-      )}
-
+    <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-xl animate-card-enter">
       {message && (
         <div className="mb-4 rounded-xl bg-green-50 border border-green-100 p-4 text-sm text-green-600">
           {message}
@@ -118,7 +111,7 @@ function SignupForm() {
             required
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            className="mt-1 w-full rounded-xl border border-slate-200 p-3 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+            className="mt-1 w-full rounded-xl border border-slate-200 p-3 text-sm transition-all focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:scale-[1.005]"
             placeholder="John Doe"
           />
         </div>
@@ -135,7 +128,7 @@ function SignupForm() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 w-full rounded-xl border border-slate-200 p-3 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+            className="mt-1 w-full rounded-xl border border-slate-200 p-3 text-sm transition-all focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:scale-[1.005]"
             placeholder="you@example.com"
           />
         </div>
@@ -153,7 +146,7 @@ function SignupForm() {
             minLength={6}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 w-full rounded-xl border border-slate-200 p-3 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+            className="mt-1 w-full rounded-xl border border-slate-200 p-3 text-sm transition-all focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:scale-[1.005]"
             placeholder="Min 6 characters"
           />
         </div>
@@ -180,7 +173,7 @@ export default function SignupPage() {
       {/* Left Side - Form */}
       <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-sm">
-          <Link href="/" className="flex items-center space-x-2 mb-8">
+          <Link href="/" className="flex items-center space-x-2 mb-8 animate-card-enter">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-primary-700">
               <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -189,7 +182,7 @@ export default function SignupPage() {
             <span className="text-lg font-bold text-slate-900">ResumeLab</span>
           </Link>
 
-          <div className="mb-8">
+          <div className="mb-8 animate-card-enter animation-delay-100">
             <h1 className="text-2xl font-bold text-slate-900">
               Start with 25 free credits
             </h1>
@@ -198,9 +191,11 @@ export default function SignupPage() {
             </p>
           </div>
 
-          <Suspense fallback={<div className="rounded-2xl border border-slate-200 bg-white p-8 h-96 animate-pulse" />}>
-            <SignupForm />
-          </Suspense>
+          <div className="animate-card-enter animation-delay-200">
+            <Suspense fallback={<div className="rounded-2xl border border-slate-200 bg-white p-8 h-96 animate-pulse" />}>
+              <SignupForm />
+            </Suspense>
+          </div>
 
           <p className="mt-6 text-center text-sm text-slate-600">
             Already have an account?{' '}

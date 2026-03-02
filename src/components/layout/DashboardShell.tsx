@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { AnalysisHistorySkeleton } from '@/components/ui/skeleton'
 
 interface Analysis {
   id: string
@@ -190,17 +191,21 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
             </p>
 
             {loadingAnalyses ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary-400 border-t-transparent" />
-              </div>
+              <AnalysisHistorySkeleton />
             ) : analyses.length === 0 ? (
-              <p className="px-2 py-4 text-sm text-slate-400">
-                No analyses yet. Start by uploading a resume.
-              </p>
+              <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
+                <div className="mb-3 rounded-2xl bg-primary-50 p-4">
+                  <svg className="h-10 w-10 text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                  </svg>
+                </div>
+                <p className="text-sm font-medium text-slate-700">No analyses yet</p>
+                <p className="mt-1 text-xs text-slate-400">Upload a resume to get started</p>
+              </div>
             ) : (
               <div className="space-y-1">
                 {analyses.map((analysis) => (
-                  <div key={analysis.id} className="group relative flex items-center rounded-lg text-sm text-slate-700 transition-all hover:bg-primary-50">
+                  <div key={analysis.id} className="group relative flex items-center rounded-lg text-sm text-slate-700 transition-all hover:bg-primary-50 hover:translate-x-0.5 border-l-2 border-transparent hover:border-primary-400">
                     {editingId === analysis.id ? (
                       <div className="flex w-full items-center px-3 py-2">
                         <input
@@ -232,7 +237,15 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
                             </p>
                             <p className="text-xs text-slate-400">
                               {formatDate(analysis.created_at)}
-                              {analysis.score && <span className="ml-2">Score: {analysis.score}</span>}
+                              {analysis.score != null && (
+                                <span className={`ml-2 inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
+                                  analysis.score >= 75 ? 'bg-green-100 text-green-700' :
+                                  analysis.score >= 50 ? 'bg-amber-100 text-amber-700' :
+                                  'bg-red-100 text-red-700'
+                                }`}>
+                                  {analysis.score}
+                                </span>
+                              )}
                             </p>
                           </div>
                         </Link>
@@ -334,7 +347,7 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
             <Link
               href="/settings"
               onClick={() => setSidebarOpen(false)}
-              className="mb-3 block rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 p-3 text-white transition-transform hover:scale-[1.02]"
+              className={`mb-3 block rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 p-3 text-white transition-transform hover:scale-[1.02] ${(profile?.credits || 0) < 10 ? 'animate-score-pulse' : ''}`}
             >
               <div className="flex items-center justify-between">
                 <div>

@@ -1,5 +1,10 @@
+'use client'
+
 import Link from 'next/link'
 import { KeywordMatcher } from '@/components/tools/resumelab/keyword-matcher'
+import { RevealSection } from '@/components/marketing/reveal-section'
+import { FaqSection } from '@/components/marketing/faq-section'
+import { useTypingEffect } from '@/hooks/use-typing-effect'
 
 // Interactive annotation mockup for the hero
 function AnnotationDemo() {
@@ -73,6 +78,90 @@ function AnnotationDemo() {
   )
 }
 
+const TYPING_PHRASES = [
+  'The only resume editor with built-in AI fixes',
+  'Fix weak bullets in one click',
+  'See keyword gaps instantly',
+]
+
+function HeroBadge() {
+  const typedText = useTypingEffect({ phrases: TYPING_PHRASES })
+
+  return (
+    <div className="inline-flex items-center rounded-full bg-primary-50 border border-primary-200 px-4 py-1.5 text-sm font-medium text-primary-700 mb-6 animate-card-enter">
+      <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+      </svg>
+      <span>{typedText}</span>
+      <span className="ml-0.5 inline-block w-[2px] h-4 bg-primary-500 animate-pulse" />
+    </div>
+  )
+}
+
+const OTHER_TOOLS = [
+  { text: 'Give you a score and a report', detail: 'You still have to open Word/Docs to make changes' },
+  { text: 'Charge $29-50/month', detail: 'Subscription for a tool you need for 2 weeks' },
+  { text: 'Generate generic AI rewrites', detail: 'Same corporate-speak for everyone' },
+  { text: 'Require Chrome extensions & job trackers', detail: 'Feature bloat you didn\'t ask for' },
+]
+
+const RESUMELAB_BENEFITS = [
+  { text: 'Edit and fix directly on your resume', detail: 'Inline highlights + one-click apply, like Google Docs suggestions' },
+  { text: 'Pay $10 once, not $50/month', detail: 'Credits for your job search — no recurring charge' },
+  { text: 'Rewrites using YOUR real experience', detail: 'Nothing fabricated — your voice, stronger impact' },
+  { text: 'One tool that does the whole job', detail: 'Upload → fix → export PDF. That\'s it.' },
+]
+
+const PROBLEM_ITEMS = [
+  { title: 'ATS filters reject 80% of resumes', desc: 'Missing keywords means a human never sees your application' },
+  { title: '\u201cResponsible for\u201d is invisible to recruiters', desc: 'Duty-based bullets blend together — impact statements get noticed' },
+  { title: 'Generic feedback doesn\u2019t help', desc: '\u201cAdd more metrics\u201d is useless — you need exact rewrites using your real experience' },
+]
+
+const SOLUTION_ITEMS = [
+  { title: 'Inline annotations on your actual resume', desc: 'Not a separate report — highlights right on your document, like Google Docs suggestions' },
+  { title: 'One-click fixes using your real experience', desc: 'Every rewrite uses only facts from your resume — nothing fabricated' },
+  { title: 'ATS keyword scoring for any job', desc: 'Paste a job description and see exactly which keywords you\u2019re missing' },
+]
+
+const TESTIMONIALS = [
+  {
+    text: '\u201cThe rewrite feature blew my mind. It took my bullet \u2018Responsible for managing database operations\u2019 and turned it into \u2018Managed PostgreSQL cluster serving 2M+ queries/day.\u2019 Same facts, completely different impact. Got 3 callbacks in a week.\u201d',
+    initial: 'S', name: 'Sarah M.', role: 'Software Engineer',
+  },
+  {
+    text: '\u201cI went from a 58 to an 87 score. The inline annotations made it so obvious what was wrong — I could see the red highlights on my weak bullets and fix them one by one. Way better than a wall of text telling me what to do.\u201d',
+    initial: 'J', name: 'James R.', role: 'Product Manager',
+  },
+  {
+    text: '\u201cUsed the free credits, was skeptical. But it caught things I never would have noticed — my skills section was missing 4 keywords from the job posting. Fixed them, applied, got the interview. Bought more credits the same day.\u201d',
+    initial: 'A', name: 'Alex T.', role: 'Marketing Director',
+  },
+]
+
+function XIcon({ className }: { className: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  )
+}
+
+function CheckIcon({ className }: { className: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+    </svg>
+  )
+}
+
+function StarIcon() {
+  return (
+    <svg className="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+    </svg>
+  )
+}
 
 export default function LandingPage() {
   return (
@@ -104,29 +193,24 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* Hero Section — Loss Aversion + Product Demo */}
+      {/* Hero Section */}
       <section className="relative overflow-hidden pt-16 pb-8 sm:pt-24 sm:pb-12">
         <div className="absolute inset-0 bg-gradient-to-b from-white via-primary-50/40 to-slate-50" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-primary-100/30 rounded-full blur-3xl" />
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
-            <div className="inline-flex items-center rounded-full bg-primary-50 border border-primary-200 px-4 py-1.5 text-sm font-medium text-primary-700 mb-6">
-              <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-              The only resume editor with built-in AI fixes
-            </div>
-            <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
+            <HeroBadge />
+            <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl animate-card-enter [animation-delay:100ms]">
               Fix your resume{' '}
               <span className="bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent">
                 right here
               </span>
               {' '}&mdash; not in another tab
             </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-600 leading-relaxed">
+            <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-600 leading-relaxed animate-card-enter [animation-delay:200ms]">
               Upload your resume, see exactly what&apos;s wrong with inline highlights, fix it with one click, and export as PDF. 60 seconds. No subscription.
             </p>
-            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row animate-card-enter [animation-delay:300ms]">
               <Link
                 href="/signup"
                 className="group rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-8 py-4 text-base font-semibold text-white shadow-lg shadow-primary-500/30 transition-all hover:shadow-xl hover:shadow-primary-500/40 hover:-translate-y-0.5"
@@ -149,7 +233,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Why ResumeLab Is Different — Competitor Comparison */}
+      {/* Why ResumeLab Is Different */}
       <section className="py-20 bg-white/70">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
@@ -162,77 +246,61 @@ export default function LandingPage() {
           </div>
 
           <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
-            {/* Other tools column */}
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-              <div className="flex items-center gap-2 mb-6">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200">
-                  <svg className="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+            <RevealSection delay={0}>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200">
+                    <XIcon className="h-4 w-4 text-slate-500" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-slate-500">Other resume tools</h3>
                 </div>
-                <h3 className="text-lg font-semibold text-slate-500">Other resume tools</h3>
+                <ul className="space-y-4">
+                  {OTHER_TOOLS.map((item, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <div className="mt-1 flex-shrink-0 w-5 h-5 rounded-full bg-red-100 flex items-center justify-center">
+                        <XIcon className="w-3 h-3 text-red-500" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-slate-700">{item.text}</p>
+                        <p className="text-xs text-slate-500 mt-0.5">{item.detail}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <ul className="space-y-4">
-                {[
-                  { text: 'Give you a score and a report', detail: 'You still have to open Word/Docs to make changes' },
-                  { text: 'Charge $29-50/month', detail: 'Subscription for a tool you need for 2 weeks' },
-                  { text: 'Generate generic AI rewrites', detail: 'Same corporate-speak for everyone' },
-                  { text: 'Require Chrome extensions & job trackers', detail: 'Feature bloat you didn\'t ask for' },
-                ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <div className="mt-1 flex-shrink-0 w-5 h-5 rounded-full bg-red-100 flex items-center justify-center">
-                      <svg className="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-slate-700">{item.text}</p>
-                      <p className="text-xs text-slate-500 mt-0.5">{item.detail}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            </RevealSection>
 
-            {/* ResumeLab column */}
-            <div className="rounded-2xl border-2 border-primary-500 bg-gradient-to-br from-primary-50 to-indigo-50 p-6 relative">
-              <div className="absolute -top-3 left-6 rounded-full bg-primary-500 px-3 py-0.5 text-xs font-medium text-white">
-                ResumeLab
-              </div>
-              <div className="flex items-center gap-2 mb-6">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100">
-                  <svg className="h-4 w-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+            <RevealSection delay={100}>
+              <div className="rounded-2xl border-2 border-primary-500 bg-gradient-to-br from-primary-50 to-indigo-50 p-6 relative">
+                <div className="absolute -top-3 left-6 rounded-full bg-primary-500 px-3 py-0.5 text-xs font-medium text-white">
+                  ResumeLab
                 </div>
-                <h3 className="text-lg font-semibold text-primary-700">A better way</h3>
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100">
+                    <CheckIcon className="h-4 w-4 text-primary-600" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-primary-700">A better way</h3>
+                </div>
+                <ul className="space-y-4">
+                  {RESUMELAB_BENEFITS.map((item, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <div className="mt-1 flex-shrink-0 w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
+                        <CheckIcon className="w-3 h-3 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-slate-800">{item.text}</p>
+                        <p className="text-xs text-slate-600 mt-0.5">{item.detail}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <ul className="space-y-4">
-                {[
-                  { text: 'Edit and fix directly on your resume', detail: 'Inline highlights + one-click apply, like Google Docs suggestions' },
-                  { text: 'Pay $10 once, not $50/month', detail: 'Credits for your job search — no recurring charge' },
-                  { text: 'Rewrites using YOUR real experience', detail: 'Nothing fabricated — your voice, stronger impact' },
-                  { text: 'One tool that does the whole job', detail: 'Upload → fix → export PDF. That\'s it.' },
-                ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <div className="mt-1 flex-shrink-0 w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
-                      <svg className="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-slate-800">{item.text}</p>
-                      <p className="text-xs text-slate-600 mt-0.5">{item.detail}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            </RevealSection>
           </div>
         </div>
       </section>
 
-      {/* How It Works — 3 Steps */}
+      {/* How It Works */}
       <section className="py-20 bg-slate-100/60">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -242,125 +310,76 @@ export default function LandingPage() {
           </div>
 
           <div className="relative grid gap-8 md:grid-cols-3 max-w-4xl mx-auto">
-            {/* Connecting line (desktop only) */}
             <div className="hidden md:block absolute top-7 left-[calc(16.67%+28px)] right-[calc(16.67%+28px)] h-0.5 bg-gradient-to-r from-primary-300 via-primary-400 to-primary-500" />
 
-            <div className="relative text-center rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 text-white text-xl font-bold shadow-lg shadow-primary-500/30 relative z-10">
-                1
-              </div>
-              <h3 className="mt-5 text-lg font-semibold text-slate-900">Upload your resume</h3>
-              <p className="mt-2 text-sm text-slate-600">
-                Drop a PDF or paste text. We parse it instantly.
-              </p>
-            </div>
-            <div className="relative text-center rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 text-white text-xl font-bold shadow-lg shadow-primary-500/30 relative z-10">
-                2
-              </div>
-              <h3 className="mt-5 text-lg font-semibold text-slate-900">See inline annotations</h3>
-              <p className="mt-2 text-sm text-slate-600">
-                Color-coded highlights on every issue — click any to see the fix.
-              </p>
-            </div>
-            <div className="relative text-center rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 text-white text-xl font-bold shadow-lg shadow-primary-500/30 relative z-10">
-                3
-              </div>
-              <h3 className="mt-5 text-lg font-semibold text-slate-900">Apply fixes & export</h3>
-              <p className="mt-2 text-sm text-slate-600">
-                One-click apply or auto-rewrite everything. Export as PDF.
-              </p>
-            </div>
+            {[
+              { step: '1', title: 'Upload your resume', desc: 'Drop a PDF or paste text. We parse it instantly.' },
+              { step: '2', title: 'See inline annotations', desc: 'Color-coded highlights on every issue — click any to see the fix.' },
+              { step: '3', title: 'Apply fixes & export', desc: 'One-click apply or auto-rewrite everything. Export as PDF.' },
+            ].map((card, i) => (
+              <RevealSection key={card.step} delay={i * 100}>
+                <div className="relative text-center rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 text-white text-xl font-bold shadow-lg shadow-primary-500/30 relative z-10">
+                    {card.step}
+                  </div>
+                  <h3 className="mt-5 text-lg font-semibold text-slate-900">{card.title}</h3>
+                  <p className="mt-2 text-sm text-slate-600">{card.desc}</p>
+                </div>
+              </RevealSection>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Problem/Solution with specifics */}
+      {/* Problem/Solution */}
       <section className="py-20 bg-white/70">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-12 lg:grid-cols-2 items-center">
-            <div>
-              <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">
-                Recruiters spend 6 seconds on your resume. Make every word count.
-              </h2>
-              <div className="mt-8 space-y-5">
-                <div className="flex items-start gap-3">
-                  <div className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-red-100 flex items-center justify-center">
-                    <svg className="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="font-medium text-slate-900">ATS filters reject 80% of resumes</p>
-                    <p className="text-sm text-slate-500 mt-0.5">Missing keywords means a human never sees your application</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-red-100 flex items-center justify-center">
-                    <svg className="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="font-medium text-slate-900">&ldquo;Responsible for&rdquo; is invisible to recruiters</p>
-                    <p className="text-sm text-slate-500 mt-0.5">Duty-based bullets blend together — impact statements get noticed</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-red-100 flex items-center justify-center">
-                    <svg className="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="font-medium text-slate-900">Generic feedback doesn&apos;t help</p>
-                    <p className="text-sm text-slate-500 mt-0.5">&ldquo;Add more metrics&rdquo; is useless — you need exact rewrites using your real experience</p>
-                  </div>
+            <RevealSection delay={0}>
+              <div>
+                <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">
+                  Recruiters spend 6 seconds on your resume. Make every word count.
+                </h2>
+                <div className="mt-8 space-y-5">
+                  {PROBLEM_ITEMS.map((item, i) => (
+                    <RevealSection key={i} delay={i * 100}>
+                      <div className="flex items-start gap-3">
+                        <div className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-red-100 flex items-center justify-center">
+                          <XIcon className="w-3.5 h-3.5 text-red-500" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-slate-900">{item.title}</p>
+                          <p className="text-sm text-slate-500 mt-0.5">{item.desc}</p>
+                        </div>
+                      </div>
+                    </RevealSection>
+                  ))}
                 </div>
               </div>
-            </div>
+            </RevealSection>
 
-            <div className="bg-gradient-to-br from-primary-50 to-indigo-50 rounded-2xl p-8 border border-primary-100">
-              <h3 className="text-lg font-semibold text-slate-900 mb-6">
-                ResumeLab gives you:
-              </h3>
-              <div className="space-y-5">
-                <div className="flex items-start gap-3">
-                  <div className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-                    <svg className="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="font-medium text-slate-900">Inline annotations on your actual resume</p>
-                    <p className="text-sm text-slate-500 mt-0.5">Not a separate report — highlights right on your document, like Google Docs suggestions</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-                    <svg className="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="font-medium text-slate-900">One-click fixes using your real experience</p>
-                    <p className="text-sm text-slate-500 mt-0.5">Every rewrite uses only facts from your resume — nothing fabricated</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-                    <svg className="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="font-medium text-slate-900">ATS keyword scoring for any job</p>
-                    <p className="text-sm text-slate-500 mt-0.5">Paste a job description and see exactly which keywords you&apos;re missing</p>
-                  </div>
+            <RevealSection delay={200}>
+              <div className="bg-gradient-to-br from-primary-50 to-indigo-50 rounded-2xl p-8 border border-primary-100">
+                <h3 className="text-lg font-semibold text-slate-900 mb-6">
+                  ResumeLab gives you:
+                </h3>
+                <div className="space-y-5">
+                  {SOLUTION_ITEMS.map((item, i) => (
+                    <RevealSection key={i} delay={i * 100}>
+                      <div className="flex items-start gap-3">
+                        <div className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+                          <CheckIcon className="w-3.5 h-3.5 text-green-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-slate-900">{item.title}</p>
+                          <p className="text-sm text-slate-500 mt-0.5">{item.desc}</p>
+                        </div>
+                      </div>
+                    </RevealSection>
+                  ))}
                 </div>
               </div>
-            </div>
+            </RevealSection>
           </div>
         </div>
       </section>
@@ -375,71 +394,25 @@ export default function LandingPage() {
           </div>
 
           <div className="grid gap-8 md:grid-cols-3">
-            <div className="rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
-              <div className="flex items-center space-x-1 mb-4">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <svg key={i} className="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                ))}
-              </div>
-              <p className="text-slate-600 mb-4 text-sm leading-relaxed">
-                &ldquo;The rewrite feature blew my mind. It took my bullet &lsquo;Responsible for managing database operations&rsquo; and turned it into &lsquo;Managed PostgreSQL cluster serving 2M+ queries/day.&rsquo; Same facts, completely different impact. Got 3 callbacks in a week.&rdquo;
-              </p>
-              <div className="flex items-center">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 text-primary-600 font-semibold text-sm">
-                  S
+            {TESTIMONIALS.map((t, i) => (
+              <RevealSection key={t.name} delay={i * 100}>
+                <div className="rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
+                  <div className="flex items-center space-x-1 mb-4">
+                    {[1, 2, 3, 4, 5].map((s) => <StarIcon key={s} />)}
+                  </div>
+                  <p className="text-slate-600 mb-4 text-sm leading-relaxed">{t.text}</p>
+                  <div className="flex items-center">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 text-primary-600 font-semibold text-sm">
+                      {t.initial}
+                    </div>
+                    <div className="ml-3">
+                      <p className="font-medium text-slate-900 text-sm">{t.name}</p>
+                      <p className="text-xs text-slate-500">{t.role}</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="ml-3">
-                  <p className="font-medium text-slate-900 text-sm">Sarah M.</p>
-                  <p className="text-xs text-slate-500">Software Engineer</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
-              <div className="flex items-center space-x-1 mb-4">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <svg key={i} className="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                ))}
-              </div>
-              <p className="text-slate-600 mb-4 text-sm leading-relaxed">
-                &ldquo;I went from a 58 to an 87 score. The inline annotations made it so obvious what was wrong — I could see the red highlights on my weak bullets and fix them one by one. Way better than a wall of text telling me what to do.&rdquo;
-              </p>
-              <div className="flex items-center">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 text-primary-600 font-semibold text-sm">
-                  J
-                </div>
-                <div className="ml-3">
-                  <p className="font-medium text-slate-900 text-sm">James R.</p>
-                  <p className="text-xs text-slate-500">Product Manager</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
-              <div className="flex items-center space-x-1 mb-4">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <svg key={i} className="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                ))}
-              </div>
-              <p className="text-slate-600 mb-4 text-sm leading-relaxed">
-                &ldquo;Used the free credits, was skeptical. But it caught things I never would have noticed — my skills section was missing 4 keywords from the job posting. Fixed them, applied, got the interview. Bought more credits the same day.&rdquo;
-              </p>
-              <div className="flex items-center">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 text-primary-600 font-semibold text-sm">
-                  A
-                </div>
-                <div className="ml-3">
-                  <p className="font-medium text-slate-900 text-sm">Alex T.</p>
-                  <p className="text-xs text-slate-500">Marketing Director</p>
-                </div>
-              </div>
-            </div>
+              </RevealSection>
+            ))}
           </div>
         </div>
       </section>
@@ -483,31 +456,23 @@ export default function LandingPage() {
           </div>
 
           <div className="grid gap-6 md:grid-cols-3">
-            <div className="rounded-2xl border-2 border-primary-500 bg-white p-6 relative">
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary-500 px-4 py-1 text-xs font-medium text-white">
-                Start Here
-              </span>
+            {/* Free tier */}
+            <div className="rounded-2xl border border-slate-200 bg-white p-6">
               <h3 className="text-lg font-semibold text-slate-900">Free</h3>
               <p className="mt-2 text-3xl font-bold text-slate-900">$0</p>
               <p className="text-sm text-slate-500">25 credits included</p>
               <p className="mt-4 text-sm text-slate-600">Try it on your actual resume</p>
               <ul className="mt-4 space-y-2.5 text-sm text-slate-600">
                 <li className="flex items-center gap-2">
-                  <svg className="h-4 w-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <CheckIcon className="h-4 w-4 text-green-500 flex-shrink-0" />
                   Full analysis with inline annotations
                 </li>
                 <li className="flex items-center gap-2">
-                  <svg className="h-4 w-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <CheckIcon className="h-4 w-4 text-green-500 flex-shrink-0" />
                   AI rewrite + PDF export
                 </li>
                 <li className="flex items-center gap-2">
-                  <svg className="h-4 w-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <CheckIcon className="h-4 w-4 text-green-500 flex-shrink-0" />
                   No credit card required
                 </li>
               </ul>
@@ -519,9 +484,10 @@ export default function LandingPage() {
               </Link>
             </div>
 
-            <div className="rounded-2xl border-2 border-primary-500 bg-white p-6 relative shadow-lg shadow-primary-500/10">
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary-500 px-4 py-1 text-xs font-medium text-white">
-                Best Value
+            {/* Standard tier — Most Popular */}
+            <div className="rounded-2xl border-2 border-primary-500 ring-4 ring-primary-100 scale-[1.02] shadow-xl bg-white p-6 relative">
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary-500 px-4 py-1 text-xs font-medium text-white whitespace-nowrap">
+                Most Popular
               </span>
               <h3 className="text-lg font-semibold text-slate-900">Standard</h3>
               <p className="mt-2 text-3xl font-bold text-slate-900">$10</p>
@@ -529,54 +495,46 @@ export default function LandingPage() {
               <p className="mt-4 text-sm text-slate-600">For active job seekers</p>
               <ul className="mt-4 space-y-2.5 text-sm text-slate-600">
                 <li className="flex items-center gap-2">
-                  <svg className="h-4 w-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <CheckIcon className="h-4 w-4 text-green-500 flex-shrink-0" />
                   ~12 full analyses + rewrites
                 </li>
                 <li className="flex items-center gap-2">
-                  <svg className="h-4 w-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <CheckIcon className="h-4 w-4 text-green-500 flex-shrink-0" />
                   Job-specific keyword matching
                 </li>
                 <li className="flex items-center gap-2">
-                  <svg className="h-4 w-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <CheckIcon className="h-4 w-4 text-green-500 flex-shrink-0" />
                   Credits never expire
                 </li>
               </ul>
               <Link
                 href="/signup"
-                className="mt-6 block w-full rounded-lg bg-primary-500 py-2.5 text-center text-sm font-medium text-white hover:bg-primary-600 transition-colors"
+                className="mt-6 block w-full rounded-lg bg-gradient-to-r from-primary-500 to-primary-700 py-2.5 text-center text-sm font-medium text-white shadow-lg shadow-primary-500/25 hover:shadow-xl hover:shadow-primary-500/30 transition-all"
               >
                 Get Started
               </Link>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-6">
+            {/* Pro tier */}
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 relative">
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-slate-700 px-4 py-1 text-xs font-medium text-white whitespace-nowrap">
+                Best for Volume
+              </span>
               <h3 className="text-lg font-semibold text-slate-900">Pro</h3>
               <p className="mt-2 text-3xl font-bold text-slate-900">$20</p>
               <p className="text-sm text-slate-500">300 credits</p>
               <p className="mt-4 text-sm text-slate-600">For career changers</p>
               <ul className="mt-4 space-y-2.5 text-sm text-slate-600">
                 <li className="flex items-center gap-2">
-                  <svg className="h-4 w-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <CheckIcon className="h-4 w-4 text-green-500 flex-shrink-0" />
                   ~30 full analyses + rewrites
                 </li>
                 <li className="flex items-center gap-2">
-                  <svg className="h-4 w-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <CheckIcon className="h-4 w-4 text-green-500 flex-shrink-0" />
                   Multiple resume versions
                 </li>
                 <li className="flex items-center gap-2">
-                  <svg className="h-4 w-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <CheckIcon className="h-4 w-4 text-green-500 flex-shrink-0" />
                   50% savings vs Standard
                 </li>
               </ul>
@@ -591,7 +549,10 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Final CTA — Urgency */}
+      {/* FAQ */}
+      <FaqSection />
+
+      {/* Final CTA */}
       <section className="py-20 bg-gradient-to-r from-slate-900 to-slate-800">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-white sm:text-4xl">
