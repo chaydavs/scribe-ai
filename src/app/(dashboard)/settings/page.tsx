@@ -304,7 +304,7 @@ function SettingsContent() {
 
       {/* Free Credits Offer */}
       {showFreeCreditsOffer && (
-        <div className="rounded-2xl bg-gradient-to-r from-primary-500 to-primary-700 p-6 text-white shadow-lg">
+        <div className="rounded-2xl bg-black p-6 text-white shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center space-x-2 mb-2">
@@ -313,7 +313,7 @@ function SettingsContent() {
                 </svg>
                 <h2 className="text-xl font-bold">Welcome Gift</h2>
               </div>
-              <p className="text-primary-100">Claim your 25 free credits to try every feature.</p>
+              <p className="text-slate-300">Claim your 25 free credits to try every feature.</p>
             </div>
             <button
               onClick={handleClaimFreeCredits}
@@ -355,7 +355,7 @@ function SettingsContent() {
             <div className="space-y-6">
               {/* Avatar & Info */}
               <div className="flex items-center space-x-4 pb-6 border-b border-slate-100">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary-400 to-primary-600 text-2xl font-semibold text-white">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-black text-2xl font-semibold text-white">
                   {(profile?.full_name || profile?.email || 'U')[0].toUpperCase()}
                 </div>
                 <div>
@@ -461,10 +461,10 @@ function SettingsContent() {
         {activeTab === 'credits' && (
           <div className="space-y-6">
             {/* Balance Card */}
-            <div className="rounded-2xl bg-gradient-to-r from-primary-500 to-primary-700 p-6 text-white shadow-lg">
+            <div className="rounded-2xl bg-black p-6 text-white shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-primary-200">Available Balance</p>
+                  <p className="text-sm font-medium text-slate-300">Available Balance</p>
                   <p className="mt-1 text-4xl font-bold">
                     {pollingCredits ? (
                       <span className="inline-flex items-center gap-2">
@@ -473,9 +473,9 @@ function SettingsContent() {
                       </span>
                     ) : (profile?.credits || 0)}
                   </p>
-                  <p className="mt-1 text-sm text-primary-200">{pollingCredits ? 'Updating...' : 'credits'}</p>
+                  <p className="mt-1 text-sm text-slate-300">{pollingCredits ? 'Updating...' : 'credits'}</p>
                 </div>
-                <div className="text-right text-sm text-primary-200 space-y-1">
+                <div className="text-right text-sm text-slate-300 space-y-1">
                   <p>5 credits per analysis</p>
                   <p>5 credits per rewrite</p>
                   <p>10-20 credits per export</p>
@@ -511,7 +511,7 @@ function SettingsContent() {
                       disabled={purchasing !== null}
                       className={`mt-4 w-full rounded-lg py-2.5 text-sm font-medium transition-all ${
                         pack.popular
-                          ? 'bg-gradient-to-r from-primary-500 to-primary-700 text-white shadow-lg shadow-primary-500/25 hover:shadow-xl'
+                          ? 'bg-black text-white shadow-sm hover:shadow-md'
                           : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                       } disabled:opacity-50`}
                     >

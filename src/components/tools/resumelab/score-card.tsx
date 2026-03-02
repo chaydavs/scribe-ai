@@ -145,8 +145,9 @@ function drawCard(
     ctx.fillStyle = '#334155'
     ctx.fill()
 
-    // Filled bar
-    const filledW = Math.max(0, (entry.score / 100) * barW)
+    // Filled bar — use actual max per dimension (impact:35, clarity:25, ats:25, structure:15)
+    const maxScore = cat.key === 'impact' ? 35 : cat.key === 'structure' ? 15 : 25
+    const filledW = Math.max(0, (entry.score / maxScore) * barW)
     if (filledW > 0) {
       ctx.beginPath()
       ctx.roundRect(barX, barY, filledW, barH, 4)

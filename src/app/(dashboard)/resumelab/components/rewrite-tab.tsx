@@ -82,7 +82,7 @@ export function RewriteTab({
           )}
 
           {/* Preview CTA */}
-          <div className="mt-8 p-6 rounded-xl bg-gradient-to-r from-primary-50 to-indigo-50 border border-primary-100">
+          <div className="mt-8 p-6 rounded-xl bg-white border border-slate-200">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-semibold text-slate-900">Ready to preview and export?</h3>
@@ -92,7 +92,7 @@ export function RewriteTab({
               </div>
               <button
                 onClick={() => onSetActiveTab('preview')}
-                className="rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:shadow-xl"
+                className="rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white shadow-none hover:shadow-sm"
               >
                 Preview & Export →
               </button>
@@ -114,7 +114,7 @@ export function RewriteTab({
           <button
             onClick={onHandleRewrite}
             disabled={rewriteLoading || !analysis}
-            className="mt-8 rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-8 py-4 text-lg font-semibold text-white shadow-lg hover:shadow-xl disabled:opacity-50"
+            className="mt-8 rounded-xl bg-black px-8 py-4 text-lg font-semibold text-white shadow-none hover:shadow-sm disabled:opacity-50"
           >
             Rewrite My Resume ({creditCost} credits)
           </button>

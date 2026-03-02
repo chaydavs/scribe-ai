@@ -140,7 +140,7 @@ export function UploadTab({
         <button
           onClick={onAnalyze}
           disabled={loading || uploading || !resumeText.trim()}
-          className="w-full rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-6 py-4 text-base font-semibold text-white shadow-lg shadow-primary-500/30 transition-all hover:shadow-xl hover:shadow-primary-500/40 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+          className="w-full rounded-xl bg-black px-6 py-4 text-base font-semibold text-white shadow-none transition-all hover:shadow-sm hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
         >
           {loading ? (
             <span className="flex flex-col items-center gap-1">

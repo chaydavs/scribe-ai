@@ -142,7 +142,7 @@ export function KeywordMatcher() {
         <button
           onClick={analyze}
           disabled={!resumeText.trim() || !jobText.trim()}
-          className="rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-primary-500/25 transition-all hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded-xl bg-black px-8 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Check Match
         </button>

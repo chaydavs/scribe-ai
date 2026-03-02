@@ -57,7 +57,7 @@ export function TemplatePicker({
                     <div className="flex items-center space-x-2">
                       <h4 className="font-semibold text-slate-900 text-sm">{template.name}</h4>
                       {template.isPremium && (
-                        <span className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-semibold px-1.5 py-0.5 rounded-full">
+                        <span className="bg-black text-white text-xs font-semibold px-1.5 py-0.5 rounded-full">
                           Pro
                         </span>
                       )}
@@ -117,7 +117,7 @@ export function TemplatePicker({
               onMouseLeave={() => setHoveredId(null)}
             >
               {/* Preview Image */}
-              <div className="aspect-[8.5/11] bg-gradient-to-br from-slate-100 to-slate-200 relative">
+              <div className="aspect-[8.5/11] bg-slate-100 relative">
                 {/* Placeholder for actual template preview */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center p-4">
@@ -132,7 +132,7 @@ export function TemplatePicker({
 
                 {/* Premium Badge */}
                 {template.isPremium && (
-                  <div className="absolute top-2 right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-semibold px-2 py-1 rounded-full shadow-sm">
+                  <div className="absolute top-2 right-2 bg-black text-white text-xs font-semibold px-2 py-1 rounded-full shadow-sm">
                     Premium
                   </div>
                 )}
@@ -204,7 +204,7 @@ export function TemplatePicker({
               if (template) onExport(template)
             }}
             disabled={loading}
-            className="flex items-center space-x-2 bg-gradient-to-r from-primary-500 to-primary-700 text-white font-semibold px-8 py-3 rounded-xl shadow-lg shadow-primary-500/30 hover:shadow-xl transition-all disabled:opacity-50"
+            className="flex items-center space-x-2 bg-black text-white font-semibold px-8 py-3 rounded-xl shadow-sm hover:shadow-md transition-all disabled:opacity-50"
           >
             {loading ? (
               <>

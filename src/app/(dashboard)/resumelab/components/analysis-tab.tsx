@@ -126,7 +126,7 @@ export function AnalysisTab({
             onFixApplied={(newText) => onFixApplied(newText)}
           />
           {/* Direct to Edit & Export CTA */}
-          <div className="mt-6 p-5 rounded-xl bg-gradient-to-r from-primary-50 to-indigo-50 border border-primary-100">
+          <div className="mt-6 p-5 rounded-xl bg-white border border-slate-200">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-semibold text-slate-900">Ready to apply fixes and export?</h3>
@@ -140,7 +140,7 @@ export function AnalysisTab({
                     onSetEditableResume(resumeText)
                     onSetActiveTab('preview')
                   }}
-                  className="rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:shadow-xl"
+                  className="rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white shadow-none hover:shadow-sm"
                 >
                   Edit &amp; Export &rarr;
                 </button>
@@ -152,7 +152,7 @@ export function AnalysisTab({
         /* Fallback for non-structured analysis (old format) */
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 max-w-3xl mx-auto">
           {analysisScore && (
-            <div className="mb-8 p-6 rounded-xl bg-gradient-to-r from-primary-50 to-indigo-50 border border-primary-100">
+            <div className="mb-8 p-6 rounded-xl bg-white border border-slate-200">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-primary-600">Resume Score</p>
@@ -181,7 +181,7 @@ export function AnalysisTab({
             </button>
             <button
               onClick={() => { onSetActiveTab('rewrite'); if (!rewrite) onHandleRewrite() }}
-              className="flex-1 rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:shadow-xl"
+              className="flex-1 rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white shadow-none hover:shadow-sm"
             >
               Get AI Rewrite ({creditCost} credits)
             </button>

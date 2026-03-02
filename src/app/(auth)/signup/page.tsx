@@ -154,7 +154,7 @@ function SignupForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary-500/25 transition-all hover:shadow-xl hover:shadow-primary-500/30 disabled:opacity-50"
+          className="w-full rounded-xl bg-black px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:shadow-md disabled:opacity-50"
         >
           {loading ? 'Creating account...' : 'Create Free Account'}
         </button>
@@ -174,7 +174,7 @@ export default function SignupPage() {
       <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-sm">
           <Link href="/" className="flex items-center space-x-2 mb-8 animate-card-enter">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-primary-700">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-black">
               <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
@@ -207,7 +207,7 @@ export default function SignupPage() {
       </div>
 
       {/* Right Side - Feature Highlight */}
-      <div className="hidden lg:flex lg:flex-1 lg:flex-col lg:justify-center bg-gradient-to-br from-primary-500 to-primary-700 p-12">
+      <div className="hidden lg:flex lg:flex-1 lg:flex-col lg:justify-center bg-black p-12">
         <div className="mx-auto max-w-md text-white">
           <div className="rounded-2xl bg-white/10 backdrop-blur p-6 mb-6">
             <div className="flex items-center space-x-2 mb-4">

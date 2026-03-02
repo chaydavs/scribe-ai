@@ -857,7 +857,7 @@ function ResumeLabContent() {
             </button>
           )}
           {analysisScore && (
-            <div className="rounded-lg bg-primary-50 border border-primary-100 px-3 py-1.5 text-sm font-semibold text-primary-700">
+            <div className="rounded-lg bg-white border border-slate-200 px-3 py-1.5 text-sm font-semibold text-slate-700">
               Score: {analysisScore}/100
             </div>
           )}
@@ -882,7 +882,7 @@ function ResumeLabContent() {
                     disabled={!isClickable}
                     className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
                       isActive
-                        ? 'bg-primary-600 text-white shadow-md shadow-primary-500/25'
+                        ? 'bg-black text-white shadow-sm'
                         : step.done
                           ? 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100'
                           : isClickable

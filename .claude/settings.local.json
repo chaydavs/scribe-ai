@@ -22,7 +22,22 @@
       "Bash(npm uninstall:*)",
       "Bash(npx tsc:*)",
       "Bash(npx tsx:*)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(git checkout:*)",
+      "Bash(git:*)",
+      "Bash(tail:*)",
+      "Bash(ls:*)",
+      "Bash(python3:*)",
+      "Bash(grep:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:research.library.gsu.edu)",
+      "Bash(npx next:*)",
+      "mcp__plugin_playwright_playwright__browser_navigate",
+      "mcp__plugin_playwright_playwright__browser_take_screenshot",
+      "mcp__plugin_playwright_playwright__browser_close",
+      "Bash(head:*)",
+      "Bash(bash:*)",
+      "Bash(wc:*)"
     ]
   }
 }

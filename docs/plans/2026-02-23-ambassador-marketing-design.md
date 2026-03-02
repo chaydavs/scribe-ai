@@ -13,6 +13,7 @@ Ambassadors don't promote ResumeLab directly — they share their job search sto
 ## 1. Ambassador Recruiting Pipeline
 
 ### Who to Target
+
 Students who posted on LinkedIn in the last 1-3 months about landing an internship/job. Keywords to search:
 - "I'm excited to share that I'll be joining..."
 - "Thrilled to announce my internship at..."

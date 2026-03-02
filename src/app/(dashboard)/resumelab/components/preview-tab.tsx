@@ -138,7 +138,7 @@ export function PreviewTab({
               <button
                 onClick={onHandleExport}
                 disabled={!editableResume || exportLoading}
-                className="flex items-center space-x-2 rounded-lg bg-gradient-to-r from-primary-500 to-primary-700 px-4 py-2 text-sm font-semibold text-white shadow-lg hover:shadow-xl disabled:opacity-50"
+                className="flex items-center space-x-2 rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white shadow-none hover:shadow-sm disabled:opacity-50"
               >
                 {exportLoading ? (
                   <>

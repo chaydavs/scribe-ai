@@ -303,7 +303,7 @@ export default function InteractiveAnalysis({
           {!sidebarOpen && (
             <button
               onClick={() => setSidebarOpen(true)}
-              className="fixed bottom-6 right-6 z-30 flex items-center gap-2 px-4 py-3 bg-primary-600 text-white rounded-full shadow-xl shadow-primary-500/30 hover:bg-primary-700"
+              className="fixed bottom-6 right-6 z-30 flex items-center gap-2 px-4 py-3 bg-primary-600 text-white rounded-full shadow-sm hover:bg-primary-700"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
@@ -350,7 +350,7 @@ export default function InteractiveAnalysis({
       </div>
 
       {/* Bottom CTA */}
-      <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-primary-50 to-indigo-50 border-t border-primary-100 rounded-b-xl">
+      <div className="flex items-center justify-between px-6 py-4 bg-white border-t border-primary-100 rounded-b-xl">
         <div>
           <p className="text-sm font-bold text-slate-900">
             {appliedCount === 0 ? 'Want all fixes applied automatically?' : `${appliedCount} fixes applied manually. Want the rest?`}
@@ -359,7 +359,7 @@ export default function InteractiveAnalysis({
         </div>
         <button
           onClick={onRequestRewrite}
-          className="flex-shrink-0 rounded-lg bg-gradient-to-r from-primary-500 to-primary-700 px-5 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-xl"
+          className="flex-shrink-0 rounded-lg bg-black px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:shadow-md"
         >
           AI Rewrite
         </button>
@@ -662,7 +662,7 @@ function SidebarContent({
       {/* Rewrite CTA */}
       <button
         onClick={onRequestRewrite}
-        className="w-full rounded-lg bg-gradient-to-r from-primary-500 to-primary-700 px-4 py-3 text-sm font-semibold text-white shadow-lg hover:shadow-xl transition-shadow"
+        className="w-full rounded-lg bg-black px-4 py-3 text-sm font-semibold text-white shadow-sm hover:shadow-md transition-shadow"
       >
         Fix All with AI Rewrite
       </button>

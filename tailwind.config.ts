@@ -33,7 +33,7 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Futura', 'Futura-Medium', 'Century Gothic', 'CenturyGothic', 'AppleGothic', 'sans-serif'],
       },
       animation: {
         'score-pulse': 'score-pulse 2s ease-in-out infinite',

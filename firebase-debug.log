@@ -1,0 +1,99 @@
+[debug] [2026-02-23T18:56:21.137Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-23T18:56:21.139Z] > authorizing via signed-in user (chaydav4@gmail.com)
+[debug] [2026-02-23T18:56:21.139Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-23T18:56:21.139Z] > authorizing via signed-in user (chaydav4@gmail.com)
+[debug] [2026-02-23T18:56:21.139Z] Checked if tokens are valid: false, expires at: 1768681285819
+[debug] [2026-02-23T18:56:21.139Z] Checked if tokens are valid: false, expires at: 1768681285819
+[debug] [2026-02-23T18:56:21.140Z] > refreshing access token with scopes: []
+[debug] [2026-02-23T18:56:21.140Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-02-23T18:56:21.140Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-23T18:56:21.141Z] Checked if tokens are valid: false, expires at: 1768681285819
+[debug] [2026-02-23T18:56:21.141Z] Checked if tokens are valid: false, expires at: 1768681285819
+[debug] [2026-02-23T18:56:21.141Z] > refreshing access token with scopes: []
+[debug] [2026-02-23T18:56:21.141Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-02-23T18:56:21.141Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-23T18:56:21.142Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-23T18:56:21.142Z] > authorizing via signed-in user (chaydav4@gmail.com)
+[debug] [2026-02-23T18:56:21.142Z] Checked if tokens are valid: false, expires at: 1768681285819
+[debug] [2026-02-23T18:56:21.142Z] Checked if tokens are valid: false, expires at: 1768681285819
+[debug] [2026-02-23T18:56:21.142Z] > refreshing access token with scopes: []
+[debug] [2026-02-23T18:56:21.142Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-02-23T18:56:21.142Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-23T18:56:21.248Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-02-23T18:56:21.248Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-23T18:56:21.292Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/cred-ma/billingInfo [none]
+[debug] [2026-02-23T18:56:21.294Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-02-23T18:56:21.294Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-23T18:56:21.313Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/cred-ma/billingInfo [none]
+[debug] [2026-02-23T18:56:21.314Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-02-23T18:56:21.314Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-23T18:56:21.325Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/cred-ma/billingInfo [none]
+[debug] [2026-02-23T18:56:21.515Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/cred-ma/billingInfo 403
+[debug] [2026-02-23T18:56:21.515Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/cred-ma/billingInfo {"error":{"code":403,"message":"The caller does not have permission","status":"PERMISSION_DENIED"}}
+[debug] [2026-02-23T18:56:21.652Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/cred-ma/billingInfo 403
+[debug] [2026-02-24T19:46:50.209Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-24T19:46:50.211Z] > authorizing via signed-in user (chaydav4@gmail.com)
+[debug] [2026-02-24T19:46:50.211Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-24T19:46:50.211Z] > authorizing via signed-in user (chaydav4@gmail.com)
+[debug] [2026-02-24T19:46:50.211Z] Checked if tokens are valid: false, expires at: 1771876580314
+[debug] [2026-02-24T19:46:50.211Z] Checked if tokens are valid: false, expires at: 1771876580314
+[debug] [2026-02-24T19:46:50.212Z] > refreshing access token with scopes: []
+[debug] [2026-02-24T19:46:50.212Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-02-24T19:46:50.213Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-24T19:46:50.213Z] Checked if tokens are valid: false, expires at: 1771876580314
+[debug] [2026-02-24T19:46:50.214Z] Checked if tokens are valid: false, expires at: 1771876580314
+[debug] [2026-02-24T19:46:50.214Z] > refreshing access token with scopes: []
+[debug] [2026-02-24T19:46:50.214Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-02-24T19:46:50.214Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-24T19:46:50.214Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-24T19:46:50.214Z] > authorizing via signed-in user (chaydav4@gmail.com)
+[debug] [2026-02-24T19:46:50.214Z] Checked if tokens are valid: false, expires at: 1771876580314
+[debug] [2026-02-24T19:46:50.214Z] Checked if tokens are valid: false, expires at: 1771876580314
+[debug] [2026-02-24T19:46:50.214Z] > refreshing access token with scopes: []
+[debug] [2026-02-24T19:46:50.214Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-02-24T19:46:50.214Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-24T19:46:50.367Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-02-24T19:46:50.367Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-24T19:46:50.384Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/cred-ma/billingInfo [none]
+[debug] [2026-02-24T19:46:50.385Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-02-24T19:46:50.385Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-24T19:46:50.395Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/cred-ma/billingInfo [none]
+[debug] [2026-02-24T19:46:50.396Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-02-24T19:46:50.396Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-24T19:46:50.406Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/cred-ma/billingInfo [none]
+[debug] [2026-02-24T19:46:50.724Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/cred-ma/billingInfo 403
+[debug] [2026-02-24T19:46:50.724Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/cred-ma/billingInfo {"error":{"code":403,"message":"The caller does not have permission","status":"PERMISSION_DENIED"}}
+[debug] [2026-02-24T19:46:50.916Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/cred-ma/billingInfo 403
+[debug] [2026-02-24T19:46:50.916Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/cred-ma/billingInfo {"error":{"code":403,"message":"The caller does not have permission","status":"PERMISSION_DENIED"}}
+[debug] [2026-02-24T19:46:50.917Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/cred-ma/billingInfo 403
+[debug] [2026-03-02T08:09:56.177Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-02T08:09:56.179Z] > authorizing via signed-in user (chaydav4@gmail.com)
+[debug] [2026-03-02T08:09:56.179Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-02T08:09:56.179Z] > authorizing via signed-in user (chaydav4@gmail.com)
+[debug] [2026-03-02T08:09:56.180Z] Checked if tokens are valid: false, expires at: 1771966009396
+[debug] [2026-03-02T08:09:56.180Z] Checked if tokens are valid: false, expires at: 1771966009396
+[debug] [2026-03-02T08:09:56.180Z] > refreshing access token with scopes: []
+[debug] [2026-03-02T08:09:56.181Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-02T08:09:56.181Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T08:09:56.182Z] Checked if tokens are valid: false, expires at: 1771966009396
+[debug] [2026-03-02T08:09:56.182Z] Checked if tokens are valid: false, expires at: 1771966009396
+[debug] [2026-03-02T08:09:56.182Z] > refreshing access token with scopes: []
+[debug] [2026-03-02T08:09:56.182Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-02T08:09:56.182Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T08:09:56.182Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-02T08:09:56.182Z] > authorizing via signed-in user (chaydav4@gmail.com)
+[debug] [2026-03-02T08:09:56.182Z] Checked if tokens are valid: false, expires at: 1771966009396
+[debug] [2026-03-02T08:09:56.182Z] Checked if tokens are valid: false, expires at: 1771966009396
+[debug] [2026-03-02T08:09:56.182Z] > refreshing access token with scopes: []
+[debug] [2026-03-02T08:09:56.182Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-02T08:09:56.182Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T08:09:56.433Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-03-02T08:09:56.433Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T08:09:56.449Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/cred-ma/billingInfo [none]
+[debug] [2026-03-02T08:09:56.451Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-03-02T08:09:56.451Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T08:09:56.464Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/cred-ma/billingInfo [none]
+[debug] [2026-03-02T08:09:56.465Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-03-02T08:09:56.466Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-02T08:09:56.479Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/cred-ma/billingInfo [none]
+[debug] [2026-03-02T08:09:56.814Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/cred-ma/billingInfo 403

@@ -266,7 +266,7 @@ export function CreateTab({
               <button
                 onClick={onCreateResume}
                 disabled={creatingPdf || !formData.fullName.trim()}
-                className="w-full rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-6 py-4 text-lg font-semibold text-white shadow-lg shadow-primary-500/30 transition-all hover:shadow-xl hover:shadow-primary-500/40 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full rounded-xl bg-black px-6 py-4 text-lg font-semibold text-white shadow-none transition-all hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {creatingPdf ? (
                   <span className="flex items-center justify-center space-x-2">

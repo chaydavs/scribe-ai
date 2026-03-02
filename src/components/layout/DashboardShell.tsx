@@ -102,7 +102,7 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/20">
+    <div className="min-h-screen bg-white">
       {/* Mobile Header */}
       <header className="fixed top-0 left-0 right-0 z-40 flex h-14 items-center justify-between border-b border-slate-200 bg-white/80 backdrop-blur-xl px-4 lg:hidden">
         <button
@@ -114,7 +114,7 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
           </svg>
         </button>
         <Link href="/resumelab" className="flex items-center space-x-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-primary-700">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-black">
             <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
@@ -145,7 +145,7 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
           {/* Logo */}
           <div className="flex h-16 items-center justify-between border-b border-slate-200/60 px-4">
             <Link href="/resumelab" className="flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-primary-700">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-black">
                 <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
@@ -175,7 +175,7 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
                   router.push('/resumelab')
                 }
               }}
-              className="flex w-full items-center justify-center space-x-2 rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary-500/25 transition-all hover:shadow-xl hover:-translate-y-0.5"
+              className="flex w-full items-center justify-center space-x-2 rounded-xl bg-black px-4 py-3 text-sm font-semibold text-white shadow-none transition-all hover:shadow-sm hover:-translate-y-0.5"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -347,7 +347,7 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
             <Link
               href="/settings"
               onClick={() => setSidebarOpen(false)}
-              className={`mb-3 block rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 p-3 text-white transition-transform hover:scale-[1.02] ${(profile?.credits || 0) < 10 ? 'animate-score-pulse' : ''}`}
+              className={`mb-3 block rounded-xl bg-black p-3 text-white transition-transform hover:scale-[1.02] ${(profile?.credits || 0) < 10 ? 'animate-score-pulse' : ''}`}
             >
               <div className="flex items-center justify-between">
                 <div>
@@ -365,7 +365,7 @@ export default function DashboardShell({ children, user, profile }: DashboardShe
             {/* User Info */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-primary-400 to-primary-600 text-sm font-medium text-white">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-black text-sm font-medium text-white">
                   {(profile?.full_name || user.email || 'U')[0].toUpperCase()}
                 </div>
                 <div className="max-w-[140px]">

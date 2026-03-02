@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
@@ -7,14 +7,38 @@ export async function GET(request: Request) {
   const redirect = searchParams.get('redirect') || '/resumelab'
 
   if (code) {
-    const supabase = await createClient()
+    // Build the redirect response FIRST so we can attach cookies to it
+    const redirectUrl = `${origin}${redirect}`
+    const response = NextResponse.redirect(redirectUrl)
+
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.headers.get('cookie')
+              ?.split('; ')
+              .map((c) => {
+                const [name, ...rest] = c.split('=')
+                return { name, value: rest.join('=') }
+              }) ?? []
+          },
+          setAll(cookiesToSet: { name: string; value: string; options?: CookieOptions }[]) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              response.cookies.set(name, value, options)
+            })
+          },
+        },
+      }
+    )
+
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {
-      return NextResponse.redirect(`${origin}${redirect}`)
+      return response
     }
   }
 
-  // Return the user to an error page with instructions
   return NextResponse.redirect(`${origin}/login?error=Could not authenticate user`)
 }
