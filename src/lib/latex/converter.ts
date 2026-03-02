@@ -169,7 +169,7 @@ function detectSection(line: string): string {
 }
 
 function isBullet(line: string): boolean {
-  return /^[-•*]\s/.test(line)
+  return /^[-–•*]\s/.test(line)
 }
 
 /**
@@ -497,8 +497,23 @@ export function parseResumeText(resumeText: string): ParsedResume {
     // ── Projects ──
     if (currentSection === 'projects') {
       if (isBullet(line)) {
-        if (currentProject) {
-          currentProject.description += ' ' + line.replace(/^[-•*]\s*/, '').trim()
+        const bulletText = line.replace(/^[-–•*]\s*/, '').trim()
+        // Detect if this "bullet" is actually a project name:
+        // - Very short with no spaces (e.g. "Refr.store", "FinanceBot")
+        // - Short phrase with ≤3 words and no verb-like start (e.g. "AI Chat App")
+        const words = bulletText.split(/\s+/)
+        const startsWithVerb = /^(built|led|developed|created|designed|implemented|managed|reduced|increased|achieved|analyzed|conducted|optimized|architected|deployed|integrated|automated|improved|fine-tuned|launched|maintained|processed|resolved|shipped|used|worked|wrote|configured|established|executed|facilitated|generated|handled|migrated|monitored|operated|organized|performed|planned|prepared|presented|provided|published|ran|researched|reviewed|secured|served|set|supported|tested|trained|updated|utilized)/i.test(bulletText)
+        const looksLikeProjectName = !startsWithVerb && (
+          (!bulletText.includes(' ')) ||
+          (words.length <= 4 && !/[.;,]/.test(bulletText))
+        )
+        if (looksLikeProjectName) {
+          if (currentProject) {
+            resume.projects!.push(currentProject)
+          }
+          currentProject = { name: bulletText, description: '' }
+        } else if (currentProject) {
+          currentProject.description += ' ' + bulletText
         }
         continue
       }
@@ -522,7 +537,9 @@ export function parseResumeText(resumeText: string): ParsedResume {
       } else if (line.length > 0) {
         // Check if this looks like a new project name (short, no sentence structure)
         // vs a continuation of the previous project description
-        if (!currentProject || (line.length < 80 && !line.includes('.') && !line.includes(','))) {
+        // A dot in a short word like "Refr.store" is a domain/name, not a sentence period
+        const hasSentencePeriod = /\.\s/.test(line) || (line.endsWith('.') && line.split(/\s+/).length > 3)
+        if (!currentProject || (line.length < 80 && !hasSentencePeriod && !line.includes(','))) {
           // Likely a new project name
           if (currentProject) {
             resume.projects!.push(currentProject)

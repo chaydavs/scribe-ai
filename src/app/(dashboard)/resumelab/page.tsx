@@ -127,6 +127,7 @@ function ResumeLabContent() {
 
   // Mode state - analyze existing or create from scratch
   const [mode, setMode] = useState<'analyze' | 'create'>('analyze')
+  const [createdFromScratch, setCreatedFromScratch] = useState(false)
 
   // Create from scratch form state
   const [formData, setFormData] = useState({
@@ -654,60 +655,18 @@ function ResumeLabContent() {
     }))
   }
 
-  const handleCreateResume = async () => {
+  const handleCreatePreview = () => {
     if (!formData.fullName.trim()) {
       toast('Please enter your full name', 'error')
       return
     }
 
-    setCreatingPdf(true)
-
-    try {
-      const resumeText = formatResumeForExport(formData)
-
-      const response = await fetch('/api/tools/export-resume', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          resumeText,
-          templateId: 'classic-professional-1',
-        }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create resume')
-      }
-
-      if (data.format === 'pdf' && data.content) {
-        const byteCharacters = atob(data.content)
-        const byteNumbers = new Array(byteCharacters.length)
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i)
-        }
-        const byteArray = new Uint8Array(byteNumbers)
-        const blob = new Blob([byteArray], { type: 'application/pdf' })
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `${formData.fullName.replace(/\s+/g, '_')}_Resume.pdf`
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        URL.revokeObjectURL(url)
-
-        if (data.remainingCredits !== undefined) {
-          setUserCredits(data.remainingCredits)
-        }
-
-        toast('Resume created and downloaded!', 'success')
-      }
-    } catch (err) {
-      toast(err instanceof Error ? err.message : 'Failed to create resume', 'error')
-    } finally {
-      setCreatingPdf(false)
-    }
+    const generatedText = formatResumeForExport(formData)
+    setResumeText(generatedText)
+    setEditableResume(generatedText)
+    setCreatedFromScratch(true)
+    setMode('analyze')
+    setActiveTab('preview')
   }
 
   const formatResumeForExport = (data: typeof formData): string => {
@@ -840,7 +799,16 @@ function ResumeLabContent() {
           )}
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          {mode === 'analyze' && (analysis || activeTab !== 'upload') && (
+          {createdFromScratch && activeTab === 'preview' && (
+            <button
+              onClick={() => { setMode('create'); setCreatedFromScratch(false); setActiveTab('upload') }}
+              className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+              Back to Form
+            </button>
+          )}
+          {mode === 'analyze' && !createdFromScratch && (analysis || activeTab !== 'upload') && (
             <button onClick={clearFile} className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
               New
@@ -1029,7 +997,7 @@ function ResumeLabContent() {
           onAddEducation={addEducation}
           onUpdateEducation={updateEducation}
           onRemoveEducation={removeEducation}
-          onCreateResume={handleCreateResume}
+          onCreateResume={handleCreatePreview}
         />
       )}
     </div>

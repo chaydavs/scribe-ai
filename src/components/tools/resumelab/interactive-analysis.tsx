@@ -131,21 +131,45 @@ export default function InteractiveAnalysis({
     }, 100)
   }, [])
 
+  // Fuzzy replace: tries exact match, then whitespace-normalized regex, then keyword-based match
+  const fuzzyReplace = useCallback((text: string, search: string, replacement: string): string => {
+    // 1. Exact match
+    if (text.includes(search)) {
+      return text.replace(search, replacement)
+    }
+    // 2. Whitespace-normalized regex
+    const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const fuzzyPattern = escaped.replace(/\s+/g, '\\s+')
+    const wsResult = text.replace(new RegExp(fuzzyPattern), replacement)
+    if (wsResult !== text) return wsResult
+    // 3. Key-word fuzzy match (find the span containing significant words and replace it)
+    const keyWords = search.replace(/[^\w\s]/g, '').split(/\s+/).filter(w => w.length > 2).slice(0, 6)
+    if (keyWords.length >= 3) {
+      const fuzzyRe = new RegExp(keyWords.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('[\\s\\S]{0,40}'), 'i')
+      const match = text.match(fuzzyRe)
+      if (match && match[0]) {
+        return text.replace(match[0], replacement)
+      }
+    }
+    return text
+  }, [])
+
   // Apply a fix (with optional custom text)
   const applyFix = useCallback((fixId: string, fixIndex: number, customText?: string) => {
     const fix = structuredAnalysis.fixes[fixIndex]
     const replacement = customText || fix.fixed
-    const newText = workingText.replace(fix.current, replacement)
+    const newText = fuzzyReplace(workingText, fix.current, replacement)
+    if (newText === workingText) return // No match found — don't mark as applied
     setWorkingText(newText)
     setAppliedFixes(prev => { const next = new Set(Array.from(prev)); next.add(fixId); return next })
     setActiveAnnotationId(null)
     onFixApplied?.(newText)
-  }, [workingText, structuredAnalysis.fixes, onFixApplied])
+  }, [workingText, structuredAnalysis.fixes, onFixApplied, fuzzyReplace])
 
   // Undo a fix
   const undoFix = useCallback((fixId: string, fixIndex: number) => {
     const fix = structuredAnalysis.fixes[fixIndex]
-    const newText = workingText.replace(fix.fixed, fix.current)
+    const newText = fuzzyReplace(workingText, fix.fixed, fix.current)
     setWorkingText(newText)
     setAppliedFixes(prev => {
       const next = new Set(prev)
@@ -153,7 +177,7 @@ export default function InteractiveAnalysis({
       return next
     })
     onFixApplied?.(newText)
-  }, [workingText, structuredAnalysis.fixes, onFixApplied])
+  }, [workingText, structuredAnalysis.fixes, onFixApplied, fuzzyReplace])
 
   // Close sidebar when clicking outside on mobile
   useEffect(() => {
