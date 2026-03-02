@@ -42,6 +42,8 @@ Middleware (`middleware.ts`) handles auth redirects using Supabase SSR cookie ma
 4. **Rewrite** — Optional full AI rewrite preserving all facts
 5. **Export** — Choose LaTeX template → compile via `latex.ytotech.com` → download PDF
 
+Alternative: **Create from Scratch** → fill form → Preview & Edit (same editor as step 3) → Export.
+
 ### AI Integration
 
 All AI calls funnel through `src/lib/claude/client.ts` → `generateWithClaude(systemPrompt, userMessage, maxTokens)`. Returns `{ content, inputTokens, outputTokens }`.
@@ -55,7 +57,7 @@ All prompts return JSON in `` ```json ``` `` fences, parsed with regex: `respons
 
 ### Scoring System
 
-Score = impact(0-35) + clarity(0-25) + ats(0-25) + structure(0-15) = 0-100. The quick-score API (`api/tools/quick-score`) uses the same calibration as the full analysis prompt — keep them in sync.
+Score = impact(0-35) + clarity(0-25) + ats(0-25) + structure(0-15) = 0-100. The quick-score API (`api/tools/quick-score`) uses the same calibration as the full analysis prompt — keep them in sync. Score bars must divide by the actual max (35/25/25/15), NOT by 100.
 
 ### Main Tool Page (`resumelab/`)
 
@@ -64,15 +66,35 @@ The page (`page.tsx`) is the state orchestrator. It holds all state and passes p
 - `analysis-tab.tsx` — Score display, fix cards, section reviews
 - `preview-tab.tsx` — Edit with formatting toolbar, apply fixes (undo/redo), template picker, export
 - `rewrite-tab.tsx` — AI rewrite flow
-- `create-tab.tsx` — Build resume from scratch
+- `create-tab.tsx` — Build resume from scratch → transitions to preview-tab for editing
 
-### Fix Application
+### Fix Application (CRITICAL — read carefully)
 
-Fixes use fuzzy text matching (whitespace normalization + regex) to find `current` text in the resume and replace with `fixed`. Users can apply individually, "Apply All" (critical+important), or copy nice-to-have fixes. Undo/redo stack tracks all changes.
+Fixes use 3-tier fuzzy matching in both `interactive-analysis.tsx` and `preview-tab.tsx`:
+1. Exact string match
+2. Whitespace-normalized regex (handles line break differences from PDF parsing)
+3. Keyword-based fuzzy match (first 5-6 significant words)
+
+**Known pitfall — substring containment:** When `fix.fixed` contains `fix.current` as a substring (e.g. appending details to a line), naive detection fails because `fix.current` is still found inside the applied `fix.fixed` text. The correct approach:
+- `isApplied` = resume contains `fix.fixed` (don't also check that `fix.current` is absent)
+- `canApply` = `!isApplied && resume contains fix.current`
+- Guard `applyFix()` with `if (isApplied) return` to prevent double-clicks
+- "Apply All" must skip fixes where `fix.fixed` is already present
+
+Nice-to-have fixes show separate Apply + Copy buttons (not a single ambiguous button).
 
 ### LaTeX Export Pipeline
 
-`src/lib/latex/converter.ts` parses resume text into structured sections → template functions (`src/lib/latex/templates/`) generate LaTeX → `src/lib/latex/escape.ts` handles special chars + markdown formatting (`**bold**` → `\textbf{}`, `*italic*` → `\textit{}`). Five templates: classic-professional, modern-minimal, tech-focused, creative-bold, executive.
+`src/lib/latex/converter.ts` parses resume text into structured sections → template functions (`src/lib/latex/templates/`) generate LaTeX → `src/lib/latex/escape.ts` handles special chars + markdown formatting (`**bold**` → `\textbf{}`, `*italic*` → `\textit{}`). Currently only `classic-professional` template is used (hardcoded `classic-professional-1`).
+
+**LaTeX overflow prevention:** All templates include `\sloppy` + `\emergencystretch=1em` after `\begin{document}`. The escape function adds `\allowbreak{}` after `/` characters to allow line breaks in long strings.
+
+### Text Parser Gotchas (`converter.ts`)
+
+- **`isBullet()` must match en-dash `–` (U+2013)** — not just hyphen `-`. Many resumes use en-dashes for bullets. Without this, lines like `– Refr.store` fall through to wrong code paths.
+- **Projects section — bullet vs project name:** When a bullet is detected in the projects section, check if it's actually a short project name (no verb start, few words like "Refr.store") vs a description bullet ("Built Flask backend..."). Use verb-start heuristic.
+- **Dot in project names:** `Refr.store` contains a dot but is NOT a sentence. Detect sentence periods as `. ` (dot+space) or ending `.` on lines with >3 words. Don't use `line.includes('.')`.
+- Section detection is case-insensitive with substring matching for headers >4 chars.
 
 ### Database (Supabase)
 
@@ -93,4 +115,4 @@ Supabase auth with Google OAuth. The callback route (`api/auth/callback/route.ts
 ## Parser Notes
 
 - **PDF parser** (`src/lib/pdf-parser.ts`): Handles smart quotes, mojibake, 20+ bullet symbols, date recovery
-- **Text parser** (`src/lib/latex/converter.ts`): Fuzzy section headers (case-insensitive, substring match for headers >4 chars), comma guard for title/company, mid-line degrees, GPA slash format, season dates
+- **Text parser** (`src/lib/latex/converter.ts`): Fuzzy section headers, comma guard for title/company, mid-line degrees, GPA slash format, season dates, en-dash bullets, project name vs bullet heuristic
