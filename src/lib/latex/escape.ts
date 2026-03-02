@@ -18,5 +18,8 @@ export function escapeLatex(str: string): string {
   // Convert *italic* to \textit{italic}
   result = result.replace(/\*(.+?)\*/g, '\\textit{$1}')
 
+  // Allow line breaks after / in long strings (e.g. URLs, paths, skill lists)
+  result = result.replace(/\//g, '/\\allowbreak{}')
+
   return result
 }

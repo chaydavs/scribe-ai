@@ -90,6 +90,8 @@ ${exp.bullets.map(b => `  \\item ${esc(b)}`).join('\n')}
 \\renewcommand{\\labelitemi}{\\scriptsize$\\bullet$}
 
 \\begin{document}
+\\sloppy
+\\emergencystretch=1em
 
 \\begin{center}
   {\\fontsize{20pt}{22pt}\\selectfont\\textbf{${esc(resume.fullName)}}}\\\\[0.3em]
