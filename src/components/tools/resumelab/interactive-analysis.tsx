@@ -156,8 +156,11 @@ export default function InteractiveAnalysis({
 
   // Apply a fix (with optional custom text)
   const applyFix = useCallback((fixId: string, fixIndex: number, customText?: string) => {
+    if (appliedFixes.has(fixId)) return // Already applied
     const fix = structuredAnalysis.fixes[fixIndex]
     const replacement = customText || fix.fixed
+    // Skip if the fixed text is already present (prevents duplication when fixed contains current)
+    if (workingText.includes(fix.fixed)) return
     const newText = fuzzyReplace(workingText, fix.current, replacement)
     if (newText === workingText) return // No match found — don't mark as applied
     setWorkingText(newText)

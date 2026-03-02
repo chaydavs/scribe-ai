@@ -426,7 +426,10 @@ export function PreviewTab({
                       let text = editableResume
                       const normalize = (s: string) => s.replace(/\s+/g, ' ').trim()
                       for (const fix of criticalAndImportant) {
-                        if (normalize(text).includes(normalize(fix.current))) {
+                        const normalizedText = normalize(text)
+                        // Skip if already applied (fixed text is already present)
+                        if (normalizedText.includes(normalize(fix.fixed))) continue
+                        if (normalizedText.includes(normalize(fix.current))) {
                           // Exact
                           if (text.includes(fix.current)) {
                             text = text.replace(fix.current, fix.fixed)
@@ -459,8 +462,16 @@ export function PreviewTab({
                   // Normalize whitespace for fuzzy matching (handles line breaks from PDF parsing)
                   const normalize = (s: string) => s.replace(/\s+/g, ' ').trim()
                   const normalizedResume = normalize(editableResume)
-                  const isApplied = normalizedResume.includes(normalize(fix.fixed)) && !normalizedResume.includes(normalize(fix.current))
-                  const canApply = normalizedResume.includes(normalize(fix.current))
+                  const normalizedFixed = normalize(fix.fixed)
+                  const normalizedCurrent = normalize(fix.current)
+
+                  // Detect applied state: if fixed text is present, it's applied
+                  // (even if current is also present as a substring of fixed)
+                  const hasFixed = normalizedResume.includes(normalizedFixed)
+                  const hasCurrent = normalizedResume.includes(normalizedCurrent)
+                  const isApplied = hasFixed
+                  // Can only apply if current is present AND the fix hasn't already been applied
+                  const canApply = !isApplied && hasCurrent
 
                   // Aggressive fuzzy: match first 5+ significant words from fix.current
                   const keyWords = fix.current.replace(/[^\w\s]/g, '').split(/\s+/).filter(w => w.length > 2).slice(0, 5)
@@ -470,6 +481,7 @@ export function PreviewTab({
                   })()
 
                   const applyFix = () => {
+                    if (isApplied) return // Guard against double-apply
                     updateWithUndo((() => {
                       const prev = editableResume
                       // 1. Exact match
