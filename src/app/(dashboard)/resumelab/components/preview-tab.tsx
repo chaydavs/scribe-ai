@@ -86,23 +86,32 @@ function CopyButton({ text }: { text: string }) {
 }
 
 function NiceToHaveButton({ isClickable, applyFix, fixedText }: { isClickable: boolean; applyFix: () => void; fixedText: string }) {
-  const [copied, setCopied] = useState(false)
+  const [label, setLabel] = useState<'Apply' | 'Copy' | 'Copied!' | 'Applied!'>(isClickable ? 'Apply' : 'Copy')
   return (
-    <button
-      onClick={(e) => {
-        e.stopPropagation()
-        if (isClickable) {
-          applyFix()
-        } else {
+    <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+      {isClickable && (
+        <button
+          onClick={() => {
+            applyFix()
+            setLabel('Applied!')
+            setTimeout(() => setLabel('Apply'), 1500)
+          }}
+          className="inline-flex items-center rounded-full bg-black px-2.5 py-1 text-[10px] font-semibold text-white hover:bg-slate-800 transition-colors"
+        >
+          {label === 'Applied!' ? 'Applied!' : 'Apply'}
+        </button>
+      )}
+      <button
+        onClick={() => {
           navigator.clipboard.writeText(fixedText)
-          setCopied(true)
-          setTimeout(() => setCopied(false), 1500)
-        }
-      }}
-      className="inline-flex items-center rounded-full bg-slate-100 px-2 py-1 text-[10px] font-medium text-slate-600 hover:bg-slate-200 transition-colors"
-    >
-      {copied ? 'Copied!' : isClickable ? 'Apply' : 'Copy'}
-    </button>
+          setLabel('Copied!')
+          setTimeout(() => setLabel(isClickable ? 'Apply' : 'Copy'), 1500)
+        }}
+        className="inline-flex items-center rounded-full bg-slate-100 px-2 py-1 text-[10px] font-medium text-slate-600 hover:bg-slate-200 transition-colors"
+      >
+        {label === 'Copied!' ? 'Copied!' : 'Copy'}
+      </button>
+    </div>
   )
 }
 
