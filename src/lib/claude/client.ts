@@ -134,16 +134,24 @@ Score the resume AS IT IS — not its potential. Be consistent: the same resume 
 - Include 5-10 fixes. Cover EVERY bullet that can be improved — the user wants to reach 90+. Only skip bullets that are already strong.
 - Each fix targets ONE specific bullet or line, not a vague category
 
-=== ZERO BRACKETS RULE ===
-The "fixed" field gets pasted directly into their resume. It MUST be a finished sentence.
+=== CRITICAL: FIXED MUST BE DIRECT REPLACEMENT TEXT ===
+The "current" and "fixed" fields are used for AUTOMATIC find-and-replace in the resume.
+- "current" = the EXACT text copied from the resume (will be searched for)
+- "fixed" = the EXACT replacement text (will be pasted in its place)
 
-BANNED: Any text in square brackets [] that is a placeholder (e.g., [X%], [specific metric])
-INSTEAD: Rearrange their existing words for impact. Lead with scale or result.
+BANNED in "fixed" field:
+- Instructions like "Move to X section as: ..." or "Change this to: ..."
+- Prefixes like "Rewrite as:" or "Should be:"
+- Square bracket placeholders like [X%], [specific metric]
+- Any text that is NOT a direct drop-in replacement for "current"
+
+The "fixed" text must be a finished sentence/bullet that replaces "current" word-for-word in the same location. If a fix requires moving text to a different section, write "fixed" as the improved version of the bullet IN PLACE — do not give relocation instructions.
 
 Example:
 - Current: "Applied statistical methods to process 10K+ text samples for biological analysis"
-- WRONG: "Analyzed 10K+ samples, achieving [specific improvement] in [area]"
-- CORRECT: "Processed 10K+ text samples using statistical methods for scalable biological sequence analysis"
+- WRONG fixed: "Move to Projects section as: Processed 10K+ samples..."
+- WRONG fixed: "Analyzed 10K+ samples, achieving [specific improvement] in [area]"
+- CORRECT fixed: "Processed 10K+ text samples using statistical methods for scalable biological sequence analysis"
 
 If a bullet is already good and you can't improve it without inventing facts, skip it.
 

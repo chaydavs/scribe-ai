@@ -1530,30 +1530,50 @@ function ResumeLabContent() {
                         const normalizedResume = normalize(editableResume)
                         const isApplied = normalizedResume.includes(normalize(fix.fixed)) && !normalizedResume.includes(normalize(fix.current))
                         const canApply = normalizedResume.includes(normalize(fix.current))
+
+                        // Aggressive fuzzy: match first 5+ significant words from fix.current
+                        const keyWords = fix.current.replace(/[^\w\s]/g, '').split(/\s+/).filter(w => w.length > 2).slice(0, 5)
+                        const canFuzzyApply = !canApply && !isApplied && keyWords.length >= 3 && (() => {
+                          const fuzzyRe = new RegExp(keyWords.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('[\\s\\S]{0,30}'), 'i')
+                          return fuzzyRe.test(editableResume)
+                        })()
+
+                        const applyFix = () => {
+                          setEditableResume(prev => {
+                            // 1. Exact match
+                            if (prev.includes(fix.current)) {
+                              return prev.replace(fix.current, fix.fixed)
+                            }
+                            // 2. Whitespace-normalized regex
+                            const escaped = fix.current.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+                            const fuzzyPattern = escaped.replace(/\s+/g, '\\s+')
+                            const wsResult = prev.replace(new RegExp(fuzzyPattern), fix.fixed)
+                            if (wsResult !== prev) return wsResult
+                            // 3. Key-word fuzzy match (find the span containing those words and replace it)
+                            if (keyWords.length >= 3) {
+                              const fuzzyRe = new RegExp(keyWords.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('[\\s\\S]{0,30}'), 'i')
+                              const match = prev.match(fuzzyRe)
+                              if (match && match[0]) {
+                                return prev.replace(match[0], fix.fixed)
+                              }
+                            }
+                            return prev
+                          })
+                        }
+
+                        const isClickable = !isApplied && (canApply || canFuzzyApply)
+
                         return (
                           <div
                             key={i}
                             className={`rounded-lg border p-3 transition-colors ${
                               isApplied
                                 ? 'border-green-200 bg-green-50'
-                                : canApply
+                                : isClickable
                                   ? 'border-slate-200 hover:border-primary-300 hover:bg-primary-50/30 cursor-pointer'
                                   : 'border-slate-100 bg-slate-50'
                             }`}
-                            onClick={() => {
-                              if (canApply && !isApplied) {
-                                // Try exact match first, then fuzzy whitespace match
-                                setEditableResume(prev => {
-                                  if (prev.includes(fix.current)) {
-                                    return prev.replace(fix.current, fix.fixed)
-                                  }
-                                  // Fuzzy: build regex that treats any whitespace in fix.current as \s+
-                                  const escaped = fix.current.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-                                  const fuzzyPattern = escaped.replace(/\s+/g, '\\s+')
-                                  return prev.replace(new RegExp(fuzzyPattern), fix.fixed)
-                                })
-                              }
-                            }}
+                            onClick={() => { if (isClickable) applyFix() }}
                           >
                             <div className="flex items-start justify-between gap-3">
                               <div className="flex-1 min-w-0">
@@ -1578,6 +1598,21 @@ function ResumeLabContent() {
                                     <p className="text-slate-700 mt-0.5 break-words">{fix.fixed.length > 120 ? fix.fixed.slice(0, 120) + '...' : fix.fixed}</p>
                                   </div>
                                 </div>
+                                {/* Copy button for truly unmatched fixes */}
+                                {!isApplied && !canApply && !canFuzzyApply && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      navigator.clipboard.writeText(fix.fixed)
+                                      const btn = e.currentTarget
+                                      btn.textContent = 'Copied!'
+                                      setTimeout(() => { btn.textContent = 'Copy suggestion to clipboard' }, 1500)
+                                    }}
+                                    className="mt-2 text-[10px] text-primary-600 hover:text-primary-700 font-medium underline"
+                                  >
+                                    Copy suggestion to clipboard
+                                  </button>
+                                )}
                               </div>
                               <div className="flex-shrink-0">
                                 {isApplied ? (
@@ -1587,13 +1622,13 @@ function ResumeLabContent() {
                                     </svg>
                                     Applied
                                   </span>
-                                ) : canApply ? (
+                                ) : isClickable ? (
                                   <span className="inline-flex items-center rounded-full bg-primary-100 px-2 py-1 text-[10px] font-semibold text-primary-700">
                                     Apply
                                   </span>
                                 ) : (
                                   <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-[10px] text-blue-600 font-medium">
-                                    Manual
+                                    Copy
                                   </span>
                                 )}
                               </div>
