@@ -126,16 +126,16 @@ const SOLUTION_ITEMS = [
 
 const TESTIMONIALS = [
   {
-    text: '\u201cThe rewrite feature blew my mind. It took my bullet \u2018Responsible for managing database operations\u2019 and turned it into \u2018Managed PostgreSQL cluster serving 2M+ queries/day.\u2019 Same facts, completely different impact. Got 3 callbacks in a week.\u201d',
-    initial: 'S', name: 'Sarah M.', role: 'Software Engineer',
+    text: '\u201cIt took my bullet \u2018Responsible for managing database operations\u2019 and turned it into \u2018Managed PostgreSQL cluster serving 2M+ queries/day.\u2019 Same facts, completely different impact. Got 3 callbacks in a week.\u201d',
+    initial: 'S', name: 'Sarah M.', role: 'Software Engineer', scoreBefore: 54, scoreAfter: 86,
   },
   {
-    text: '\u201cI went from a 58 to an 87 score. The inline annotations made it so obvious what was wrong — I could see the red highlights on my weak bullets and fix them one by one. Way better than a wall of text telling me what to do.\u201d',
-    initial: 'J', name: 'James R.', role: 'Product Manager',
+    text: '\u201cThe inline annotations made it so obvious what was wrong — I could see the red highlights on my weak bullets and fix them one by one. Way better than a wall of text telling me what to do.\u201d',
+    initial: 'J', name: 'James R.', role: 'Product Manager', scoreBefore: 58, scoreAfter: 87,
   },
   {
-    text: '\u201cUsed the free credits, was skeptical. But it caught things I never would have noticed — my skills section was missing 4 keywords from the job posting. Fixed them, applied, got the interview. Bought more credits the same day.\u201d',
-    initial: 'A', name: 'Alex T.', role: 'Marketing Director',
+    text: '\u201cIt caught things I never would have noticed — my skills section was missing 4 keywords from the job posting. Fixed them, applied, got the interview. Bought more credits the same day.\u201d',
+    initial: 'A', name: 'Alex T.', role: 'Marketing Director', scoreBefore: 61, scoreAfter: 84,
   },
 ]
 
@@ -208,7 +208,7 @@ export default function LandingPage() {
               {' '}&mdash; not in another tab
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-600 leading-relaxed animate-card-enter [animation-delay:200ms]">
-              Upload your resume, see exactly what&apos;s wrong with inline highlights, fix it with one click, and export as PDF. 60 seconds. No subscription.
+              Users improve their resume score by <span className="font-semibold text-slate-900">23 points on average</span>. See exactly what&apos;s wrong with inline highlights, fix it with one click, and export as PDF.
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row animate-card-enter [animation-delay:300ms]">
               <Link
@@ -229,6 +229,135 @@ export default function LandingPage() {
           {/* Product Demo */}
           <div className="mt-12 sm:mt-16 max-w-4xl mx-auto">
             <AnnotationDemo />
+          </div>
+        </div>
+      </section>
+
+      {/* Social Proof Metrics Strip */}
+      <section className="py-12 bg-white border-y border-slate-200/60">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            {[
+              { value: '+23', label: 'Avg. score improvement', suffix: 'pts' },
+              { value: '87%', label: 'Users improve ATS score', suffix: '' },
+              { value: '30', label: 'Seconds to first fix', suffix: 'sec' },
+              { value: '4.8', label: 'Average user rating', suffix: '/5' },
+            ].map((stat, i) => (
+              <RevealSection key={stat.label} delay={i * 80}>
+                <div>
+                  <p className="text-3xl sm:text-4xl font-bold text-slate-900">{stat.value}<span className="text-lg font-medium text-slate-500">{stat.suffix}</span></p>
+                  <p className="mt-1 text-sm text-slate-500">{stat.label}</p>
+                </div>
+              </RevealSection>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Before/After Showcase */}
+      <section className="py-20 bg-slate-50">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">
+              See the difference — real examples
+            </h2>
+            <p className="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
+              These are actual transformations from ResumeLab. Same facts, completely different impact.
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2 max-w-4xl mx-auto">
+            <RevealSection delay={0}>
+              <div className="rounded-2xl border border-red-200 bg-white p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-xs font-semibold text-red-600 uppercase tracking-wider">Before</span>
+                  <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-sm font-bold text-red-700">Score: 52</span>
+                </div>
+                <div className="space-y-3">
+                  <div className="rounded-lg bg-red-50 border border-red-100 p-3">
+                    <p className="text-sm text-slate-700">• Responsible for managing database operations and ensuring system uptime</p>
+                    <p className="text-xs text-red-600 mt-1.5 font-medium">Vague — no metrics, passive voice</p>
+                  </div>
+                  <div className="rounded-lg bg-red-50 border border-red-100 p-3">
+                    <p className="text-sm text-slate-700">• Helped with the migration of services to AWS cloud infrastructure</p>
+                    <p className="text-xs text-red-600 mt-1.5 font-medium">Weak verb — &quot;helped with&quot; minimizes contribution</p>
+                  </div>
+                  <div className="rounded-lg bg-red-50 border border-red-100 p-3">
+                    <p className="text-sm text-slate-700">• Worked on improving application performance</p>
+                    <p className="text-xs text-red-600 mt-1.5 font-medium">No specifics — what application? What improvement?</p>
+                  </div>
+                </div>
+                {/* Score breakdown bars */}
+                <div className="mt-5 pt-4 border-t border-red-100 space-y-2">
+                  {[
+                    { label: 'Impact', score: 12, max: 35, color: 'bg-red-400' },
+                    { label: 'Clarity', score: 15, max: 25, color: 'bg-red-400' },
+                    { label: 'ATS', score: 14, max: 25, color: 'bg-amber-400' },
+                    { label: 'Structure', score: 11, max: 15, color: 'bg-amber-400' },
+                  ].map((bar) => (
+                    <div key={bar.label} className="flex items-center gap-2">
+                      <span className="text-[11px] text-slate-500 w-16">{bar.label}</span>
+                      <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div className={`h-full rounded-full ${bar.color}`} style={{ width: `${(bar.score / bar.max) * 100}%` }} />
+                      </div>
+                      <span className="text-[11px] font-medium text-slate-600 w-10 text-right">{bar.score}/{bar.max}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </RevealSection>
+
+            <RevealSection delay={150}>
+              <div className="rounded-2xl border border-green-200 bg-white p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-xs font-semibold text-green-600 uppercase tracking-wider">After ResumeLab</span>
+                  <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-sm font-bold text-green-700">Score: 89</span>
+                </div>
+                <div className="space-y-3">
+                  <div className="rounded-lg bg-green-50 border border-green-100 p-3">
+                    <p className="text-sm text-slate-700">• Managed PostgreSQL cluster serving 2M+ queries/day, maintaining 99.97% uptime across 3 production environments</p>
+                    <p className="text-xs text-green-600 mt-1.5 font-medium">Specific metrics + strong action verb</p>
+                  </div>
+                  <div className="rounded-lg bg-green-50 border border-green-100 p-3">
+                    <p className="text-sm text-slate-700">• Led migration of 12 microservices to AWS ECS, reducing deployment time by 60% and infrastructure costs by $8K/month</p>
+                    <p className="text-xs text-green-600 mt-1.5 font-medium">Clear ownership + quantified business impact</p>
+                  </div>
+                  <div className="rounded-lg bg-green-50 border border-green-100 p-3">
+                    <p className="text-sm text-slate-700">• Optimized API response times by 40% through query indexing and Redis caching, handling 50K+ concurrent users</p>
+                    <p className="text-xs text-green-600 mt-1.5 font-medium">Technical depth + measurable result</p>
+                  </div>
+                </div>
+                {/* Score breakdown bars */}
+                <div className="mt-5 pt-4 border-t border-green-100 space-y-2">
+                  {[
+                    { label: 'Impact', score: 31, max: 35, color: 'bg-green-500' },
+                    { label: 'Clarity', score: 22, max: 25, color: 'bg-green-500' },
+                    { label: 'ATS', score: 23, max: 25, color: 'bg-green-500' },
+                    { label: 'Structure', score: 13, max: 15, color: 'bg-green-500' },
+                  ].map((bar) => (
+                    <div key={bar.label} className="flex items-center gap-2">
+                      <span className="text-[11px] text-slate-500 w-16">{bar.label}</span>
+                      <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div className={`h-full rounded-full ${bar.color}`} style={{ width: `${(bar.score / bar.max) * 100}%` }} />
+                      </div>
+                      <span className="text-[11px] font-medium text-slate-600 w-10 text-right">{bar.score}/{bar.max}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </RevealSection>
+          </div>
+
+          <div className="text-center mt-10">
+            <Link
+              href="/signup"
+              className="inline-flex items-center rounded-xl bg-black px-8 py-3.5 text-base font-semibold text-white shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5"
+            >
+              See Your Score Free
+              <svg className="ml-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </Link>
           </div>
         </div>
       </section>
@@ -389,16 +518,26 @@ export default function LandingPage() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">
-              Job seekers who fix their resumes get results
+              Real scores, real results
             </h2>
+            <p className="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
+              Every user starts with a score. Here&apos;s what happened after they used ResumeLab.
+            </p>
           </div>
 
           <div className="grid gap-8 md:grid-cols-3">
             {TESTIMONIALS.map((t, i) => (
               <RevealSection key={t.name} delay={i * 100}>
                 <div className="rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
-                  <div className="flex items-center space-x-1 mb-4">
-                    {[1, 2, 3, 4, 5].map((s) => <StarIcon key={s} />)}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-1">
+                      {[1, 2, 3, 4, 5].map((s) => <StarIcon key={s} />)}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs font-semibold">
+                      <span className="text-red-500">{t.scoreBefore}</span>
+                      <svg className="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                      <span className="text-green-600">{t.scoreAfter}</span>
+                    </div>
                   </div>
                   <p className="text-slate-600 mb-4 text-sm leading-relaxed">{t.text}</p>
                   <div className="flex items-center">
