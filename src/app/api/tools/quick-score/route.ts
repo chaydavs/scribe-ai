@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { generateWithClaude } from '@/lib/claude/client'
 
 export const maxDuration = 30
@@ -59,6 +59,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Validate input before hitting the DB
     const { resumeText } = await request.json()
 
     if (!resumeText) {
@@ -72,6 +73,29 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Rate limit: 20 quick-score calls per user per day
+    const todayMidnightUTC = new Date()
+    todayMidnightUTC.setUTCHours(0, 0, 0, 0)
+
+    const { count, error: countError } = await supabase
+      .from('usage_logs')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('tool', 'quick-score')
+      .gte('created_at', todayMidnightUTC.toISOString())
+
+    if (countError) {
+      console.error('Quick score rate limit check error:', countError)
+      return NextResponse.json({ error: 'Failed to score resume' }, { status: 500 })
+    }
+
+    if ((count ?? 0) >= 20) {
+      return NextResponse.json(
+        { error: 'Daily limit reached. Quick Score is limited to 20 uses per day.' },
+        { status: 429 }
+      )
+    }
+
     const response = await generateWithClaude(
       SCORE_PROMPT,
       `Score this resume:\n\n${resumeText}`,
@@ -82,6 +106,17 @@ export async function POST(request: NextRequest) {
     if (jsonMatch) {
       try {
         const parsed = JSON.parse(jsonMatch[1])
+
+        // Log the usage after a successful response
+        const serviceClient = await createServiceClient()
+        await serviceClient.from('usage_logs').insert({
+          user_id: user.id,
+          tool: 'quick-score',
+          credits_used: 0,
+          input_tokens: response.inputTokens,
+          output_tokens: response.outputTokens,
+        })
+
         return NextResponse.json(parsed)
       } catch {
         console.error('Quick score JSON parse error')
