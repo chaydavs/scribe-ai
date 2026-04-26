@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { generateWithClaude, toolPrompts } from '@/lib/claude/client'
+
+export const maxDuration = 60
 
 const CREDIT_COST = 5
 
@@ -60,6 +62,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Resume text is required' }, { status: 400 })
     }
 
+    if (typeof resumeText === 'string' && resumeText.length > 50_000) {
+      return NextResponse.json(
+        { error: 'Resume text is too long. Please keep it under 50,000 characters.' },
+        { status: 400 }
+      )
+    }
+
     // Build prompt with optional keyword injection
     let userMessage = `Here is the resume to rewrite:\n\n${resumeText}`
 
@@ -88,28 +97,35 @@ export async function POST(request: NextRequest) {
       4096
     )
 
-    // Deduct credits
-    await supabase
-      .from('profiles')
-      .update({ credits: profile.credits - CREDIT_COST })
-      .eq('id', user.id)
+    // Atomically deduct credits via RPC (prevents race condition double-spend)
+    const serviceClient = await createServiceClient()
+    const { data: newCredits, error: creditError } = await serviceClient
+      .rpc('deduct_credits', { p_user_id: user.id, p_cost: CREDIT_COST })
 
-    // Log usage
-    await supabase.from('credit_transactions').insert({
-      user_id: user.id,
-      amount: -CREDIT_COST,
-      type: 'usage',
-      tool: 'resume-rewrite',
-      description: 'Resume rewrite',
-    })
+    if (creditError || newCredits === null) {
+      return NextResponse.json(
+        { error: 'Insufficient credits. Please try again.' },
+        { status: 402 }
+      )
+    }
 
-    await supabase.from('usage_logs').insert({
-      user_id: user.id,
-      tool: 'resume-rewrite',
-      credits_used: CREDIT_COST,
-      input_tokens: response.inputTokens,
-      output_tokens: response.outputTokens,
-    })
+    // Log transaction and usage in parallel
+    await Promise.all([
+      serviceClient.from('credit_transactions').insert({
+        user_id: user.id,
+        amount: -CREDIT_COST,
+        type: 'usage',
+        tool: 'resume-rewrite',
+        description: 'Resume rewrite',
+      }),
+      serviceClient.from('usage_logs').insert({
+        user_id: user.id,
+        tool: 'resume-rewrite',
+        credits_used: CREDIT_COST,
+        input_tokens: response.inputTokens,
+        output_tokens: response.outputTokens,
+      }),
+    ])
 
     // Update analysis with rewrite result if analysisId provided
     if (analysisId) {

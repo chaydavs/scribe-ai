@@ -15,8 +15,7 @@ interface UploadTabProps {
   countdown: number
   userCredits: number
   creditCost: number
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  fileInputRef: React.RefObject<any>
+  fileInputRef: React.RefObject<HTMLInputElement>
   onFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void
   onDrop: (e: React.DragEvent) => void
   onAnalyze: () => void

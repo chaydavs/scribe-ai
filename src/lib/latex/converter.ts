@@ -261,7 +261,7 @@ export function parseResumeText(resumeText: string): ParsedResume {
     if (currentSection === 'experience') {
       if (isBullet(line)) {
         if (currentExperience) {
-          currentExperience.bullets.push(line.replace(/^[-•*]\s*/, '').trim())
+          currentExperience.bullets.push(line.replace(/^[-–•*]\s*/, '').trim())
         }
         continue
       }
@@ -556,7 +556,7 @@ export function parseResumeText(resumeText: string): ParsedResume {
     // ── Certifications ──
     if (currentSection === 'certifications') {
       if (line.length > 0) {
-        resume.certifications!.push(line.replace(/^[-•*]\s*/, '').trim())
+        resume.certifications!.push(line.replace(/^[-–•*]\s*/, '').trim())
       }
       continue
     }
@@ -579,7 +579,7 @@ export function parseResumeText(resumeText: string): ParsedResume {
       // Treat leadership entries similar to experience
       if (isBullet(line)) {
         if (currentExperience) {
-          currentExperience.bullets.push(line.replace(/^[-•*]\s*/, '').trim())
+          currentExperience.bullets.push(line.replace(/^[-–•*]\s*/, '').trim())
         }
         continue
       }

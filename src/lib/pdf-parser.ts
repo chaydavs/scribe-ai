@@ -26,7 +26,7 @@ export async function extractTextFromPDF(buffer: Buffer): Promise<string> {
 }
 
 // Smart resume text cleanup that preserves structure
-function cleanResumeText(raw: string): string {
+export function cleanResumeText(raw: string): string {
   let text = raw
     // Encoding mojibake cleanup (must come first)
     .replace(/â€™/g, "'")

@@ -2,9 +2,21 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { convertResumeToLatex, parseResumeText } from '@/lib/latex/converter'
 import { TemplateStyle, AVAILABLE_TEMPLATES } from '@/types/templates'
+import { isFirebaseConfigured } from '@/lib/firebase/admin'
+import { uploadExportPDF } from '@/lib/storage/server'
 import crypto from 'crypto'
 
-// Simple in-memory cache for preview PDFs (avoids re-compiling identical LaTeX)
+export const maxDuration = 30
+
+const TEMPLATE_DB_IDS: Record<string, string> = {
+  'modern-minimal-1':       'a1b2c3d4-0001-0001-0001-000000000001',
+  'classic-professional-1': 'a1b2c3d4-0002-0002-0002-000000000002',
+  'tech-focused-1':         'a1b2c3d4-0003-0003-0003-000000000003',
+  'creative-bold-1':        'a1b2c3d4-0004-0004-0004-000000000004',
+  'executive-1':            'a1b2c3d4-0005-0005-0005-000000000005',
+}
+
+// Simple in-memory cache for preview PDFs (avoids re-compiling identical LaTeX, ephemeral in serverless)
 const previewCache = new Map<string, { pdf: string; timestamp: number }>()
 const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 const MAX_CACHE_SIZE = 20
@@ -92,6 +104,7 @@ export async function POST(request: NextRequest) {
           compiler: 'pdflatex',
           resources: [{ main: true, content: latex }],
         }),
+        signal: AbortSignal.timeout(30_000),
       })
 
       if (!compileResponse.ok) {
@@ -148,6 +161,7 @@ export async function POST(request: NextRequest) {
           },
         ],
       }),
+      signal: AbortSignal.timeout(30_000),
     })
 
     if (!compileResponse.ok) {
@@ -169,47 +183,78 @@ export async function POST(request: NextRequest) {
     const pdfBuffer = await compileResponse.arrayBuffer()
     const pdfBase64 = Buffer.from(pdfBuffer).toString('base64')
 
-    // Deduct credits
+    // Atomically deduct credits via RPC (prevents race condition double-spend)
     const serviceClient = await createServiceClient()
+    const { data: newCredits, error: creditError } = await serviceClient
+      .rpc('deduct_credits', { p_user_id: user.id, p_cost: creditCost })
 
-    await serviceClient
-      .from('profiles')
-      .update({ credits: (profile?.credits || 0) - creditCost })
-      .eq('id', user.id)
+    if (creditError || newCredits === null) {
+      return NextResponse.json(
+        { error: 'Insufficient credits. Please try again.' },
+        { status: 402 }
+      )
+    }
 
-    // Log the transaction
-    await serviceClient.from('credit_transactions').insert({
-      user_id: user.id,
-      amount: -creditCost,
-      type: 'usage',
-      tool: 'resume-export',
-      description: `Resume export - ${template.name} template`,
-    })
+    // Log transaction and usage in parallel
+    await Promise.all([
+      serviceClient.from('credit_transactions').insert({
+        user_id: user.id,
+        amount: -creditCost,
+        type: 'usage',
+        tool: 'resume-export',
+        description: `Resume export - ${template.name} template`,
+      }),
+      serviceClient.from('usage_logs').insert({
+        user_id: user.id,
+        tool: 'resume-export',
+        credits_used: creditCost,
+      }),
+    ])
 
-    // Log usage
-    await serviceClient.from('usage_logs').insert({
-      user_id: user.id,
-      tool: 'resume-export',
-      credits_used: creditCost,
-    })
-
-    // Save export record
+    // Parse resume and build export metadata
+    const exportId = crypto.randomUUID()
     const parsedResume = parseResumeText(resumeText)
-    await serviceClient.from('resume_exports').insert({
-      user_id: user.id,
-      analysis_id: analysisId || null,
-      template_id: template.id,
-      resume_data: parsedResume,
-      credits_used: creditCost,
-    })
+    const fileName = `${parsedResume.fullName.replace(/\s+/g, '_')}_Resume.pdf`
+    const templateDbId = TEMPLATE_DB_IDS[template.id] ?? null
+
+    // Upload to Cloud Storage (best-effort — skipped if Firebase is not configured)
+    let exportUrl: string | null = null
+    if (isFirebaseConfigured()) {
+      try {
+        const { storagePath } = await uploadExportPDF(
+          user.id,
+          exportId,
+          Buffer.from(pdfBase64, 'base64'),
+          { fileName, templateId: template.id }
+        )
+        exportUrl = storagePath
+      } catch (storageError) {
+        console.error('Storage upload failed (non-fatal, PDF still delivered):', storageError)
+      }
+    }
+
+    // Save export record (non-fatal — PDF already compiled and credits already deducted)
+    try {
+      await serviceClient.from('resume_exports').insert({
+        id: exportId,
+        user_id: user.id,
+        analysis_id: analysisId || null,
+        template_id: templateDbId,
+        resume_data: parsedResume,
+        credits_used: creditCost,
+        export_url: exportUrl,
+      })
+    } catch (exportRecordError) {
+      console.error('Export record save failed (non-fatal, PDF delivered):', exportRecordError)
+    }
 
     return NextResponse.json({
       success: true,
       format: 'pdf',
       content: pdfBase64,
-      filename: `${parsedResume.fullName.replace(/\s+/g, '_')}_Resume.pdf`,
+      filename: fileName,
       creditsUsed: creditCost,
-      remainingCredits: (profile?.credits || 0) - creditCost,
+      remainingCredits: newCredits,
     })
   } catch (error) {
     console.error('Export resume error:', error)
@@ -232,7 +277,7 @@ export async function GET() {
 
     const { data: exports, error } = await supabase
       .from('resume_exports')
-      .select('id, template_id, credits_used, created_at')
+      .select('id, analysis_id, template_id, credits_used, created_at')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(20)

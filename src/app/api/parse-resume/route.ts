@@ -84,10 +84,9 @@ export async function POST(request: NextRequest) {
     const errorStack = error instanceof Error ? error.stack : ''
     console.error('Error details:', { message: errorMessage, stack: errorStack })
 
-    // Temporarily show debug info to diagnose the issue
     return NextResponse.json(
       {
-        error: `Failed to parse file: ${errorMessage}. Please try pasting your resume text instead.`,
+        error: 'Failed to parse file. Please try pasting your resume text instead.',
       },
       { status: 500 }
     )

@@ -182,11 +182,11 @@ function ResumeLabContent() {
           }
         }
 
-        // Check if user has previously exported this analysis
+        // Check if user has previously exported this specific analysis
         try {
           const exportsRes = await fetch('/api/tools/export-resume')
           const exportsData = await exportsRes.json()
-          if (exportsData.exports?.some((exp: { id: string }) => exp.id)) {
+          if (exportsData.exports?.some((exp: { id: string; analysis_id?: string }) => exp.analysis_id === id)) {
             setHasExported(true)
           }
         } catch {

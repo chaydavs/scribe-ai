@@ -1,4 +1,8 @@
-const PAYPAL_BASE_URL = 'https://api-m.paypal.com'
+const PAYPAL_BASE_URL =
+  process.env.PAYPAL_API_URL ??
+  (process.env.NODE_ENV === 'production'
+    ? 'https://api-m.paypal.com'
+    : 'https://api-m.sandbox.paypal.com')
 
 let cachedToken: { token: string; expiresAt: number } | null = null
 
@@ -24,6 +28,7 @@ export async function getPayPalAccessToken(): Promise<string> {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     body: 'grant_type=client_credentials',
+    signal: AbortSignal.timeout(15_000),
   })
 
   if (!response.ok) {
@@ -52,6 +57,7 @@ export async function createPayPalOrder(
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
+    signal: AbortSignal.timeout(15_000),
     body: JSON.stringify({
       intent: 'CAPTURE',
       purchase_units: [
@@ -103,6 +109,7 @@ export async function capturePayPalOrder(
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
+      signal: AbortSignal.timeout(15_000),
     }
   )
 

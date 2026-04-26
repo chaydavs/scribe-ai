@@ -3,6 +3,8 @@ import { generateWithClaude, toolPrompts } from '@/lib/claude/client'
 import { getToolCreditCost } from '@/lib/paypal/credits'
 import { NextResponse } from 'next/server'
 
+export const maxDuration = 60
+
 const TOOL_NAME = 'resumelab'
 const CREDIT_COST = getToolCreditCost(TOOL_NAME)
 
@@ -38,6 +40,13 @@ export async function POST(request: Request) {
       )
     }
 
+    if (resumeText.length > 50_000) {
+      return NextResponse.json(
+        { error: 'Resume text is too long. Please keep it under 50,000 characters.' },
+        { status: 400 }
+      )
+    }
+
     // Build the user message
     let userMessage = `Please analyze this resume:\n\n${resumeText}`
     if (jobDescription) {
@@ -50,31 +59,35 @@ export async function POST(request: Request) {
       userMessage
     )
 
-    // Deduct credits using service client
+    // Atomically deduct credits via RPC (prevents race condition double-spend)
     const serviceClient = await createServiceClient()
+    const { data: newCredits, error: creditError } = await serviceClient
+      .rpc('deduct_credits', { p_user_id: user.id, p_cost: CREDIT_COST })
 
-    await serviceClient
-      .from('profiles')
-      .update({ credits: profile.credits - CREDIT_COST })
-      .eq('id', user.id)
+    if (creditError || newCredits === null) {
+      return NextResponse.json(
+        { error: 'Insufficient credits. Please try again.' },
+        { status: 402 }
+      )
+    }
 
-    // Log the transaction
-    await serviceClient.from('credit_transactions').insert({
-      user_id: user.id,
-      amount: -CREDIT_COST,
-      type: 'usage',
-      tool: TOOL_NAME,
-      description: `Resume analysis`,
-    })
-
-    // Log usage for analytics
-    await serviceClient.from('usage_logs').insert({
-      user_id: user.id,
-      tool: TOOL_NAME,
-      credits_used: CREDIT_COST,
-      input_tokens: response.inputTokens,
-      output_tokens: response.outputTokens,
-    })
+    // Log transaction and usage in parallel
+    await Promise.all([
+      serviceClient.from('credit_transactions').insert({
+        user_id: user.id,
+        amount: -CREDIT_COST,
+        type: 'usage',
+        tool: TOOL_NAME,
+        description: `Resume analysis`,
+      }),
+      serviceClient.from('usage_logs').insert({
+        user_id: user.id,
+        tool: TOOL_NAME,
+        credits_used: CREDIT_COST,
+        input_tokens: response.inputTokens,
+        output_tokens: response.outputTokens,
+      }),
+    ])
 
     // Parse structured JSON from the response
     const jsonMatch = response.content.match(/```json\s*([\s\S]*?)\s*```/)
@@ -138,7 +151,7 @@ export async function POST(request: Request) {
       analysisId: savedAnalysis?.id,
       score,
       creditsUsed: CREDIT_COST,
-      remainingCredits: profile.credits - CREDIT_COST,
+      remainingCredits: newCredits,
     })
   } catch (error) {
     console.error('ResumeLab error:', error)

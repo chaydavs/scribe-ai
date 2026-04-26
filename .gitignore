@@ -43,4 +43,12 @@ next-env.d.ts
 # Supabase
 .supabase/
 .env.local
+
+# Claude Code
 .claude/
+
+# Firebase
+firebase-debug.log
+.firebase/
+firestore-debug.log
+storage-debug.log

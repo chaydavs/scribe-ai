@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { generateWithClaude } from '@/lib/claude/client'
 
+export const maxDuration = 30
+
 const SCORE_PROMPT = `You are the #1 resume consultant in the world. You think like a recruiter with a stack of 200 resumes and 30 seconds each. Score this resume with EXACTLY the same strictness you would use for a full analysis.
 
 Your output MUST be valid JSON wrapped in \`\`\`json ... \`\`\` fences. No text outside the JSON block.
@@ -63,6 +65,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Resume text is required' }, { status: 400 })
     }
 
+    if (typeof resumeText === 'string' && resumeText.length > 50_000) {
+      return NextResponse.json(
+        { error: 'Resume text is too long. Please keep it under 50,000 characters.' },
+        { status: 400 }
+      )
+    }
+
     const response = await generateWithClaude(
       SCORE_PROMPT,
       `Score this resume:\n\n${resumeText}`,
@@ -71,8 +80,13 @@ export async function POST(request: NextRequest) {
 
     const jsonMatch = response.content.match(/```json\s*([\s\S]*?)\s*```/)
     if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[1])
-      return NextResponse.json(parsed)
+      try {
+        const parsed = JSON.parse(jsonMatch[1])
+        return NextResponse.json(parsed)
+      } catch {
+        console.error('Quick score JSON parse error')
+        return NextResponse.json({ error: 'Failed to parse score response' }, { status: 500 })
+      }
     }
 
     return NextResponse.json({ error: 'Failed to parse score' }, { status: 500 })

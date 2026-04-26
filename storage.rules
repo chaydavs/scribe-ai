@@ -1,0 +1,10 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // All writes are server-side via firebase-admin (bypasses these rules).
+    // Client-side access is blocked until Firebase Auth migration is complete.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

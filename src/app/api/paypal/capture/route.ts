@@ -38,62 +38,23 @@ export async function GET(request: NextRequest) {
 
     const supabase = getAdminClient()
 
-    // Check for duplicate capture (idempotency)
-    const { data: existingTx, error: idempotencyError } = await supabase
-      .from('credit_transactions')
-      .select('id')
-      .eq('stripe_session_id', token)
-      .single()
+    const { error: rpcError } = await supabase.rpc('add_credits_for_purchase', {
+      p_user_id:     userId,
+      p_credits:     credits,
+      p_token:       token,
+      p_description: `Purchased ${packId} pack (${credits} credits)`,
+    })
 
-    if (idempotencyError && idempotencyError.code !== 'PGRST116') {
-      // PGRST116 = "no rows found" which is expected for new transactions
-      console.error('[PayPal Capture] Idempotency check error:', idempotencyError)
-    }
-
-    if (existingTx) {
-      console.log('[PayPal Capture] Already processed token:', token)
-      return NextResponse.redirect(`${baseUrl}/settings?success=true`)
-    }
-
-    // Get current credits and add new ones
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('credits')
-      .eq('id', userId)
-      .single()
-
-    if (profileError || !profile) {
-      console.error('[PayPal Capture] Profile fetch failed:', profileError)
-      return NextResponse.redirect(`${baseUrl}/settings?error=profile_not_found`)
-    }
-
-    console.log('[PayPal Capture] Current credits:', profile.credits, '+ adding:', credits)
-
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update({ credits: profile.credits + credits })
-      .eq('id', userId)
-
-    if (updateError) {
-      console.error('[PayPal Capture] Credit update failed:', updateError)
+    if (rpcError) {
+      if (rpcError.code === '23505') {
+        // Unique constraint: this token was already processed
+        console.log('[PayPal Capture] Duplicate token, already credited:', token)
+        return NextResponse.redirect(`${baseUrl}/settings?success=true`)
+      }
+      console.error('[PayPal Capture] RPC failed:', rpcError)
       return NextResponse.redirect(`${baseUrl}/settings?error=credit_update_failed`)
     }
 
-    // Log the transaction
-    const { error: txError } = await supabase.from('credit_transactions').insert({
-      user_id: userId,
-      amount: credits,
-      type: 'purchase',
-      stripe_session_id: token,
-      description: `Purchased ${packId} pack (${credits} credits)`,
-    })
-
-    if (txError) {
-      console.error('[PayPal Capture] Transaction log failed (credits already added):', txError)
-      // Don't fail the redirect — credits were already added successfully
-    }
-
-    console.log('[PayPal Capture] Success! User:', userId, 'new balance:', profile.credits + credits)
     return NextResponse.redirect(`${baseUrl}/settings?success=true`)
   } catch (error) {
     console.error('[PayPal Capture] Unexpected error:', error)

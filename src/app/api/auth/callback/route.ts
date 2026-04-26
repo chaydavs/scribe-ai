@@ -4,7 +4,11 @@ import { NextResponse } from 'next/server'
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  const redirect = searchParams.get('redirect') || '/resumelab'
+  // Validate redirect to prevent open redirect attacks
+  let redirect = searchParams.get('redirect') || '/resumelab'
+  if (!redirect.startsWith('/') || redirect.startsWith('//')) {
+    redirect = '/resumelab'
+  }
 
   if (code) {
     // Build the redirect response FIRST so we can attach cookies to it

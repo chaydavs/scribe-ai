@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 function getAnthropicClient() {
   return new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY || '',
+    timeout: 90_000, // 90 second timeout
   })
 }
 
